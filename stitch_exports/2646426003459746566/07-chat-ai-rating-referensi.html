@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Interactive AI Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b4f",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f231e",
+                        "accent-soft": "#204b40",
+                        "border-green": "#2d5a4e"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .neo-shadow {
+            box-shadow: 4px 4px 0px 0px #006b4f;
+        }
+        .neo-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #006b4f;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-border-green/30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-4">
+<div class="max-w-5xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg neo-shadow-sm text-white">
+<span class="material-symbols-outlined block">bubble_chart</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Asisten AI</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded-full bg-accent-soft/20 p-2 hover:bg-accent-soft/40 transition-colors">
+<span class="material-symbols-outlined text-primary">search</span>
+</button>
+<div class="h-10 w-10 rounded-full border-2 border-primary overflow-hidden" data-alt="User profile avatar with green accent border" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCir_8YA_a0wsZ3a38CfUwbCR4Ztb_Cp-6tb7NJ3dKKfyQJiHpIE3w4l9f3qXasYvVZcONbmiTF83rsYFldcZP92AzXyzwHqEHLmLTHGKtjMzBNhZUl5U_4zXgxZLM2IEYS6BExMfWU1J5EgP1bEplx81HvqRch2_PWLxU71I9HHOfAxl0A38GLX42NZUbHE4ElnpVDsR2sjHhZt4RPFUGiVBSmfbwlD5VByEgCi1Mxm_xCY3Dz-Rb-FU-oEejQEWPM077A0kSUWWk');">
+</div>
+</div>
+</div>
+</header>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 py-8 overflow-y-auto space-y-8">
+<!-- AI Response -->
+<div class="flex items-start gap-4 max-w-3xl">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0 neo-shadow-sm" data-alt="AI identity icon green square">
+<span class="material-symbols-outlined text-white text-xl">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-white dark:bg-accent-soft/30 border-2 border-primary p-5 rounded-xl rounded-tl-none neo-shadow-sm">
+<p class="leading-relaxed">Berdasarkan data perencanaan kota ekologis terbaru, penggabungan sistem irigasi terintegrasi secara vertikal ke dalam gedung pencakar langit dapat menurunkan suhu sekitar sebesar 3-5°C sekaligus mendaur ulang hingga 40% air limbah domestik (greywater).</p>
+</div>
+<!-- Citation Badges -->
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1 bg-primary/10 border border-primary/30 px-3 py-1 rounded-full text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-xs">description</span>
+                        Urban Ecology 2024
+                    </div>
+<div class="flex items-center gap-1 bg-primary/10 border border-primary/30 px-3 py-1 rounded-full text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-xs">link</span>
+                        SustainableCities.org
+                    </div>
+</div><div class="flex items-center gap-4 mt-2 px-1"><span class="text-[10px] font-bold uppercase tracking-wider opacity-60">Rating Jawaban:</span><div class="flex gap-2"><button class="p-1 hover:bg-primary/10 rounded transition-colors text-primary"><span class="material-symbols-outlined text-sm">thumb_up</span></button><button class="p-1 hover:bg-primary/10 rounded transition-colors text-primary"><span class="material-symbols-outlined text-sm">thumb_down</span></button></div></div>
+</div>
+</div>
+<!-- User Query -->
+<div class="flex items-start gap-4 max-w-3xl ml-auto flex-row-reverse">
+<div class="w-10 h-10 rounded-full border-2 border-primary shrink-0 overflow-hidden" data-alt="User profile circular portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDIMDbbvfGNLozIsJXP-b_rCpq0R3Q5U30h7tpki2Kfetdn4IdiNnUgjqfofy-Y2fJuPY3vhWnUmLyc1kKS7j3i6fjLNPaKQzuXgKOiKRDecOzDc5MH1BZpeKyTwv7ndqD9pnNrMfN6v6RV06D-Xtr6NEcmqy3hG0-fX5IOkFQ8vAu89-59QgA2KZfR1Ec7eHjGKJMb2nba1wFnEDKlj-owX_dX4YRb-tTDixVVXQo4_WOSFgfaOLK889akm0r5SUEtyuiQ0F34eaE');">
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="bg-primary text-white p-5 rounded-xl rounded-tr-none neo-shadow-sm border-2 border-primary">
+<p class="leading-relaxed">Bagaimana dampaknya terhadap integritas struktural bangunan beton tua jika kita melakukan retrofit dengan sistem ini?</p>
+</div>
+<span class="text-[10px] uppercase tracking-widest opacity-50 font-bold px-1">DIKIRIM 10:42</span>
+</div>
+</div>
+<!-- AI Response 2 -->
+<div class="flex items-start gap-4 max-w-3xl">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0 neo-shadow-sm">
+<span class="material-symbols-outlined text-white text-xl">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-white dark:bg-accent-soft/30 border-2 border-primary p-5 rounded-xl rounded-tl-none neo-shadow-sm">
+<p class="leading-relaxed">Retrofitting struktur tua memerlukan analisis beban yang cermat. Sebagian besar bangunan beton abad ke-20 dapat menopang sistem hidroponik ringan (sekitar 50kg/m²), namun "dinding hijau" berbasis tanah tradisional mungkin memerlukan penguatan struktural pada selubung eksterior.</p>
+<ul class="mt-4 space-y-2 list-none">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>Rasio berat terhadap luas harus di bawah batas struktural.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>Membran kedap air sangat penting untuk umur panjang beton.</span>
+</li>
+</ul>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1 bg-primary/10 border border-primary/30 px-3 py-1 rounded-full text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-xs">menu_book</span>
+                        Architectural Digest Tech
+                    </div>
+</div><div class="flex items-center gap-4 mt-2 px-1"><span class="text-[10px] font-bold uppercase tracking-wider opacity-60">Rating Jawaban:</span><div class="flex gap-2"><button class="p-1 hover:bg-primary/10 rounded transition-colors text-primary"><span class="material-symbols-outlined text-sm">thumb_up</span></button><button class="p-1 hover:bg-primary/10 rounded transition-colors text-primary"><span class="material-symbols-outlined text-sm">thumb_down</span></button></div></div>
+</div>
+</div>
+</main>
+<!-- Floating Input Area -->
+<footer class="p-6 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent">
+<div class="max-w-4xl mx-auto">
+<div class="relative group">
+<div class="absolute -inset-1 bg-primary/20 rounded-xl blur transition duration-300 group-focus-within:bg-primary/40"></div>
+<div class="relative bg-white dark:bg-accent-soft/40 border-2 border-primary rounded-xl flex items-center p-2 shadow-xl">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-slate-100 px-4 py-2 font-medium" placeholder="Tanya tentang keberlanjutan kota..." type="text"/>
+<button class="bg-primary text-white p-2 px-5 rounded-lg font-bold flex items-center gap-2 hover:translate-x-0.5 hover:-translate-y-0.5 transition-transform neo-shadow-sm">
+<span>Kirim</span>
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+<div class="flex justify-center gap-6 mt-4 opacity-60">
+<button class="flex items-center gap-1 text-xs font-bold hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">history</span> Topik Terkini</button>
+<button class="flex items-center gap-1 text-xs font-bold hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">lightbulb</span> Contoh Prompt</button>
+<button class="flex items-center gap-1 text-xs font-bold hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">share</span> Ekspor Chat</button>
+</div>
+</div>
+</footer>
+</body></html>
