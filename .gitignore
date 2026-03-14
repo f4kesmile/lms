@@ -8,3 +8,4 @@ out
 .env.production.local
 prisma/dev.db
 .vscode
+stitch_export

@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { AlertTriangle, BarChart3 } from "lucide-react";
 
 type Stats = {
   totalMaterials: number;
@@ -18,7 +22,14 @@ type Stats = {
   };
 };
 
-const statIcons = ["library_books", "forum", "quiz", "star", "format_quote", "speed"];
+const statIcons = [
+  "library_books",
+  "forum",
+  "quiz",
+  "star",
+  "format_quote",
+  "speed",
+];
 
 export default function AdminStatsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -36,16 +47,33 @@ export default function AdminStatsPage() {
 
   if (error) {
     return (
-      <AdminLayout title="Statistik Penggunaan Chatbot" subtitle="Monitoring metrik evaluasi sistem RAG ringan.">
-        <p style={{ color: "var(--rose)" }}>{error}</p>
+      <AdminLayout
+        title="Statistik Penggunaan Chatbot"
+      >
+        <EmptyState
+          icon={AlertTriangle}
+          title="Gagal memuat statistik"
+          description={error}
+        />
       </AdminLayout>
     );
   }
 
   if (!stats) {
     return (
-      <AdminLayout title="Statistik Penggunaan Chatbot" subtitle="Monitoring metrik evaluasi sistem RAG ringan.">
-        <p className="text-muted">Memuat...</p>
+      <AdminLayout
+        title="Statistik Penggunaan Chatbot"
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array(6)
+            .fill(0)
+            .map((_, index) => (
+              <Card key={`stats-skeleton-${index}`} className="p-4">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="mt-4 h-8 w-24" />
+              </Card>
+            ))}
+        </div>
       </AdminLayout>
     );
   }
@@ -62,12 +90,14 @@ export default function AdminStatsPage() {
   return (
     <AdminLayout
       title="Statistik Penggunaan Chatbot"
-      subtitle="Monitoring metrik evaluasi sistem RAG ringan."
     >
       <section className="admin-grid-3">
         {statItems.map((item, i) => (
           <article className="stat-card" key={item.title}>
-            <div className="row" style={{ gap: "0.75rem", marginBottom: "0.5rem" }}>
+            <div
+              className="row"
+              style={{ gap: "0.75rem", marginBottom: "0.5rem" }}
+            >
               <div
                 style={{
                   width: 36,
@@ -80,31 +110,62 @@ export default function AdminStatsPage() {
                   color: "var(--primary)",
                 }}
               >
-                <span className="material-symbols-outlined">{statIcons[i]}</span>
+                <span className="material-symbols-outlined">
+                  {statIcons[i]}
+                </span>
               </div>
-              <p className="text-dim" style={{ fontSize: "0.85rem" }}>{item.title}</p>
+              <p className="text-dim" style={{ fontSize: "0.85rem" }}>
+                {item.title}
+              </p>
             </div>
             <p className="stat-value">{item.value}</p>
           </article>
         ))}
       </section>
 
-      <section className="neo-card" style={{ padding: "1.5rem", display: "grid", gap: "1rem" }}>
+      <section
+        className="neo-card"
+        style={{ padding: "1.5rem", display: "grid", gap: "1rem" }}
+      >
         <h2 className="title-lg">Target Uji</h2>
         <div className="grid-3">
           <div className="doc-card">
-            <p className="text-dim" style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}>Answer Relevance</p>
+            <p
+              className="text-dim"
+              style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}
+            >
+              Answer Relevance
+            </p>
             <p style={{ fontWeight: 700 }}>{stats.target.answerRelevance}</p>
           </div>
           <div className="doc-card">
-            <p className="text-dim" style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}>Citation</p>
+            <p
+              className="text-dim"
+              style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}
+            >
+              Citation
+            </p>
             <p style={{ fontWeight: 700 }}>{stats.target.citation}</p>
           </div>
           <div className="doc-card">
-            <p className="text-dim" style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}>Response Time</p>
+            <p
+              className="text-dim"
+              style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}
+            >
+              Response Time
+            </p>
             <p style={{ fontWeight: 700 }}>{stats.target.responseTime}</p>
           </div>
         </div>
+      </section>
+
+      <section className="mt-6">
+        <EmptyState
+          icon={BarChart3}
+          title="Insight lanjutan segera hadir"
+          description="Kami sedang menyiapkan visualisasi tren mingguan dan perbandingan lintas periode untuk analitik chatbot."
+          className="min-h-40"
+        />
       </section>
     </AdminLayout>
   );

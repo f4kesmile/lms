@@ -22,7 +22,7 @@ export function Modal({
   onClose,
   title,
   children,
-  width = "500px",
+  width = "640px",
   primaryAction,
 }: ModalProps) {
   if (!isOpen) return null;
@@ -43,22 +43,25 @@ export function Modal({
           left: 0,
           right: 0,
           bottom: 0,
-          background: "rgba(0,0,0,0.6)",
-          backdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.7)",
           zIndex: 99,
         }}
         onClick={onClose}
       />
       <div
-        className="glass-panel"
+        className="rounded-lg border border-border bg-card"
         style={{
           position: "fixed",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           zIndex: 100,
-          padding: "2rem",
-          width: `min(${width}, 90vw)`,
+          background: "hsl(var(--card))",
+          color: "hsl(var(--card-foreground))",
+          padding: "clamp(1rem, 2.5vw, 2rem)",
+          width: `min(${width}, 96vw)`,
+          maxHeight: "90dvh",
+          overflowY: "auto",
           boxShadow: "0 20px 50px rgba(0,0,0,0.4)",
         }}
       >

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
 import Link from "next/link";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { getInitials, formatDate } from "@/lib/utils";
+import { getInitials, formatDate, cn } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Table,
   TableHeader,
@@ -15,6 +18,17 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import {
+  Plus,
+  Users,
+  BookOpen,
+  Component,
+  Cpu,
+  Activity,
+  Lightbulb,
+  ArrowUpRight,
+  TrendingUp,
+} from "lucide-react";
 
 type DashboardResponse = {
   metrics: {
@@ -32,12 +46,25 @@ type DashboardResponse = {
   }>;
 };
 
-const statIcons = ["person", "library_books", "extension", "smart_toy"];
-const statLabels = ["Total Pengguna", "Kursus", "Modul Aktif", "Penggunaan AI"];
+const statColors = [
+  "from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  "from-blue-500/20 to-blue-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20",
+  "from-amber-500/20 to-amber-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  "from-purple-500/20 to-purple-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20",
+];
+
+const statIcons = [Users, BookOpen, Component, Cpu];
+const statLabels = [
+  "Total Pengguna",
+  "Kursus Aktif",
+  "Modul Belajar",
+  "Efisiensi AI",
+];
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/dashboard")
@@ -50,11 +77,12 @@ export default function AdminDashboardPage() {
       })
       .catch((e) => {
         setError(e instanceof Error ? e.message : "Gagal memuat dashboard");
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const bars = useMemo(() => {
-    if (!data) return [20, 20, 20, 20, 20, 20, 20];
+    if (!data) return Array(7).fill(20);
     const activityCount = data.activities.length;
     return [1, 2, 3, 4, 5, 6, 7].map((day) => {
       const dayActivities = data.activities.filter((item) => {
@@ -63,7 +91,7 @@ export default function AdminDashboardPage() {
       }).length;
       return Math.min(
         100,
-        Math.max(10, (dayActivities / Math.max(activityCount, 1)) * 200),
+        Math.max(15, (dayActivities / Math.max(activityCount, 1)) * 300),
       );
     });
   }, [data]);
@@ -75,226 +103,268 @@ export default function AdminDashboardPage() {
         data.metrics.totalModules.toString(),
         `${data.metrics.aiUsage}%`,
       ]
-    : ["-", "-", "-", "-"];
+    : ["0", "0", "0", "0%"];
 
   return (
     <AdminLayout
-      title="Ringkasan Dasbor"
-      subtitle="Selamat datang kembali, berikut perkembangan hari ini."
+      title="Ringkasan Eksekutif"
       headerActions={
-        <Button variant="default" size="sm">
-          <span className="material-symbols-outlined text-sm">add</span>
-          Kursus Baru
+        <Button
+          className="font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
+          size="sm"
+        >
+          <Plus className="mr-1 size-4" />
+          Kelas Baru
         </Button>
       }
     >
-      {/* Stat Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statLabels.map((label, i) => (
-          <Card key={label} className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-dim">
-                {label}
-              </CardTitle>
-              <div className="bg-primary/10 p-2 rounded-md text-primary">
-                <span className="material-symbols-outlined">
-                  {statIcons[i]}
-                </span>
+      <div className="flex flex-col gap-8">
+        {/* Stat Cards Row */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statLabels.map((label, i) => {
+            const Icon = statIcons[i];
+            return (
+              <Card
+                key={label}
+                className="group relative overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+              >
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-gradient-to-br opacity-50",
+                    statColors[i],
+                  )}
+                />
+                <CardHeader className="relative flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+                    {label}
+                  </CardTitle>
+                  <div className="rounded-full bg-background/50 p-2 shadow-sm backdrop-blur-sm">
+                    <Icon className="size-4 opacity-80" />
+                  </div>
+                </CardHeader>
+                <CardContent className="relative">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black tracking-tight">
+                      {metricValues[i]}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+                      <ArrowUpRight className="size-3" />
+                      12%
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[10px] font-medium text-muted-foreground">
+                    vs. bulan lalu
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </section>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* Recent Activities Table */}
+          <Card className="lg:col-span-2 border-none bg-card shadow-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 bg-muted/30 px-6 py-4">
+              <div className="flex items-center gap-2">
+                <Activity className="size-5 text-primary" />
+                <CardTitle className="text-lg font-bold">
+                  Aktivitas Terkini
+                </CardTitle>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-xs font-bold text-primary hover:bg-primary/5"
+              >
+                <Link href={"/admin/dashboard" as Route}>Lihat Laporan</Link>
+              </Button>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-black">{metricValues[i]}</div>
-            </CardContent>
+            <div className="p-0">
+              <Table>
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="px-6 text-[10px] font-black uppercase tracking-widest">
+                      Pengguna
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Aktivitas
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">
+                      Status
+                    </TableHead>
+                    <TableHead className="px-6 text-[10px] font-black uppercase tracking-widest text-right">
+                      Waktu
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    Array(5)
+                      .fill(0)
+                      .map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell
+                            colSpan={4}
+                            className="h-16 border-b border-border/30"
+                          >
+                            <Skeleton className="h-10 w-full" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  ) : error ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="p-6">
+                        <EmptyState
+                          title="Gagal memuat aktivitas"
+                          description={error}
+                          className="min-h-40 border-destructive/30"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ) : data?.activities.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="p-6">
+                        <EmptyState
+                          icon={Activity}
+                          title="Belum ada aktivitas"
+                          description="Aktivitas pengguna akan muncul di sini setelah ada interaksi baru di platform."
+                          className="min-h-40"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data?.activities.map((item) => {
+                      const sKey = item.status.toLowerCase();
+                      const variant =
+                        sKey === "completed" || sKey === "aktif"
+                          ? "default"
+                          : sKey === "pending" || sKey === "proses"
+                            ? "secondary"
+                            : "destructive";
+                      return (
+                        <TableRow
+                          key={item.id}
+                          className="group border-b border-border/30 transition-colors hover:bg-muted/20"
+                        >
+                          <TableCell className="px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary ring-2 ring-primary/5 group-hover:scale-110 transition-transform">
+                                {getInitials(item.user)}
+                              </div>
+                              <span className="text-sm font-bold tracking-tight">
+                                {item.user}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                            {item.activity}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge
+                              variant={variant as BadgeProps["variant"]}
+                              className="text-[9px] font-black uppercase tracking-wider px-2 h-5"
+                            >
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-6 text-right font-mono text-[11px] font-bold text-muted-foreground">
+                            {formatDate(item.date)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
-        ))}
-      </section>
 
-      {/* Recent Activities */}
-      <Card className="overflow-hidden">
-        <div className="flex items-center justify-between p-6 bg-card">
-          <h2 className="text-xl font-bold">Aktivitas Terbaru</h2>
-          <Button variant="ghost" className="text-primary font-bold">
-            Lihat Semua
-          </Button>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Pengguna</TableHead>
-              <TableHead>Aktivitas</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Tanggal</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data?.activities.map((item) => {
-              const sKey = item.status.toLowerCase();
-              const variant =
-                sKey === "completed"
-                  ? "default"
-                  : sKey === "pending"
-                    ? "destructive"
-                    : "secondary";
-              return (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold">
-                        {getInitials(item.user)}
-                      </div>
-                      <span className="font-semibold">{item.user}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-dim">{item.activity}</TableCell>
-                  <TableCell>
-                    <Badge variant={variant as BadgeProps["variant"]}>
-                      {item.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-dim text-sm">
-                    {formatDate(item.date)}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {!error && (data?.activities.length ?? 0) === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
-                  Belum ada aktivitas terbaru.
-                </TableCell>
-              </TableRow>
-            )}
-            {error && (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center py-8 text-destructive"
+          {/* Right Column: Growth & Insights */}
+          <div className="flex flex-col gap-6">
+            {/* Platform Growth Chart Card */}
+            <Card className="border-none bg-card shadow-lg p-6 overflow-hidden">
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-5 text-emerald-500" />
+                  <h3 className="font-bold">Kurva Pertumbuhan</h3>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[9px] font-bold border-emerald-500/30 text-emerald-500 bg-emerald-500/5"
                 >
-                  {error}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+                  7 Hari Terakhir
+                </Badge>
+              </div>
+              <div className="flex h-40 items-end gap-2 px-1">
+                {bars.map((h, i) => (
+                  <div key={`bar-${i}`} className="group relative flex-1">
+                    <div
+                      className="w-full rounded-t-md bg-gradient-to-t from-primary/40 to-primary/90 transition-all duration-300 hover:scale-x-110 hover:to-primary"
+                      style={{ height: `${h}%` }}
+                    />
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-foreground px-1 py-0.5 text-[8px] font-bold text-background opacity-0 transition-opacity group-hover:opacity-100">
+                      {Math.round(h)}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <span>Sen</span>
+                <span>Sel</span>
+                <span>Rab</span>
+                <span>Kam</span>
+                <span>Jum</span>
+                <span>Sab</span>
+                <span>Min</span>
+              </div>
+            </Card>
 
-      {/* Platform Growth + AI Insight */}
-      <section className="admin-grid-2">
-        <article
-          style={{
-            padding: "1.5rem",
-            borderRadius: "var(--radius-md)",
-            background: "rgba(190,239,0,0.03)",
-            border: "1px solid var(--border-primary)",
-          }}
-        >
-          <h4
-            className="row"
-            style={{ fontWeight: 700, marginBottom: "1rem", gap: "0.5rem" }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ color: "var(--primary)" }}
-            >
-              analytics
-            </span>
-            Platform Growth
-          </h4>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              gap: "0.4rem",
-              height: 160,
-            }}
-          >
-            {bars.map((h, i) => (
-              <div
-                key={`bar-${i}`}
-                style={{
-                  flex: 1,
-                  height: `${h}%`,
-                  borderRadius: "4px 4px 0 0",
-                  background: `rgba(190,239,0,${0.2 + (h / 100) * 0.8})`,
-                }}
-              />
-            ))}
-          </div>
-          <div
-            className="row space-between"
-            style={{
-              marginTop: "0.5rem",
-              fontSize: "0.6rem",
-              fontWeight: 700,
-              color: "var(--text-dim)",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span>Sat</span>
-            <span>Sun</span>
-          </div>
-        </article>
+            {/* AI Insight Card */}
+            <Card className="group relative border-none bg-emerald-900 text-emerald-50 p-6 shadow-lg shadow-emerald-900/20 overflow-hidden">
+              {/* Background pattern */}
+              <div className="absolute -right-8 -top-8 size-32 rounded-full bg-emerald-800/50 blur-3xl" />
+              <div className="absolute -left-8 -bottom-8 size-32 rounded-full bg-emerald-800/50 blur-3xl" />
 
-        <article
-          className="neo-card"
-          style={{
-            padding: "1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <div className="row" style={{ marginBottom: "1rem" }}>
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                background: "rgba(190,239,0,0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--primary)",
-              }}
-            >
-              <span className="material-symbols-outlined">lightbulb</span>
-            </div>
-            <div>
-              <h4 style={{ fontWeight: 700 }}>AI Insight</h4>
-              <p className="text-dim" style={{ fontSize: "0.8rem" }}>
-                Ringkasan Platform
-              </p>
-            </div>
+              <div className="relative">
+                <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner">
+                  <Lightbulb className="size-6 text-emerald-300 group-hover:animate-pulse" />
+                </div>
+                <h3 className="mb-2 text-lg font-black tracking-tight">
+                  AI Platform Insight
+                </h3>
+                <p className="mb-6 text-sm leading-relaxed text-emerald-100/80">
+                  Platform Anda tercatat memiliki{" "}
+                  <span className="font-bold text-white">
+                    {metricValues[0]} pengguna
+                  </span>{" "}
+                  aktif dengan{" "}
+                  <span className="font-bold text-white">
+                    {metricValues[1]} kursus
+                  </span>{" "}
+                  berjalan. Efisiensi penggunaan AI bulan ini mencapai{" "}
+                  {metricValues[3]}, menunjukkan adopsi fitur yang sangat
+                  positif.
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full border-white/20 bg-white/10 font-bold tracking-tight hover:bg-white/20 hover:text-white"
+                  size="sm"
+                  asChild
+                >
+                  <Link
+                    href="/admin/stats"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    Buka Statistik Lengkap
+                    <ArrowUpRight className="size-4" />
+                  </Link>
+                </Button>
+              </div>
+            </Card>
           </div>
-          <p
-            className="text-muted"
-            style={{ lineHeight: 1.7, marginBottom: "1rem" }}
-          >
-            Platform saat ini memiliki{" "}
-            <span style={{ color: "var(--primary)", fontWeight: 700 }}>
-              {metricValues[0]} pengguna
-            </span>{" "}
-            dan{" "}
-            <span style={{ color: "var(--primary)", fontWeight: 700 }}>
-              {metricValues[1]} kelas aktif
-            </span>
-            . Tingkat penggunaan AI berada di {metricValues[3]}.
-          </p>
-          <Link
-            className="btn-ghost"
-            href="/admin/stats"
-            style={{ width: "fit-content", fontSize: "0.85rem" }}
-          >
-            Lihat Statistik
-          </Link>
-        </article>
-      </section>
+        </div>
+      </div>
     </AdminLayout>
   );
 }
