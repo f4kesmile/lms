@@ -6,17 +6,35 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { ADMIN_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { LogOut, User, Home, Sun, Moon, School } from "lucide-react";
+import { getInitials, cn } from "@/lib/utils/index";
 
 type AdminLayoutProps = {
   title: string;
-  subtitle: string;
   headerActions?: ReactNode;
   children: ReactNode;
 };
 
 export const AdminLayout = ({
   title,
-  subtitle,
   headerActions,
   children,
 }: AdminLayoutProps) => {
@@ -26,14 +44,15 @@ export const AdminLayout = ({
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true));
+    const frame = requestAnimationFrame(() => setMounted(true));
     fetch("/api/users/me")
       .then((res) => res.json())
       .then((data) => {
         if (data.user) setUser(data.user);
       })
       .catch(() => {});
-    return () => cancelAnimationFrame(id);
+
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   async function logout() {
@@ -41,151 +60,175 @@ export const AdminLayout = ({
     window.location.href = "/login";
   }
 
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : "??";
+  const initials = user?.name ? getInitials(user.name) : "??";
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar Section */}
-      <aside
-        className="admin-sidebar"
-        style={{ display: "flex", flexDirection: "column", height: "100%" }}
-      >
-        <div>
-          <div className="admin-logo">
-            <div className="admin-logo-icon">
-              <span className="material-symbols-outlined">school</span>
-            </div>
-            <div>
-              <p className="admin-logo-text">{SITE_CONFIG.shortName} Admin</p>
-              <p className="admin-sublogo">Bottle Green Ed.</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="admin-nav" style={{ flex: 1, overflowY: "auto" }}>
-          {ADMIN_NAV_LINKS.map(
-            (item: { href: string; label: string; icon: string }) => (
-              <Link
-                key={item.href}
-                href={item.href as Route}
-                className={`admin-link ${pathname === item.href ? "active" : ""}`}
-              >
-                <span className="material-symbols-outlined">{item.icon}</span>
-                {item.label}
-              </Link>
-            ),
-          )}
-        </nav>
-
-        <div className="admin-profile" style={{ marginTop: "auto" }}>
-          <div className="row" style={{ marginBottom: "0.75rem" }}>
-            <div
-              className="avatar avatar-md"
-              style={{
-                background: "rgba(12, 163, 127, 0.12)",
-                color: "var(--primary)",
-              }}
-            >
-              {user ? (
-                initials
-              ) : (
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "20px" }}
-                >
-                  person
-                </span>
-              )}
-            </div>
-            <div>
-              <p className="admin-profile-name">{user?.name || "Memuat..."}</p>
-              <p
-                className="text-dim"
-                style={{ fontSize: "0.75rem", textTransform: "capitalize" }}
-              >
-                {user?.role || "Mengecek..."}
-              </p>
-            </div>
-          </div>
-          <button
-            className="btn-ghost row"
-            type="button"
-            onClick={logout}
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              fontSize: "0.85rem",
-              border: "none",
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "16px" }}
-            >
-              logout
-            </span>
-            Keluar
-          </button>
-        </div>
-      </aside>
-
-      {/* Content Section */}
-      <section className="admin-content">
-        <header
-          className="admin-content-header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
+    <SidebarProvider>
+      <div className="flex min-h-dvh w-full bg-background">
+        <Sidebar
+          collapsible="icon"
+          className="border-r border-sidebar-border bg-sidebar shadow-xl"
         >
-          <div>
-            <h1 className="title-lg">{title}</h1>
-            <p className="text-muted" style={{ fontSize: "0.85rem" }}>
-              {subtitle}
-            </p>
-          </div>
-          <div className="row" style={{ gap: "0.5rem" }}>
-            <Link
-              href="/"
-              className="btn-ghost row"
-              style={{
-                padding: "0.5rem 0.75rem",
-                borderRadius: "var(--radius-md)",
-                fontSize: "0.85rem",
-              }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "20px" }}
-              >
-                home
-              </span>
-              Beranda
-            </Link>
-            {mounted && (
+          <SidebarHeader className="flex h-16 items-center justify-start px-3 sm:px-4">
+            <div className="flex w-full items-center justify-start gap-3 overflow-hidden">
+              <div className="flex aspect-square size-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <School className="size-[30px]" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
+                <span className="font-bold tracking-tight text-sidebar-foreground">
+                  {SITE_CONFIG.shortName} Admin
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 font-bold">
+                  University LMS
+                </span>
+              </div>
+            </div>
+          </SidebarHeader>
+          <SidebarContent className="px-2 pb-2">
+            <SidebarGroup>
+              <SidebarGroupLabel className="px-2 pb-2 text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/40 transition-opacity group-data-[collapsible=icon]:hidden">
+                Menu Utama
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {ADMIN_NAV_LINKS.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                          className={cn(
+                            "relative justify-start overflow-hidden transition-all duration-200",
+                            isActive
+                              ? "bg-primary/10 text-primary font-bold hover:bg-primary/15"
+                              : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          )}
+                        >
+                          <Link
+                            href={item.href as Route}
+                            className="flex w-full items-center justify-start gap-4"
+                          >
+                            <span className="material-symbols-outlined shrink-0 text-[26px] leading-none">
+                              {item.icon}
+                            </span>
+                            <span className="truncate group-data-[collapsible=icon]:hidden">
+                              {item.label}
+                            </span>
+                            {isActive && (
+                              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-l-full bg-primary group-data-[collapsible=icon]:hidden" />
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter className="p-2">
+            <div className="flex flex-col gap-1">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="w-full justify-start gap-3 px-2 py-6 hover:bg-sidebar-accent transition-all duration-200"
+                    size="lg"
+                  >
+                    <div className="flex aspect-square size-10 items-center justify-center rounded-full bg-primary/10 text-primary font-black text-xs ring-2 ring-primary/5">
+                      {user ? initials : <User className="size-5" />}
+                    </div>
+                    <div className="flex flex-col items-start gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
+                      <span className="font-bold text-sm truncate max-w-[120px]">
+                        {user?.name || "Memuat..."}
+                      </span>
+                      <span className="text-[10px] text-sidebar-foreground/50 uppercase font-black tracking-wider">
+                        {user?.role || "Petugas"}
+                      </span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+              <Separator className="bg-sidebar-border mx-2 opacity-50" />
               <button
-                className="btn-ghost"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                style={{ padding: "0.5rem", borderRadius: "var(--radius-md)" }}
+                type="button"
+                onClick={logout}
+                className="flex w-full items-center justify-start gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
               >
-                <span className="material-symbols-outlined">
-                  {theme === "dark" ? "light_mode" : "dark_mode"}
+                <LogOut className="size-4 shrink-0" />
+                <span className="transition-opacity group-data-[collapsible=icon]:hidden">
+                  Keluar
                 </span>
               </button>
+            </div>
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+
+        <SidebarInset className="flex min-h-dvh flex-col bg-background/50">
+          <header className="sticky top-0 z-10 flex min-h-16 shrink-0 items-center justify-between gap-2 border-b border-border/50 bg-background/80 px-3 backdrop-blur-sm sm:px-5 lg:px-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <div className="flex flex-col leading-tight">
+                <h1 className="text-lg font-bold tracking-tight">{title}</h1>
+                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider"></p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Link
+                href="/"
+                className="group flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all hover:bg-sidebar-accent"
+              >
+                <Home className="size-4 transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">Halaman Umum</span>
+              </Link>
+
+              <Separator orientation="vertical" className="mx-1 h-4" />
+
+              {mounted && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="rounded-lg"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="size-4 text-amber-400 fill-amber-400" />
+                  ) : (
+                    <Moon className="size-4 text-emerald-600 fill-emerald-600" />
+                  )}
+                </Button>
+              )}
+            </div>
+          </header>
+
+          <main
+            className={cn(
+              "flex-1 overflow-auto px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8 xl:px-10 xl:py-10",
+              headerActions && "pb-24 lg:pb-28",
             )}
-            {headerActions}
-          </div>
-        </header>
-        <div className="admin-content-body">{children}</div>
-      </section>
-    </div>
+          >
+            <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {children}
+            </div>
+          </main>
+
+          {headerActions && (
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 p-3 sm:p-4">
+              <div className="mx-auto flex w-full max-w-md justify-center rounded-2xl border border-border/60 bg-background/90 p-2 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/70 lg:ml-auto lg:mr-8 lg:max-w-max">
+                <div className="pointer-events-auto flex items-center gap-2">
+                  {headerActions}
+                </div>
+              </div>
+            </div>
+          )}
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
