@@ -445,7 +445,8 @@ export default function KnowledgeAdminPage() {
               {editingMaterial ? "Edit Materi" : "Upload Materi Baru"}
             </DialogTitle>
             <DialogDescription className="text-sm font-medium">
-              Materi ini akan dipecah menjadi chunk dan dipakai sebagai sumber AI RAG.
+              Materi ini akan dipecah menjadi chunk dan dipakai sebagai sumber
+              AI RAG.
             </DialogDescription>
           </DialogHeader>
 
@@ -457,7 +458,9 @@ export default function KnowledgeAdminPage() {
               <Input
                 required
                 value={form.title}
-                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, title: e.target.value }))
+                }
                 className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
                 placeholder="Contoh: Dasar Pemrograman Python"
               />
@@ -471,7 +474,9 @@ export default function KnowledgeAdminPage() {
                 <Input
                   required
                   value={form.module}
-                  onChange={(e) => setForm((prev) => ({ ...prev, module: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, module: e.target.value }))
+                  }
                   className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
                   placeholder="Contoh: Modul 1"
                 />
@@ -482,7 +487,9 @@ export default function KnowledgeAdminPage() {
                 </label>
                 <Input
                   value={form.page}
-                  onChange={(e) => setForm((prev) => ({ ...prev, page: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, page: e.target.value }))
+                  }
                   className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
                   placeholder="Contoh: 12-20"
                 />
@@ -497,7 +504,9 @@ export default function KnowledgeAdminPage() {
                 required
                 minLength={50}
                 value={form.content}
-                onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, content: e.target.value }))
+                }
                 className="w-full min-h-56 rounded-md border-none bg-muted/30 p-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
                 placeholder="Tempelkan konten materi lengkap di sini agar dapat diproses untuk RAG..."
               />
@@ -516,8 +525,16 @@ export default function KnowledgeAdminPage() {
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={submitting} className="min-w-[140px] font-bold">
-                {submitting ? "Menyimpan..." : editingMaterial ? "Update Materi" : "Upload Materi"}
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="min-w-[140px] font-bold"
+              >
+                {submitting
+                  ? "Menyimpan..."
+                  : editingMaterial
+                    ? "Update Materi"
+                    : "Upload Materi"}
               </Button>
             </div>
           </form>
