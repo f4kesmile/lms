@@ -53,6 +53,7 @@ model Class {
     academicYearId String
     classTeacherId String?
     capacity       Int            @default(40)
+    enrollmentKey  String?
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
     academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
@@ -93,10 +94,11 @@ model ClassSubject {
 }
 
 model ClassStudent {
-    classId String
-    userId  String
-    class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
-    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    classId  String
+    userId   String
+    progress Int    @default(0)
+    class    Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+    user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@id([classId, userId])
 }
@@ -150,4 +152,15 @@ model ChatTurn {
     user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@index([sessionId, createdAt])
+}
+
+model Faq {
+    id        String   @id @default(uuid())
+    question  String
+    answer    String
+    category  String   @default("Umum")
+    isActive  Boolean  @default(true)
+    sortOrder Int      @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
