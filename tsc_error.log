@@ -1,0 +1,1 @@
+app/courses/[id]/page.tsx(266,18): error TS2304: Cannot find name 'EnrollButton'.
