@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 type Source = {
   id: string;
@@ -66,6 +66,7 @@ function IconBtn({
 
 export const FloatingChatbot = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -92,6 +93,20 @@ export const FloatingChatbot = () => {
     scrollLeft: 0,
     moved: false,
   });
+  const suggestionsLoadedKeyRef = useRef<string>("");
+
+  const classIdFromQuery = searchParams.get("classId") ?? "";
+  const courseIdFromQuery = searchParams.get("courseId") ?? "";
+
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const courseIdFromPath =
+    pathSegments[0] === "courses" && pathSegments[1] ? pathSegments[1] : "";
+  const classIdFromPath =
+    pathSegments[0] === "classes" && pathSegments[1] ? pathSegments[1] : "";
+
+  const classId = classIdFromQuery || classIdFromPath;
+  const courseId = courseIdFromQuery || courseIdFromPath;
+  const suggestionContextKey = `${pathname}|class:${classId}|course:${courseId}`;
 
   if (pathname === "/chatbot") return null;
 
@@ -105,15 +120,31 @@ export const FloatingChatbot = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!isOpen) return;
+
     fetch("/api/chat/sessions")
       .then((r) => r.json())
       .then((d) => setSessions(d.sessions || []))
       .catch(() => {});
-    fetch("/api/chat/suggestions?limit=8")
+
+    if (
+      suggestionsLoadedKeyRef.current === suggestionContextKey &&
+      suggestions.length > 0
+    ) {
+      return;
+    }
+
+    const params = new URLSearchParams({ limit: "8" });
+    if (classId) params.set("classId", classId);
+    if (courseId) params.set("courseId", courseId);
+
+    fetch(`/api/chat/suggestions?${params.toString()}`)
       .then((r) => r.json())
-      .then((d) => setSuggestions(d.suggestions || []))
+      .then((d) => {
+        setSuggestions(d.suggestions || []);
+        suggestionsLoadedKeyRef.current = suggestionContextKey;
+      })
       .catch(() => {});
-  }, [isOpen]);
+  }, [isOpen, classId, courseId, suggestionContextKey, suggestions.length]);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
