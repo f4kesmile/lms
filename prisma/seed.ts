@@ -13,6 +13,7 @@ async function main() {
   await prisma.chatSession.deleteMany();
   await prisma.materialChunk.deleteMany();
   await prisma.courseMaterial.deleteMany();
+  await prisma.course.deleteMany();
   await prisma.faq.deleteMany();
   await prisma.classStudent.deleteMany();
   await prisma.classSubject.deleteMany();
@@ -148,6 +149,9 @@ async function main() {
 
   const materialPayload = [
     {
+      code: "AI-101",
+      courseTitle: "Pengantar Kecerdasan Buatan",
+      createdById: dosenA.id,
       title: "Konsep Dasar Machine Learning",
       module: "Modul 1",
       page: "1-8",
@@ -155,6 +159,9 @@ async function main() {
         "Machine Learning adalah cabang AI yang memungkinkan sistem belajar dari data. Proses dimulai dari pengumpulan data, preprocessing, training model, lalu evaluasi metrik. Model supervised belajar dari label, sedangkan unsupervised mencari pola tanpa label.",
     },
     {
+      code: "DB-201",
+      courseTitle: "Basis Data Lanjut",
+      createdById: dosenA.id,
       title: "Normalisasi dan Relasi Database",
       module: "Modul 2",
       page: "9-15",
@@ -162,6 +169,9 @@ async function main() {
         "Normalisasi bertujuan mengurangi redundansi data. Bentuk normal pertama memastikan setiap kolom atomik, bentuk normal kedua menghilangkan ketergantungan parsial, dan bentuk normal ketiga menghilangkan ketergantungan transitif. Relasi one-to-many dan many-to-many harus didesain dengan foreign key yang tepat.",
     },
     {
+      code: "SE-301",
+      courseTitle: "Rekayasa Perangkat Lunak",
+      createdById: dosenB.id,
       title: "Arsitektur Layered pada Aplikasi Web",
       module: "Modul 3",
       page: "16-23",
@@ -170,14 +180,36 @@ async function main() {
     },
   ];
 
+  const courseByCode = new Map<string, { id: string }>();
+
+  for (const material of materialPayload) {
+    if (courseByCode.has(material.code)) continue;
+
+    const course = await prisma.course.create({
+      data: {
+        code: material.code,
+        title: material.courseTitle,
+        description: `Template mata kuliah untuk ${material.courseTitle}`,
+        learningOutcomes: `Mahasiswa memahami materi inti pada ${material.courseTitle}`,
+        status: "published",
+        createdById: material.createdById,
+      },
+    });
+
+    courseByCode.set(material.code, { id: course.id });
+  }
+
   for (const mat of materialPayload) {
+    const course = courseByCode.get(mat.code);
+
     const material = await prisma.courseMaterial.create({
       data: {
+        courseId: course?.id,
         title: mat.title,
         module: mat.module,
         page: mat.page,
         content: mat.content,
-        createdById: admin.id,
+        createdById: mat.createdById,
       },
     });
 

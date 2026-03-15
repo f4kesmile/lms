@@ -12,6 +12,12 @@ enum UserRole {
     mahasiswa
 }
 
+enum CourseStatus {
+    draft
+    published
+    archived
+}
+
 enum crdb_internal_region {
     aws_ap_southeast_1 @map("aws-ap-southeast-1")
 }
@@ -31,7 +37,22 @@ model User {
     classLinks      ClassStudent[]
     chatSessions    ChatSession[]
     chatTurns       ChatTurn[]
+    courses         Course[]
     materials       CourseMaterial[]
+}
+
+model Course {
+    id               String           @id @default(uuid())
+    code             String           @unique
+    title            String
+    description      String?
+    learningOutcomes String?
+    status           CourseStatus     @default(published)
+    createdById      String?
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+    createdBy        User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+    materials        CourseMaterial[]
 }
 
 model AcademicYear {
@@ -105,6 +126,7 @@ model ClassStudent {
 
 model CourseMaterial {
     id          String          @id @default(uuid())
+    courseId    String?
     title       String
     module      String
     page        String?
@@ -112,8 +134,11 @@ model CourseMaterial {
     createdById String?
     createdAt   DateTime        @default(now())
     updatedAt   DateTime        @updatedAt
+    course      Course?         @relation(fields: [courseId], references: [id], onDelete: SetNull)
     createdBy   User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
     chunks      MaterialChunk[]
+
+    @@index([courseId])
 }
 
 model ChatbotSetting {

@@ -37,6 +37,7 @@ import {
 
 type Material = {
   id: string;
+  courseId: string | null;
   title: string;
   module: string;
   page: string | null;
@@ -44,17 +45,27 @@ type Material = {
   createdAt: string;
   updatedAt: string;
   _count: { chunks: number };
+  course: { id: string; code: string; title: string } | null;
   createdBy: { id: string; name: string | null; email: string } | null;
 };
 
 type MaterialForm = {
+  courseId: string;
   title: string;
   module: string;
   page: string;
   content: string;
 };
 
+type CourseOption = {
+  id: string;
+  code: string;
+  title: string;
+  status: string;
+};
+
 const EMPTY_FORM: MaterialForm = {
+  courseId: "",
   title: "",
   module: "",
   page: "",
@@ -63,9 +74,11 @@ const EMPTY_FORM: MaterialForm = {
 
 export default function KnowledgeAdminPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [courses, setCourses] = useState<CourseOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [form, setForm] = useState<MaterialForm>(EMPTY_FORM);
@@ -90,12 +103,15 @@ export default function KnowledgeAdminPage() {
     onConfirm: null,
   });
 
-  async function loadData(query = "") {
+  async function loadData(query = "", courseId = "") {
     setLoading(true);
     try {
       const q = query.trim();
-      const endpoint = q
-        ? `/api/kb/materials?search=${encodeURIComponent(q)}`
+      const params = new URLSearchParams();
+      if (q) params.set("search", q);
+      if (courseId.trim()) params.set("courseId", courseId.trim());
+      const endpoint = params.toString()
+        ? `/api/kb/materials?${params.toString()}`
         : "/api/kb/materials";
       const res = await fetch(endpoint);
       const data = await res.json();
@@ -107,19 +123,34 @@ export default function KnowledgeAdminPage() {
     }
   }
 
+  async function loadCourses() {
+    try {
+      const res = await fetch("/api/kb/courses");
+      const data = await res.json();
+      if (!res.ok) {
+        setCourses([]);
+        return;
+      }
+      setCourses(data.courses || []);
+    } catch {
+      setCourses([]);
+    }
+  }
+
   useEffect(() => {
-    loadData();
+    loadData("", selectedCourseId);
+    loadCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadData(search);
+      loadData(search, selectedCourseId);
     }, 250);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, selectedCourseId]);
 
   function openCreateModal() {
     setEditingMaterial(null);
@@ -130,6 +161,7 @@ export default function KnowledgeAdminPage() {
   function openEditModal(item: Material) {
     setEditingMaterial(item);
     setForm({
+      courseId: item.course?.id ?? "",
       title: item.title,
       module: item.module,
       page: item.page ?? "",
@@ -166,6 +198,7 @@ export default function KnowledgeAdminPage() {
     setSubmitting(true);
     try {
       const payload = {
+        courseId: form.courseId || undefined,
         title: form.title,
         module: form.module,
         page: form.page.trim() || undefined,
@@ -191,7 +224,7 @@ export default function KnowledgeAdminPage() {
       setShowModal(false);
       setEditingMaterial(null);
       setForm(EMPTY_FORM);
-      await loadData(search);
+      await loadData(search, selectedCourseId);
     } catch (error) {
       setNotice({
         open: true,
@@ -264,14 +297,29 @@ export default function KnowledgeAdminPage() {
             </div>
           </Card>
           <div className="flex items-center justify-end">
-            <div className="relative w-full max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                className="pl-9 h-11 bg-card border-border/50 focus-visible:ring-primary/20 font-medium"
-                placeholder="Cari materi pengetahuan..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <select
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+                className="h-11 w-full rounded-md border border-border/50 bg-card px-3 text-sm font-medium outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20 sm:max-w-xs"
+              >
+                <option value="">Semua Course</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code} - {course.title}
+                  </option>
+                ))}
+              </select>
+
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  className="pl-9 h-11 bg-card border-border/50 focus-visible:ring-primary/20 font-medium"
+                  placeholder="Cari materi pengetahuan..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -283,6 +331,9 @@ export default function KnowledgeAdminPage() {
               <TableRow className="border-none hover:bg-transparent">
                 <TableHead className="px-6 h-12 text-[10px] font-black uppercase tracking-widest">
                   Judul Materi
+                </TableHead>
+                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                  Course
                 </TableHead>
                 <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
                   Modul
@@ -305,7 +356,7 @@ export default function KnowledgeAdminPage() {
                   .map((_, i) => (
                     <TableRow key={i}>
                       <TableCell
-                        colSpan={5}
+                        colSpan={6}
                         className="h-16 border-b border-border/30"
                       >
                         <Skeleton className="h-10 w-full" />
@@ -314,7 +365,7 @@ export default function KnowledgeAdminPage() {
                   ))
               ) : materials.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="p-6">
+                  <TableCell colSpan={6} className="p-6">
                     <EmptyState
                       icon={Database}
                       title="Materi pengetahuan belum tersedia"
@@ -353,6 +404,14 @@ export default function KnowledgeAdminPage() {
                           </span>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className="font-bold px-2.5 py-0.5 text-[10px] uppercase"
+                      >
+                        {item.course?.code ?? "Tanpa Course"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -447,12 +506,20 @@ export default function KnowledgeAdminPage() {
                   </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2">
-                  <Badge
-                    variant="secondary"
-                    className="bg-primary/5 px-2.5 py-0.5 text-[10px] font-bold uppercase text-primary border-primary/20"
-                  >
-                    {item.module}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className="px-2.5 py-0.5 text-[10px] font-bold uppercase"
+                    >
+                      {item.course?.code ?? "Tanpa Course"}
+                    </Badge>
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/5 px-2.5 py-0.5 text-[10px] font-bold uppercase text-primary border-primary/20"
+                    >
+                      {item.module}
+                    </Badge>
+                  </div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     {formatDate(item.updatedAt)}
                   </span>
@@ -494,6 +561,26 @@ export default function KnowledgeAdminPage() {
           </DialogHeader>
 
           <form onSubmit={saveMaterial} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Course (Opsional)
+              </label>
+              <select
+                value={form.courseId}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, courseId: e.target.value }))
+                }
+                className="h-11 w-full rounded-md border-none bg-muted/30 px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20"
+              >
+                <option value="">Tanpa Course</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code} - {course.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Judul Materi

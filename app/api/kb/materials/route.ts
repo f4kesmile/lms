@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { splitIntoChunks } from "@/lib/rag";
 
 const createMaterialSchema = z.object({
+  courseId: z.string().uuid().optional(),
   title: z.string().min(3),
   module: z.string().min(2),
   page: z.string().optional(),
@@ -21,19 +22,25 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") ?? "";
+    const courseId = searchParams.get("courseId") ?? "";
 
     const materials = await prisma.courseMaterial.findMany({
-      where: search
-        ? {
-            OR: [
-              { title: { contains: search, mode: "insensitive" } },
-              { module: { contains: search, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
+      where: {
+        ...(courseId.trim() ? { courseId: courseId.trim() } : {}),
+        ...(search
+          ? {
+              OR: [
+                { title: { contains: search, mode: "insensitive" } },
+                { module: { contains: search, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: "desc" },
       include: {
         _count: { select: { chunks: true } },
+        course: { select: { id: true, code: true, title: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
       },
     });
 
@@ -55,15 +62,26 @@ export async function POST(request: Request) {
     const parsed = createMaterialSchema.safeParse(body);
     if (!parsed.success) return badRequest("Invalid material payload");
 
-    const { title, module, page, content } = parsed.data;
+    const { courseId, title, module, page, content } = parsed.data;
     const chunks = splitIntoChunks(content);
 
     if (chunks.length === 0) {
       return badRequest("Material content is empty");
     }
 
+    if (courseId) {
+      const exists = await prisma.course.findUnique({
+        where: { id: courseId },
+        select: { id: true },
+      });
+      if (!exists) {
+        return badRequest("Course tidak ditemukan");
+      }
+    }
+
     const material = await prisma.courseMaterial.create({
       data: {
+        courseId,
         title,
         module,
         page,
@@ -78,6 +96,8 @@ export async function POST(request: Request) {
       },
       include: {
         _count: { select: { chunks: true } },
+        course: { select: { id: true, code: true, title: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
       },
     });
 

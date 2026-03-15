@@ -35,6 +35,16 @@ const STOPWORDS = new Set([
 
 const CHUNK_TOKEN_CACHE = new Map<string, string[]>();
 
+function smartExcerpt(content: string, maxLength = 220): string {
+  const clean = content.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLength) return clean;
+
+  const clipped = clean.slice(0, maxLength);
+  const lastSpace = clipped.lastIndexOf(" ");
+  const safe = lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped;
+  return `${safe.trim()}...`;
+}
+
 export function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -119,7 +129,7 @@ export function buildSources(ranked: RankedChunk[]) {
     title: item.chunk.material.title,
     module: item.chunk.material.module,
     page: item.chunk.material.page,
-    excerpt: item.chunk.content.slice(0, 220),
+    excerpt: smartExcerpt(item.chunk.content, 220),
     score: Number(item.score.toFixed(4)),
   }));
 }
