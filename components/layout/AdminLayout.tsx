@@ -204,29 +204,25 @@ export const AdminLayout = ({
                   )}
                 </Button>
               )}
+
+              {headerActions && (
+                <>
+                  <Separator orientation="vertical" className="mx-1 h-4" />
+                  <div className="flex items-center gap-2">{headerActions}</div>
+                </>
+              )}
             </div>
           </header>
 
           <main
             className={cn(
               "flex-1 overflow-auto px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8 xl:px-10 xl:py-10",
-              headerActions && "pb-24 lg:pb-28",
             )}
           >
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
               {children}
             </div>
           </main>
-
-          {headerActions && (
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 p-3 sm:p-4">
-              <div className="mx-auto flex w-full max-w-md justify-center rounded-2xl border border-border/60 bg-background/90 p-2 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/70 lg:ml-auto lg:mr-8 lg:max-w-max">
-                <div className="pointer-events-auto flex items-center gap-2">
-                  {headerActions}
-                </div>
-              </div>
-            </div>
-          )}
         </SidebarInset>
       </div>
     </SidebarProvider>

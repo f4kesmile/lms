@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { getInitials, formatDate } from "@/lib/utils/index";
-import { MessageSquare, Zap, Search, BrainCircuit, Bot } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Table,
   TableBody,
@@ -17,6 +15,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate, getInitials } from "@/lib/utils/index";
+import {
+  Bot,
+  BrainCircuit,
+  Clock3,
+  Search,
+  Sparkles,
+  Star,
+} from "lucide-react";
+
+type InsightSummary = {
+  totalTurns: number;
+  avgResponseTimeMs: number;
+  accuracyScore: number;
+  avgRating: number | null;
+};
 
 type Interaction = {
   id: string;
@@ -25,280 +39,317 @@ type Interaction = {
   response: string;
   status: string;
   createdAt: string;
+  responseTimeMs: number;
+  rating: number | null;
+  citationCount: number;
 };
 
 export default function AdminInsightsPage() {
+  const [summary, setSummary] = useState<InsightSummary | null>(null);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/admin/insights?limit=20");
-        const data = await res.json();
-        setInteractions(data.interactions || []);
-      } catch {
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    fetch("/api/admin/insights?limit=20")
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.message || "Gagal memuat insight AI");
+        }
+        setSummary(payload.summary);
+        setInteractions(payload.interactions || []);
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Gagal memuat insight AI");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const filtered = interactions.filter(
-    (i) =>
-      i.query.toLowerCase().includes(search.toLowerCase()) ||
-      i.user.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredInteractions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return interactions;
+
+    return interactions.filter((item) => {
+      return (
+        item.user.name.toLowerCase().includes(query) ||
+        item.query.toLowerCase().includes(query) ||
+        item.response.toLowerCase().includes(query)
+      );
+    });
+  }, [interactions, search]);
+
+  const summaryCards = [
+    {
+      title: "Total Interaksi",
+      value: summary?.totalTurns ?? 0,
+      icon: Bot,
+      accent: "bg-primary/10 text-primary",
+      note: "Semua chat yang terekam",
+    },
+    {
+      title: "Rata-rata Respon",
+      value: summary
+        ? `${(summary.avgResponseTimeMs / 1000).toFixed(2)}s`
+        : "0s",
+      icon: Clock3,
+      accent: "bg-blue-500/10 text-blue-600",
+      note: "Dihitung dari interaksi terbaru",
+    },
+    {
+      title: "Skor Kelayakan",
+      value: summary ? `${summary.accuracyScore}%` : "0%",
+      icon: BrainCircuit,
+      accent: "bg-amber-500/10 text-amber-600",
+      note: "Jawaban dengan sitasi atau respons valid",
+    },
+    {
+      title: "Rata-rata Rating",
+      value: summary?.avgRating ?? "-",
+      icon: Star,
+      accent: "bg-emerald-500/10 text-emerald-600",
+      note: "Dari feedback pengguna yang masuk",
+    },
+  ];
 
   return (
-    <AdminLayout
-      title="Intelijen Platform & Analitik AI"
-      subtitle="Pantau interaksi chatbot, efektivitas basis pengetahuan, dan performa AI secara mendalam."
-    >
-      <div className="flex flex-col gap-8">
-        {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-none bg-emerald-900/10 shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                  <MessageSquare className="size-5" />
+    <AdminLayout title="AI & Wawasan">
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryCards.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card
+                key={item.title}
+                className="border-none bg-card p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      {item.title}
+                    </p>
+                    <p className="mt-2 text-3xl font-black tracking-tight">
+                      {item.value}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {item.note}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex size-11 items-center justify-center rounded-2xl ${item.accent}`}
+                  >
+                    <Icon className="size-5" />
+                  </div>
                 </div>
-                <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-black text-[9px] uppercase tracking-widest">
-                  Live
-                </Badge>
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">
-                Total Interaksi
-              </h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black">
-                  {interactions.length}+
-                </span>
-                <span className="text-[10px] font-bold text-emerald-500 flex items-center">
-                  +5%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none bg-blue-900/10 shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="size-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
-                  <Zap className="size-5" />
-                </div>
-                <Badge className="bg-blue-500/10 text-blue-600 border-none font-black text-[9px] uppercase tracking-widest">
-                  Performa
-                </Badge>
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">
-                Kecepatan Respon
-              </h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black">1.2s</span>
-                <span className="text-[10px] font-bold text-blue-500 flex items-center">
-                  -0.2s
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none bg-amber-900/10 shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-                  <BrainCircuit className="size-5" />
-                </div>
-                <Badge className="bg-amber-500/10 text-amber-600 border-none font-black text-[9px] uppercase tracking-widest">
-                  Akurasi
-                </Badge>
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">
-                AI Accuracy Score
-              </h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black">94.8%</span>
-                <span className="text-[10px] font-bold text-amber-500 flex items-center">
-                  +1.2%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Search & Interaction Table */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between bg-card p-4 rounded-2xl border border-border/50 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Bot className="size-5 text-primary" />
-              <h3 className="font-bold tracking-tight">
-                Log Interaksi Chatbot
-              </h3>
+        <Card className="border-none bg-card p-4 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <h2 className="text-base font-black tracking-tight">
+                  Rekaman Interaksi AI
+                </h2>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Pantau pertanyaan, kualitas jawaban, kecepatan respon, dan
+                penggunaan sitasi.
+              </p>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+            <div className="relative w-full md:max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="pl-9 h-9 bg-muted/30 border-none focus-visible:ring-primary/20 text-xs font-bold"
-                placeholder="Cari kata kunci..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                className="h-11 pl-9"
+                placeholder="Cari pengguna atau pertanyaan..."
               />
             </div>
           </div>
+        </Card>
 
-          <Card className="hidden overflow-hidden border-none bg-card shadow-xl lg:block">
-            <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow className="border-none hover:bg-transparent">
-                  <TableHead className="px-6 h-12 text-[10px] font-black uppercase tracking-widest">
-                    Pengguna
-                  </TableHead>
-                  <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                    Pertanyaan (Query)
-                  </TableHead>
-                  <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                    Status AI
-                  </TableHead>
-                  <TableHead className="px-6 h-12 text-[10px] font-black uppercase tracking-widest text-right">
-                    Waktu
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  Array(5)
-                    .fill(0)
-                    .map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell
-                          colSpan={4}
-                          className="h-16 border-b border-border/30"
-                        >
-                          <Skeleton className="h-10 w-full" />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                ) : filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="p-6">
-                      <EmptyState
-                        icon={Bot}
-                        title="Belum ada rekaman interaksi"
-                        description={
-                          search
-                            ? "Tidak ada data yang cocok dengan kata kunci pencarian."
-                            : "Interaksi chatbot dari pengguna akan muncul otomatis di tabel ini."
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filtered.map((item) => (
-                    <TableRow
-                      key={item.id}
-                      className="group border-b border-border/30 transition-colors hover:bg-primary/[0.01]"
-                    >
-                      <TableCell className="px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px] shadow-inner">
-                            {getInitials(item.user.name)}
-                          </div>
-                          <span className="text-sm font-bold tracking-tight">
-                            {item.user.name}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm font-medium line-clamp-1 max-w-md text-muted-foreground group-hover:text-foreground transition-colors">
-                          {item.query}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] font-black uppercase tracking-widest border-emerald-500/30 text-emerald-600 bg-emerald-500/5 h-5 px-2"
-                        >
-                          {item.status || "BERHASIL"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="px-6 text-right">
-                        <div className="flex flex-col items-end">
-                          <span className="text-xs font-bold text-muted-foreground">
-                            {formatDate(item.createdAt)}
-                          </span>
-                          <span className="text-[10px] font-mono opacity-40">
-                            {new Date(item.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
+        <Card className="hidden overflow-hidden border-none bg-card shadow-xl lg:block">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow className="border-none hover:bg-transparent">
+                <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest">
+                  Pengguna
+                </TableHead>
+                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                  Pertanyaan
+                </TableHead>
+                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                  Sinyal Kualitas
+                </TableHead>
+                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-right px-6">
+                  Waktu
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array(5)
+                  .fill(0)
+                  .map((_, index) => (
+                    <TableRow key={`insight-skeleton-${index}`}>
+                      <TableCell
+                        colSpan={4}
+                        className="h-16 border-b border-border/30"
+                      >
+                        <Skeleton className="h-10 w-full" />
                       </TableCell>
                     </TableRow>
                   ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:hidden">
-            {loading ? (
-              Array(5)
-                .fill(0)
-                .map((_, i) => (
-                  <Skeleton
-                    key={`mobile-insights-skeleton-${i}`}
-                    className="h-36 w-full"
-                  />
-                ))
-            ) : filtered.length === 0 ? (
-              <EmptyState
-                icon={Bot}
-                title="Belum ada rekaman interaksi"
-                description={
-                  search
-                    ? "Tidak ada data yang cocok dengan kata kunci pencarian."
-                    : "Interaksi chatbot dari pengguna akan muncul otomatis di sini."
-                }
-              />
-            ) : (
-              filtered.map((item) => (
-                <Card
-                  key={`mobile-${item.id}`}
-                  className="border-border/50 p-4 shadow-sm"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-black text-primary shadow-inner">
-                      {getInitials(item.user.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold tracking-tight">
-                        {item.user.name}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="p-6">
+                    <EmptyState
+                      icon={Bot}
+                      title="Gagal memuat insight AI"
+                      description={error}
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : filteredInteractions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="p-6">
+                    <EmptyState
+                      icon={Bot}
+                      title="Belum ada data interaksi"
+                      description={
+                        search
+                          ? "Tidak ada data yang cocok dengan pencarian saat ini."
+                          : "Interaksi chatbot akan muncul di sini setelah pengguna mulai bertanya."
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredInteractions.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className="group border-b border-border/30 transition-colors hover:bg-muted/20"
+                  >
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary">
+                          {getInitials(item.user.name)}
+                        </div>
+                        <span className="text-sm font-bold tracking-tight">
+                          {item.user.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <p className="max-w-xl line-clamp-2 text-sm text-muted-foreground">
                         {item.query}
                       </p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <Badge
-                      variant="outline"
-                      className="h-5 px-2 text-[9px] font-black uppercase tracking-widest border-emerald-500/30 bg-emerald-500/5 text-emerald-600"
-                    >
-                      {item.status || "BERHASIL"}
-                    </Badge>
-                    <span className="text-[11px] font-medium text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] font-black uppercase"
+                        >
+                          {item.status}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] font-black"
+                        >
+                          {item.citationCount} sitasi
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] font-black"
+                        >
+                          {(item.responseTimeMs / 1000).toFixed(2)} dtk
+                        </Badge>
+                        {item.rating !== null && (
+                          <Badge className="bg-emerald-500 text-[10px] font-black">
+                            Rating {item.rating}/5
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground">
                       {formatDate(item.createdAt)}
-                    </span>
-                  </div>
-                </Card>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {loading ? (
+            Array(4)
+              .fill(0)
+              .map((_, index) => (
+                <Skeleton
+                  key={`mobile-insight-${index}`}
+                  className="h-40 w-full"
+                />
               ))
-            )}
-          </div>
+          ) : error ? (
+            <EmptyState
+              icon={Bot}
+              title="Gagal memuat insight AI"
+              description={error}
+            />
+          ) : filteredInteractions.length === 0 ? (
+            <EmptyState
+              icon={Bot}
+              title="Belum ada data interaksi"
+              description={
+                search
+                  ? "Tidak ada data yang cocok dengan pencarian saat ini."
+                  : "Interaksi chatbot akan muncul di sini setelah pengguna mulai bertanya."
+              }
+            />
+          ) : (
+            filteredInteractions.map((item) => (
+              <Card
+                key={`mobile-${item.id}`}
+                className="border-border/50 p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold">{item.user.name}</p>
+                    <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
+                      {item.query}
+                    </p>
+                  </div>
+                  <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary">
+                    {getInitials(item.user.name)}
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-black uppercase"
+                  >
+                    {item.status}
+                  </Badge>
+                  <Badge variant="secondary" className="text-[10px] font-black">
+                    {item.citationCount} sitasi
+                  </Badge>
+                  <Badge variant="secondary" className="text-[10px] font-black">
+                    {(item.responseTimeMs / 1000).toFixed(2)} dtk
+                  </Badge>
+                </div>
+                <p className="mt-3 text-[11px] font-medium text-muted-foreground">
+                  {formatDate(item.createdAt)}
+                </p>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </AdminLayout>

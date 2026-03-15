@@ -356,7 +356,7 @@ export default function AdminDashboardPage() {
                     href="/admin/stats"
                     className="flex items-center justify-center gap-2"
                   >
-                    Buka Statistik Lengkap
+                    Buka Manajemen Chatbot
                     <ArrowUpRight className="size-4" />
                   </Link>
                 </Button>

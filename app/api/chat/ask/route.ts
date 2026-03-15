@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { generateChatAnswer } from "@/lib/chatbot";
+import { readChatbotSettings } from "@/lib/chatbot-settings";
 import { getCurrentUser } from "@/lib/current-user";
 import { badRequest, serverError, unauthorized } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
@@ -24,10 +25,17 @@ export async function POST(request: Request) {
     const parsed = askSchema.safeParse(body);
     if (!parsed.success) return badRequest("Invalid question payload");
 
-    const { question, topK = 4 } = parsed.data;
+    const settings = await readChatbotSettings();
+    const { question, topK = settings.topK } = parsed.data;
+    const fallbackTopK = Math.max(topK, 5);
 
     const chunks = await prisma.materialChunk.findMany({
-      include: {
+      select: {
+        id: true,
+        materialId: true,
+        chunkIndex: true,
+        content: true,
+        createdAt: true,
         material: {
           select: {
             id: true,
@@ -38,24 +46,32 @@ export async function POST(request: Request) {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 600,
+      take: 300,
     });
 
-    const ranked = rankChunks(question, chunks, topK);
-    const sources = buildSources(ranked);
+    const ranked = rankChunks(question, chunks, fallbackTopK, 0);
+    const strictRanked = ranked
+      .filter((item) => item.score >= settings.minScore)
+      .slice(0, topK);
 
-    if (sources.length === 0) {
-      return NextResponse.json(
-        {
-          answer:
-            "Maaf, saya belum menemukan materi yang cukup relevan. Silakan unggah materi atau perjelas pertanyaan.",
-          sources: [],
-        },
-        { status: 200 }
-      );
-    }
+    const sources = buildSources(strictRanked);
+    const nearestSources = sources.length === 0 ? buildSources(ranked.slice(0, 5)) : [];
 
-    const answer = await generateChatAnswer({ question, sources });
+    const answer =
+      sources.length > 0
+        ? await generateChatAnswer({ question, sources })
+        : nearestSources.length > 0
+          ? [
+              "Saya tidak menemukan kecocokan kuat untuk pertanyaan Anda. Kemungkinan ada typo atau istilah yang berbeda dari materi.",
+              "",
+              "Materi terdekat yang masih relevan:",
+              ...nearestSources.slice(0, 5).map((item) =>
+                `- [${item.id}] ${item.title} (${item.module})${item.page ? ` hal. ${item.page}` : ""}`,
+              ),
+              "",
+              "Silakan pilih salah satu materi di atas atau tulis ulang pertanyaan dengan kata kunci yang lebih spesifik.",
+            ].join("\n")
+          : "Maaf, saya belum menemukan materi yang cukup relevan. Silakan unggah materi atau perjelas pertanyaan.";
 
     let sessionId = parsed.data.sessionId;
     if (sessionId) {
@@ -77,13 +93,15 @@ export async function POST(request: Request) {
 
     const responseTimeMs = Date.now() - startedAt;
 
+    const citationsToSave = sources.length > 0 ? sources : nearestSources;
+
     const turn = await prisma.chatTurn.create({
       data: {
         sessionId,
         userId: user.id,
         question,
         answer,
-        citations: sources,
+        citations: citationsToSave,
         responseTimeMs,
       },
     });
@@ -93,7 +111,8 @@ export async function POST(request: Request) {
       turnId: turn.id,
       question,
       answer,
-      sources,
+      sources: citationsToSave,
+      strictMatch: sources.length > 0,
       responseTimeMs,
     });
   } catch (error) {

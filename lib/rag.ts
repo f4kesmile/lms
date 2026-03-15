@@ -33,6 +33,8 @@ const STOPWORDS = new Set([
   "a",
 ]);
 
+const CHUNK_TOKEN_CACHE = new Map<string, string[]>();
+
 export function tokenize(text: string): string[] {
   return text
     .toLowerCase()
@@ -79,14 +81,20 @@ export function rankChunks(
   chunks: (MaterialChunk & {
     material: { id: string; title: string; module: string; page: string | null };
   })[],
-  topK = 4
+  topK = 4,
+  minScore = 0
 ): RankedChunk[] {
   const qTokens = tokenize(question);
   const qSet = new Set(qTokens);
 
   const ranked = chunks
     .map((chunk) => {
-      const cTokens = tokenize(chunk.content);
+      const cached = CHUNK_TOKEN_CACHE.get(chunk.id);
+      const cTokens = cached ?? tokenize(chunk.content);
+      if (!cached) {
+        CHUNK_TOKEN_CACHE.set(chunk.id, cTokens);
+      }
+
       if (cTokens.length === 0) return { chunk, score: 0 };
 
       let overlap = 0;
@@ -97,7 +105,7 @@ export function rankChunks(
       const score = overlap / Math.sqrt(cTokens.length);
       return { chunk, score };
     })
-    .filter((item) => item.score > 0)
+    .filter((item) => item.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
 

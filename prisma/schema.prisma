@@ -116,6 +116,16 @@ model CourseMaterial {
     chunks      MaterialChunk[]
 }
 
+model ChatbotSetting {
+    id           String   @id @default(uuid())
+    key          String   @unique @default("default")
+    topK         Int      @default(4)
+    minScore     Float    @default(0.08)
+    systemPrompt String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}
+
 model MaterialChunk {
     id         String         @id @default(uuid())
     materialId String

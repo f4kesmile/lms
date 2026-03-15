@@ -1,10 +1,10 @@
 export const ADMIN_NAV_LINKS = [
   { href: "/admin/dashboard", label: "Dasbor", icon: "space_dashboard" },
-  { href: "/admin/users", label: "Manajemen Pengguna", icon: "groups" },
   { href: "/admin/courses", label: "Pusat Kursus", icon: "school" },
+  { href: "/admin/knowledge", label: "Bank Materi", icon: "library_books" },
+  { href: "/admin/users", label: "Manajemen Pengguna", icon: "groups" },
   { href: "/admin/insights", label: "AI & Wawasan", icon: "monitoring" },
-  { href: "/admin/knowledge", label: "Knowledge Base", icon: "library_books" },
-  { href: "/admin/stats", label: "Statistik Chatbot", icon: "query_stats" },
+  { href: "/admin/stats", label: "Manajemen Chatbot", icon: "query_stats" },
 ];
 
 export const STUDENT_NAV_LINKS = [

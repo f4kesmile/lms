@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { formatDate } from "@/lib/utils/index";
 import {
@@ -68,6 +69,26 @@ export default function KnowledgeAdminPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [form, setForm] = useState<MaterialForm>(EMPTY_FORM);
+  const [notice, setNotice] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+  });
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: null | (() => Promise<void> | void);
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
 
   async function loadData(query = "") {
     setLoading(true);
@@ -118,15 +139,25 @@ export default function KnowledgeAdminPage() {
   }
 
   async function deleteMaterial(id: string) {
-    if (!confirm("Hapus sumber pengetahuan ini?")) return;
-    try {
-      const res = await fetch(`/api/kb/materials/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
+    setConfirmState({
+      open: true,
+      title: "Hapus Materi",
+      message: "Hapus sumber pengetahuan ini?",
+      onConfirm: async () => {
+        const res = await fetch(`/api/kb/materials/${id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) {
+          setNotice({
+            open: true,
+            title: "Gagal Menghapus",
+            message: "Materi tidak dapat dihapus.",
+          });
+          return;
+        }
         setMaterials((prev) => prev.filter((k) => k.id !== id));
-      }
-    } catch {}
+      },
+    });
   }
 
   async function saveMaterial(e: React.FormEvent) {
@@ -162,7 +193,12 @@ export default function KnowledgeAdminPage() {
       setForm(EMPTY_FORM);
       await loadData(search);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Gagal menyimpan materi");
+      setNotice({
+        open: true,
+        title: "Gagal Menyimpan",
+        message:
+          error instanceof Error ? error.message : "Gagal menyimpan materi",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -185,10 +221,17 @@ export default function KnowledgeAdminPage() {
           <Button
             size="sm"
             className="font-bold shadow-lg shadow-primary/20"
-            onClick={openCreateModal}
+            asChild
           >
-            <Plus className="mr-1 size-4" />
-            Upload Materi
+            <Link
+              href={{
+                pathname: "/admin/materials/new",
+                query: { from: "knowledge" },
+              }}
+            >
+              <Plus className="mr-1 size-4" />
+              Upload Materi
+            </Link>
           </Button>
         </div>
       }
@@ -538,6 +581,73 @@ export default function KnowledgeAdminPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={notice.open}
+        onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{notice.title}</DialogTitle>
+            <DialogDescription>{notice.message}</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmState.open}
+        onOpenChange={(open) =>
+          setConfirmState((prev) => ({
+            ...prev,
+            open,
+            onConfirm: open ? prev.onConfirm : null,
+          }))
+        }
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{confirmState.title}</DialogTitle>
+            <DialogDescription>{confirmState.message}</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setConfirmState({
+                  open: false,
+                  title: "",
+                  message: "",
+                  onConfirm: null,
+                })
+              }
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                const action = confirmState.onConfirm;
+                setConfirmState({
+                  open: false,
+                  title: "",
+                  message: "",
+                  onConfirm: null,
+                });
+                if (action) await action();
+              }}
+            >
+              Ya, Lanjutkan
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </AdminLayout>
