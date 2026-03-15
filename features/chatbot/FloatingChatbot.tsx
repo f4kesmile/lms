@@ -16,9 +16,11 @@ type Source = {
 
 type Message = {
   id: string;
+  turnId?: string;
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  rating?: number | null;
 };
 
 type SessionItem = {
@@ -79,6 +81,9 @@ export const FloatingChatbot = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [ratingLoadingByTurn, setRatingLoadingByTurn] = useState<
+    Record<string, boolean>
+  >({});
   const [position, setPosition] = useState({ x: 24, y: 24 });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -295,9 +300,11 @@ export const FloatingChatbot = () => {
       { id: `${t.id}-q`, role: "user" as const, content: t.question },
       {
         id: `${t.id}-a`,
+        turnId: t.id,
         role: "assistant" as const,
         content: t.answer,
         sources: Array.isArray(t.citations) ? t.citations : [],
+        rating: typeof t.rating === "number" ? t.rating : null,
       },
     ]);
     setSessionId(data.id);
@@ -328,9 +335,11 @@ export const FloatingChatbot = () => {
         ...prev,
         {
           id: `${data.turnId}-a`,
+          turnId: data.turnId,
           role: "assistant",
           content: data.answer,
           sources: data.sources || [],
+          rating: null,
         },
       ]);
       setInput("");
@@ -349,6 +358,38 @@ export const FloatingChatbot = () => {
       ]);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function rateTurn(turnId: string, rating: number) {
+    if (rating < 1 || rating > 5) return;
+
+    setRatingLoadingByTurn((prev) => ({ ...prev, [turnId]: true }));
+    try {
+      const res = await fetch(`/api/chat/turns/${turnId}/rating`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal menyimpan rating");
+      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.turnId === turnId
+            ? {
+                ...msg,
+                rating,
+              }
+            : msg,
+        ),
+      );
+    } catch {
+      // Keep UX simple: ignore toast for now to avoid visual noise in chat flow.
+    } finally {
+      setRatingLoadingByTurn((prev) => ({ ...prev, [turnId]: false }));
     }
   }
 
@@ -721,6 +762,58 @@ export const FloatingChatbot = () => {
                           ))}
                         </div>
                       )}
+
+                    {msg.role === "assistant" && msg.turnId && (
+                      <div
+                        style={{
+                          marginTop: "0.45rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.35rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "0.62rem",
+                            color: "var(--text-dim)",
+                          }}
+                        >
+                          Nilai jawaban:
+                        </span>
+                        {[1, 2, 3, 4, 5].map((value) => {
+                          const active = (msg.rating ?? 0) >= value;
+                          const loadingRate =
+                            ratingLoadingByTurn[msg.turnId!] === true;
+
+                          return (
+                            <button
+                              key={`${msg.id}-rate-${value}`}
+                              type="button"
+                              disabled={loadingRate}
+                              onClick={() => void rateTurn(msg.turnId!, value)}
+                              title={`Beri rating ${value}`}
+                              style={{
+                                border: "none",
+                                background: "transparent",
+                                cursor: loadingRate ? "wait" : "pointer",
+                                padding: 0,
+                                lineHeight: 1,
+                                color: active ? "#f59e0b" : "var(--text-dim)",
+                                opacity: loadingRate ? 0.65 : 1,
+                              }}
+                            >
+                              <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: 17 }}
+                              >
+                                star
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
 

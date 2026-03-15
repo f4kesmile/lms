@@ -63,7 +63,12 @@ export async function GET(request: Request) {
       user: { name: item.user.name },
       query: item.question,
       response: item.answer,
-      status: item.rating && item.rating >= 4 ? "Memuaskan" : "Terekam",
+      status:
+        item.rating === null
+          ? "Belum Dinilai"
+          : item.rating >= 4
+            ? "Memuaskan"
+            : "Cukup",
       createdAt: item.createdAt.toISOString(),
       responseTimeMs: item.responseTimeMs,
       rating: item.rating,

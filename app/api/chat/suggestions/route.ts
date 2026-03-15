@@ -121,7 +121,7 @@ export async function GET(request: Request) {
 
     const andConditions: Prisma.CourseMaterialWhereInput[] = [];
     if (courseId) {
-      andConditions.push({ id: courseId });
+      andConditions.push({ courseId });
     }
     if (teacherIds && teacherIds.length > 0) {
       andConditions.push({ createdById: { in: teacherIds } });

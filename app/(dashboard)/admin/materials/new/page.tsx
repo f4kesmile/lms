@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,17 +20,27 @@ import { ArrowLeft, Eye, Pencil, Printer, Save } from "lucide-react";
 const A4_CHAR_LIMIT = 1900;
 
 type MaterialForm = {
+  courseId: string;
   title: string;
   module: string;
   pages: string[];
+};
+
+type CourseOption = {
+  id: string;
+  code: string;
+  title: string;
+  status: string;
 };
 
 export default function NewMaterialPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from") === "courses" ? "courses" : "knowledge";
+  const preselectedCourseId = searchParams.get("courseId") ?? "";
 
   const [submitting, setSubmitting] = useState(false);
+  const [courses, setCourses] = useState<CourseOption[]>([]);
   const [printPreview, setPrintPreview] = useState(false);
   const [notice, setNotice] = useState<{
     open: boolean;
@@ -43,6 +53,7 @@ export default function NewMaterialPage() {
     message: "",
   });
   const [form, setForm] = useState<MaterialForm>({
+    courseId: preselectedCourseId,
     title: "",
     module: "",
     pages: [""],
@@ -52,6 +63,13 @@ export default function NewMaterialPage() {
     () => (from === "courses" ? "/admin/courses" : "/admin/knowledge"),
     [from],
   );
+
+  useEffect(() => {
+    fetch("/api/kb/courses")
+      .then((res) => res.json())
+      .then((data) => setCourses(data.courses || []))
+      .catch(() => setCourses([]));
+  }, []);
 
   function handlePageChange(pageIndex: number, value: string) {
     const nextPages = [...form.pages];
@@ -115,6 +133,7 @@ export default function NewMaterialPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          courseId: form.courseId || undefined,
           title: form.title,
           module: form.module,
           page: `1-${normalizedPages.length}`,
@@ -195,7 +214,26 @@ export default function NewMaterialPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         <Card className="border-border/60 p-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Course (Opsional)
+              </label>
+              <select
+                value={form.courseId}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, courseId: e.target.value }))
+                }
+                className="h-11 w-full rounded-md border border-border/50 bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20"
+              >
+                <option value="">Tanpa Course</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code} - {course.title}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Judul Materi
