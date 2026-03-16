@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-export default function CourseSearch({ initialQuery = "" }: { initialQuery?: string }) {
+export default function CourseSearch({
+  initialQuery = "",
+}: {
+  initialQuery?: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
@@ -20,7 +24,11 @@ export default function CourseSearch({ initialQuery = "" }: { initialQuery?: str
   }
 
   return (
-    <form onSubmit={handleSearch} className="row" style={{ maxWidth: 500, margin: "0 auto", gap: "0.5rem" }}>
+    <form
+      onSubmit={handleSearch}
+      className="row"
+      style={{ maxWidth: 500, margin: "0 auto", gap: "0.5rem" }}
+    >
       <div className="input-group" style={{ flex: 1 }}>
         <span className="material-symbols-outlined input-icon">search</span>
         <input
@@ -32,7 +40,12 @@ export default function CourseSearch({ initialQuery = "" }: { initialQuery?: str
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-      <button type="submit" className="btn" disabled={isPending} style={{ padding: "0.85rem 1.5rem" }}>
+      <button
+        type="submit"
+        className="btn"
+        disabled={isPending}
+        style={{ padding: "0.85rem 1.5rem" }}
+      >
         {isPending ? "Mencari..." : "Cari"}
       </button>
     </form>

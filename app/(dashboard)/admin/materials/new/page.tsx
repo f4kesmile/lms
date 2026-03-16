@@ -296,7 +296,11 @@ export default function NewMaterialPage() {
                   Pilih dari daftar (opsional)
                 </p>
                 <Select
-                  value={MODULE_SUGGESTIONS.includes(form.module) ? form.module : "__none"}
+                  value={
+                    MODULE_SUGGESTIONS.includes(form.module)
+                      ? form.module
+                      : "__none"
+                  }
                   onValueChange={(value) => {
                     if (value !== "__none") {
                       setForm((prev) => ({ ...prev, module: value }));
@@ -307,7 +311,9 @@ export default function NewMaterialPage() {
                     <SelectValue placeholder="Pilih topik/modul" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none">Tidak pilih (isi manual)</SelectItem>
+                    <SelectItem value="__none">
+                      Tidak pilih (isi manual)
+                    </SelectItem>
                     {MODULE_SUGGESTIONS.map((item) => (
                       <SelectItem key={item} value={item}>
                         {item}
