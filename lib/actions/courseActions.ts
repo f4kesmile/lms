@@ -133,6 +133,30 @@ export async function createAcademicYearAction(data: { name: string; fromYear: s
   }
 }
 
+export async function updateAcademicYearAction(id: string, data: { name: string; fromYear: string; toYear: string; isCurrent: boolean }) {
+  try {
+    if (data.isCurrent) {
+      await prisma.academicYear.updateMany({ data: { isCurrent: false } });
+    }
+    
+    await prisma.academicYear.update({
+      where: { id },
+      data: {
+        name: data.name,
+        fromYear: new Date(data.fromYear),
+        toYear: new Date(data.toYear),
+        isCurrent: data.isCurrent
+      }
+    });
+
+    revalidatePath("/admin/courses");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating academic year:", error);
+    return { success: false, error: "Gagal mengubah tahun akademik" };
+  }
+}
+
 export async function deleteAcademicYearAction(id: string) {
   try {
     // Check constraints
