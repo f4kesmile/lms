@@ -26,37 +26,52 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(Number(searchParams.get("limit") || 20), 50);
+    const page = Math.max(Number(searchParams.get("page") || 1), 1);
+    const limit = Math.max(Number(searchParams.get("limit") || 10), 1);
+    const skip = (page - 1) * limit;
 
-    const turns = await prisma.chatTurn.findMany({
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      select: {
-        id: true,
-        question: true,
-        answer: true,
-        createdAt: true,
+    const [turns, totalTurns] = await Promise.all([
+      prisma.chatTurn.findMany({
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: skip,
+        select: {
+          id: true,
+          question: true,
+          answer: true,
+          createdAt: true,
+          responseTimeMs: true,
+          rating: true,
+          citations: true,
+          user: { select: { name: true } },
+        },
+      }),
+      prisma.chatTurn.count(),
+    ]);
+
+    const ratedTurnsCount = await prisma.chatTurn.count({
+      where: { rating: { not: null } }
+    });
+    
+    // Summary metrics based on ALL data for accurate dashboarding
+    // But for performance, we might want to aggregate this differently if data grows huge
+    const summaryData = await prisma.chatTurn.aggregate({
+      _avg: {
         responseTimeMs: true,
         rating: true,
-        citations: true,
-        user: { select: { name: true } },
       },
     });
 
-    const totalTurns = await prisma.chatTurn.count();
-    const ratedTurns = turns.filter((item) => item.rating !== null);
-    const avgResponseTimeMs =
-      turns.length > 0
-        ? Math.round(
-            turns.reduce((sum, item) => sum + item.responseTimeMs, 0) / turns.length,
-          )
-        : 0;
-    const successTurns = turns.filter((item) => {
-      const citations = Array.isArray(item.citations) ? item.citations.length : 0;
-      return citations > 0 || (item.answer ?? "").trim().length > 0;
-    }).length;
-    const accuracyScore =
-      turns.length > 0 ? Number(((successTurns / turns.length) * 100).toFixed(1)) : 0;
+    const successTurnsCount = await prisma.chatTurn.count({
+      where: {
+        OR: [
+          { citations: { not: [] } },
+          { answer: { not: "" } }
+        ]
+      }
+    });
+
+    const accuracyScore = totalTurns > 0 ? Number(((successTurnsCount / totalTurns) * 100).toFixed(1)) : 0;
 
     const interactions: InteractionItem[] = turns.map((item) => ({
       id: item.id,
@@ -78,19 +93,17 @@ export async function GET(request: Request) {
     return NextResponse.json({
       summary: {
         totalTurns,
-        avgResponseTimeMs,
+        avgResponseTimeMs: Math.round(summaryData._avg.responseTimeMs || 0),
         accuracyScore,
-        avgRating:
-          ratedTurns.length > 0
-            ? Number(
-                (
-                  ratedTurns.reduce((sum, item) => sum + (item.rating ?? 0), 0) /
-                  ratedTurns.length
-                ).toFixed(2),
-              )
-            : null,
+        avgRating: summaryData._avg.rating ? Number(summaryData._avg.rating.toFixed(2)) : null,
       },
       interactions,
+      pagination: {
+        total: totalTurns,
+        pages: Math.ceil(totalTurns / limit),
+        currentPage: page,
+        limit: limit,
+      }
     });
   } catch (error) {
     return serverError(error);

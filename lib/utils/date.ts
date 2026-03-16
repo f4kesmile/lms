@@ -34,3 +34,30 @@ export function formatDateTime(date: Date | string | number): string {
   }).replace(/\./g, ":"); // Ensure colon instead of dot for time if locale uses dots
 }
 
+
+/**
+ * Memformat rentang tanggal ke dalam format Indonesia yang user-friendly.
+ * @param start Tanggal mulai
+ * @param end Tanggal selesai
+ * @returns String rentang tanggal (Contoh: 1 Feb 2026 - 31 Jul 2026)
+ */
+export function formatDateRange(
+  start: Date | string | number,
+  end: Date | string | number
+): string {
+  const s = new Date(start);
+  const e = new Date(end);
+
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return "Rentang tidak valid";
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+
+  return `${s.toLocaleDateString("id-ID", options)} - ${e.toLocaleDateString(
+    "id-ID",
+    options
+  )}`;
+}

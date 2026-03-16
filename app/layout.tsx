@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -38,7 +39,9 @@ export default function RootLayout({
         >
           {children}
           <AppToaster />
-          <FloatingChatbot />
+          <Suspense fallback={null}>
+            <FloatingChatbot />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
