@@ -4,9 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -198,51 +196,55 @@ export default function NewMaterialPage() {
   }
 
   return (
-    <AdminLayout
-      title="Editor Materi A4"
-      headerActions={
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild className="font-bold">
-            <Link href={backHref}>
-              <ArrowLeft className="mr-1 size-4" />
-              Kembali
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            className="font-bold"
-            onClick={() => setPrintPreview((prev) => !prev)}
-          >
-            {printPreview ? (
-              <Pencil className="mr-1 size-4" />
-            ) : (
-              <Eye className="mr-1 size-4" />
-            )}
-            {printPreview ? "Mode Edit" : "Pratinjau Cetak"}
-          </Button>
-          <Button
-            variant="outline"
-            className="font-bold"
-            onClick={() => window.print()}
-          >
-            <Printer className="mr-1 size-4" />
-            Cetak/PDF
-          </Button>
-          <Button
-            className="font-bold"
-            type="button"
-            onClick={() => void submitMaterial()}
-            disabled={submitting}
-          >
-            <Save className="mr-1 size-4" />
-            {submitting ? "Menyimpan..." : "Simpan Materi"}
-          </Button>
-        </div>
-      }
-    >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <Card className="border-border/60 p-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="min-h-dvh bg-background p-3 sm:p-4 md:p-5 lg:p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto flex h-[calc(100dvh-1.5rem)] max-w-[1700px] min-h-0 flex-col gap-3 md:h-[calc(100dvh-2.5rem)] md:flex-row"
+      >
+        <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border/60 bg-card md:w-[360px] lg:w-[390px]">
+          <div className="border-b border-border/60 p-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" asChild className="h-10 font-bold">
+                <Link href={backHref}>
+                  <ArrowLeft className="mr-1 size-4" />
+                  Kembali
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-10 font-bold"
+                onClick={() => setPrintPreview((prev) => !prev)}
+                type="button"
+              >
+                {printPreview ? (
+                  <Pencil className="mr-1 size-4" />
+                ) : (
+                  <Eye className="mr-1 size-4" />
+                )}
+                {printPreview ? "Edit" : "Preview"}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-10 font-bold"
+                onClick={() => window.print()}
+                type="button"
+              >
+                <Printer className="mr-1 size-4" />
+                Cetak
+              </Button>
+              <Button
+                className="h-10 font-bold"
+                type="button"
+                onClick={() => void submitMaterial()}
+                disabled={submitting}
+              >
+                <Save className="mr-1 size-4" />
+                {submitting ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3 overflow-y-auto p-3">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Mata Kuliah (Opsional)
@@ -256,7 +258,7 @@ export default function NewMaterialPage() {
                   }))
                 }
               >
-                <SelectTrigger className="h-11 border border-border/70 bg-background">
+                <SelectTrigger className="h-11 border border-border bg-background">
                   <SelectValue placeholder="Pilih mata kuliah" />
                 </SelectTrigger>
                 <SelectContent>
@@ -269,10 +271,10 @@ export default function NewMaterialPage() {
                 </SelectContent>
               </Select>
               <p className="pl-1 text-[11px] text-muted-foreground">
-                Materi di editor ini akan masuk ke kelompok mata kuliah, bukan
-                ke kelas tertentu.
+                Materi ini dikelompokkan per mata kuliah, bukan per kelas.
               </p>
             </div>
+
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Judul Materi
@@ -283,15 +285,16 @@ export default function NewMaterialPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="h-11 border border-border/70 bg-background"
+                className="h-11 border border-border bg-background"
                 placeholder="Contoh: Pengantar Basis Data"
               />
             </div>
+
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Topik/Modul
               </label>
-              <div className="rounded-md border border-border/70 bg-background p-3 space-y-2">
+              <div className="space-y-2 rounded-md border border-border bg-background p-3">
                 <p className="text-[11px] font-semibold text-muted-foreground">
                   Pilih dari daftar (opsional)
                 </p>
@@ -307,7 +310,7 @@ export default function NewMaterialPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className="h-10 border border-border/70 bg-background">
+                  <SelectTrigger className="h-10 border border-border bg-background">
                     <SelectValue placeholder="Pilih topik/modul" />
                   </SelectTrigger>
                   <SelectContent>
@@ -321,7 +324,7 @@ export default function NewMaterialPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-[11px] font-semibold text-muted-foreground pt-1">
+                <p className="pt-1 text-[11px] font-semibold text-muted-foreground">
                   Atau isi sendiri
                 </p>
                 <Input
@@ -330,54 +333,57 @@ export default function NewMaterialPage() {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, module: e.target.value }))
                   }
-                  className="h-11 border border-border/70 bg-background"
+                  className="h-11 border border-border bg-background"
                   placeholder="Contoh: Pertemuan 3 - Normalisasi Database"
                 />
               </div>
             </div>
-          </div>
-          <div className="mt-3 rounded-md border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
-            Semua data dari halaman ini langsung tersimpan ke Bank Materi per
-            mata kuliah, jadi sinkron dengan menu Bank Materi.
-          </div>
-        </Card>
 
-        <div className="a4-print-root max-h-[68dvh] space-y-6 overflow-y-auto pr-1">
-          {form.pages.map((page, index) => (
-            <div
-              key={`a4-editor-page-${index}`}
-              className="mx-auto w-full max-w-[760px]"
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">
-                  Halaman {index + 1}
-                </span>
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {page.length}/{A4_CHAR_LIMIT} karakter
-                </span>
-              </div>
-              <div className="a4-sheet relative overflow-hidden rounded-md border border-border/60 bg-white px-[68px] pb-[72px] pt-[64px] shadow-sm">
-                {printPreview ? (
-                  <div className="min-h-[900px] whitespace-pre-wrap text-[15px] leading-7 text-slate-900">
-                    {page.trim().length > 0 ? page : "(Halaman kosong)"}
+            <div className="rounded-md border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
+              Semua data dari halaman ini langsung tersimpan ke Bank Materi per
+              mata kuliah.
+            </div>
+          </div>
+        </aside>
+
+        <section className="min-h-0 min-w-0 flex-1 rounded-xl border border-border/60 bg-muted/20 p-3 md:p-4">
+          <div className="a4-print-root h-full space-y-4 overflow-y-auto pr-1">
+            {form.pages.map((page, index) => (
+              <div
+                key={`a4-editor-page-${index}`}
+                className="mx-auto w-full max-w-[820px]"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                    Halaman {index + 1}
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {page.length}/{A4_CHAR_LIMIT} karakter
+                  </span>
+                </div>
+                <div className="a4-sheet relative overflow-hidden rounded-md border border-border/60 bg-white px-[68px] pb-[72px] pt-[64px] shadow-sm">
+                  {printPreview ? (
+                    <div className="min-h-[calc(100dvh-16rem)] whitespace-pre-wrap text-[15px] leading-7 text-slate-900">
+                      {page.trim().length > 0 ? page : "(Halaman kosong)"}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={page}
+                      onChange={(e) => handlePageChange(index, e.target.value)}
+                      className="h-[calc(100dvh-16rem)] min-h-[520px] w-full resize-none border-0 bg-transparent p-0 text-[15px] leading-7 text-slate-900 outline-none"
+                      placeholder="Tulis konten materi di sini..."
+                    />
+                  )}
+
+                  <div className="a4-footer pointer-events-none absolute bottom-0 left-[68px] right-[68px] flex items-center justify-between border-t border-slate-300 py-2 text-xs text-slate-600">
+                    <span>{form.title || "Judul Materi"}</span>
+                    <span>Halaman {index + 1}</span>
                   </div>
-                ) : (
-                  <textarea
-                    value={page}
-                    onChange={(e) => handlePageChange(index, e.target.value)}
-                    className="min-h-[900px] w-full resize-none border-0 bg-transparent p-0 text-[15px] leading-7 text-slate-900 outline-none"
-                    placeholder="Tulis konten materi di sini..."
-                  />
-                )}
-
-                <div className="a4-footer pointer-events-none absolute bottom-0 left-[68px] right-[68px] flex items-center justify-between border-t border-slate-300 py-2 text-xs text-slate-600">
-                  <span>{form.title || "Judul Materi"}</span>
-                  <span>Halaman {index + 1}</span>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
       </form>
 
       <style jsx global>{`
@@ -448,6 +454,6 @@ export default function NewMaterialPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 }
