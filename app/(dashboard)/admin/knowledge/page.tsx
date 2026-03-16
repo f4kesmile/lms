@@ -349,7 +349,7 @@ export default function KnowledgeAdminPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   className="pl-9 h-11 bg-card border-border/50 focus-visible:ring-primary/20 font-medium"
-                  placeholder="Cari materi pengetahuan..."
+                  placeholder="Cari materi"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -378,7 +378,7 @@ export default function KnowledgeAdminPage() {
                 <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
                   Diperbarui
                 </TableHead>
-                <TableHead className="px-6 h-12 text-right text-[10px] font-black uppercase tracking-widest px-6">
+                <TableHead className="sticky right-0 z-20 h-12 bg-muted/40 px-6 text-right text-[10px] font-black uppercase tracking-widest">
                   Aksi
                 </TableHead>
               </TableRow>
@@ -470,8 +470,8 @@ export default function KnowledgeAdminPage() {
                         {formatDate(item.updatedAt)}
                       </span>
                     </TableCell>
-                    <TableCell className="px-6 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+                    <TableCell className="sticky right-0 z-10 bg-card px-6 text-right shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                      <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -483,7 +483,7 @@ export default function KnowledgeAdminPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
                           onClick={() => deleteMaterial(item.id)}
                         >
                           <Trash2 className="size-4" />
@@ -583,7 +583,7 @@ export default function KnowledgeAdminPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                    className="h-8 w-8 text-red-600 hover:bg-red-600 hover:text-white"
                     onClick={() => deleteMaterial(item.id)}
                   >
                     <Trash2 className="size-4" />
@@ -812,7 +812,7 @@ export default function KnowledgeAdminPage() {
               Batal
             </Button>
             <Button
-              variant="destructive"
+              className="bg-red-600 font-bold text-white transition-colors hover:bg-red-700"
               onClick={async () => {
                 const action = confirmState.onConfirm;
                 setConfirmState({

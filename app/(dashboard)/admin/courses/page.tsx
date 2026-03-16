@@ -125,7 +125,7 @@ const EMPTY_SUBJECT_FORM: SubjectForm = {
 };
 
 export default function AdminCoursesPage() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("mataKuliah");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("years");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [subjectCourses, setSubjectCourses] = useState<SubjectCourseItem[]>([]);
   const [years, setYears] = useState<AcademicYear[]>([]);
@@ -581,26 +581,26 @@ export default function AdminCoursesPage() {
           </div>
         </div>
 
-        <div className="inline-flex rounded-lg border border-border/50 bg-muted/30 p-1">
+        <div className="inline-flex rounded-lg border border-border/50 bg-muted/40 p-1.5 gap-1">
           <button
             type="button"
             className={cn(
-              "rounded-md px-3 py-2 text-xs font-black uppercase tracking-wide transition",
-              activeTab === "mataKuliah"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground",
+              "rounded-md px-8 py-2.5 text-xs font-black uppercase tracking-widest transition-all duration-300",
+              activeTab === "years"
+                ? "bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/30 scale-105"
+                : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
             )}
-            onClick={() => setActiveTab("mataKuliah")}
+            onClick={() => setActiveTab("years")}
           >
-            Mata Kuliah
+            Tahun Akademik
           </button>
           <button
             type="button"
             className={cn(
-              "rounded-md px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+              "rounded-md px-8 py-2.5 text-xs font-black uppercase tracking-widest transition-all duration-300",
               activeTab === "kelas"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground",
+                ? "bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/30 scale-105"
+                : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
             )}
             onClick={() => setActiveTab("kelas")}
           >
@@ -609,14 +609,14 @@ export default function AdminCoursesPage() {
           <button
             type="button"
             className={cn(
-              "rounded-md px-3 py-2 text-xs font-black uppercase tracking-wide transition",
-              activeTab === "years"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground",
+              "rounded-md px-8 py-2.5 text-xs font-black uppercase tracking-widest transition-all duration-300",
+              activeTab === "mataKuliah"
+                ? "bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/30 scale-105"
+                : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
             )}
-            onClick={() => setActiveTab("years")}
+            onClick={() => setActiveTab("mataKuliah")}
           >
-            Tahun Akademik
+            Mata Kuliah
           </button>
         </div>
 
@@ -770,7 +770,7 @@ export default function AdminCoursesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
                             onClick={() => deleteSubject(item.id)}
                           >
                             <Trash2 className="size-4" />
@@ -853,7 +853,7 @@ export default function AdminCoursesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
                             onClick={() => deleteClass(cls.id)}
                           >
                             <Trash2 className="size-4" />
@@ -916,7 +916,7 @@ export default function AdminCoursesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
                           onClick={() => deleteYear(year.id)}
                         >
                           <Trash2 className="size-4" />
@@ -1340,7 +1340,7 @@ export default function AdminCoursesPage() {
               Batal
             </Button>
             <Button
-              variant="destructive"
+              className="bg-red-600 font-bold text-white transition-colors hover:bg-red-700"
               onClick={async () => {
                 await confirmState.onConfirm?.();
                 setConfirmState({
