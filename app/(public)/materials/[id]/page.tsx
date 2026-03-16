@@ -4,6 +4,10 @@ import type { Route } from "next";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { prisma } from "@/lib/prisma";
+import {
+  renderMaterialHtml,
+  splitMaterialContent,
+} from "@/lib/utils/material-content";
 
 type MaterialDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -49,10 +53,7 @@ export default async function MaterialDetailPage({
       ? siblingMaterials[currentIndex + 1]
       : null;
 
-  const contentBlocks = material.content
-    .split(/\n\n=== HALAMAN BARU ===\n\n|\n{2,}/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const contentBlocks = splitMaterialContent(material.content);
 
   return (
     <>
@@ -411,19 +412,36 @@ export default async function MaterialDetailPage({
                   </span>
                 </div>
                 <div
+                  className="material-rich-content"
                   style={{
-                    whiteSpace: "pre-wrap",
                     lineHeight: 1.8,
                     color: "var(--text-main)",
                     fontSize: "0.98rem",
                   }}
-                >
-                  {block}
-                </div>
+                  dangerouslySetInnerHTML={{
+                    __html: renderMaterialHtml(block),
+                  }}
+                />
               </article>
             ))}
           </div>
         </section>
+
+        <style>{`
+          .material-rich-content p {
+            margin: 0 0 1rem;
+          }
+
+          .material-rich-content ul,
+          .material-rich-content ol {
+            margin: 0 0 1rem 1.35rem;
+            padding: 0;
+          }
+
+          .material-rich-content li {
+            margin: 0.25rem 0;
+          }
+        `}</style>
       </main>
     </>
   );
