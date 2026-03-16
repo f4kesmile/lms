@@ -20,7 +20,15 @@ export async function GET() {
         id: true,
         code: true,
         title: true,
+        description: true,
+        learningOutcomes: true,
         status: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            materials: true,
+          },
+        },
       },
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       take: 200,

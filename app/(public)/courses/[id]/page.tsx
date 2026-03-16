@@ -55,13 +55,13 @@ export default async function CourseDetailPage({
             Beranda
           </Link>
           <span>›</span>
-          <Link href="/student">Mata Kuliah Saya</Link>
+          <Link href="/student">Kelas Saya</Link>
           <span>›</span>
           <span style={{ color: "var(--text-main)" }}>{title}</span>
         </nav>
 
         <div className="grid-2" style={{ alignItems: "start" }}>
-          {/* Left: Course Info */}
+          {/* Left: Class Info */}
           <div style={{ display: "grid", gap: "2rem" }}>
             {/* Hero */}
             <article className="neo-card" style={{ overflow: "hidden" }}>
@@ -78,7 +78,7 @@ export default async function CourseDetailPage({
               >
                 <div style={{ position: "relative", zIndex: 1 }}>
                   <span className="eyebrow" style={{ marginBottom: "0.75rem" }}>
-                    Mata Kuliah Aktif
+                    Kelas Aktif
                   </span>
                   <h1
                     className="title-xl"

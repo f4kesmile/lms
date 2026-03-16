@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { AppToaster } from "@/components/shared/AppToaster";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { FloatingChatbot } from "@/features/chatbot/FloatingChatbot";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <AppToaster />
           <FloatingChatbot />
         </ThemeProvider>
       </body>

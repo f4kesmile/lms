@@ -15,9 +15,37 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, Eye, Pencil, Printer, Save } from "lucide-react";
 
 const A4_CHAR_LIMIT = 1900;
+
+const MODULE_SUGGESTIONS = [
+  "Pertemuan 1 - Pengantar",
+  "Pertemuan 2",
+  "Pertemuan 3",
+  "Pertemuan 4",
+  "Pertemuan 5",
+  "Pertemuan 6",
+  "Pertemuan 7",
+  "Pertemuan 8 - UTS",
+  "Pertemuan 9",
+  "Pertemuan 10",
+  "Pertemuan 11",
+  "Pertemuan 12",
+  "Pertemuan 13",
+  "Pertemuan 14",
+  "Pertemuan 15",
+  "Pertemuan 16 - UAS",
+  "Praktikum",
+  "Studi Kasus",
+];
 
 type MaterialForm = {
   courseId: string;
@@ -217,22 +245,33 @@ export default function NewMaterialPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                Course (Opsional)
+                Mata Kuliah (Opsional)
               </label>
-              <select
-                value={form.courseId}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, courseId: e.target.value }))
+              <Select
+                value={form.courseId || "none"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    courseId: value === "none" ? "" : value,
+                  }))
                 }
-                className="h-11 w-full rounded-md border border-border/50 bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20"
               >
-                <option value="">Tanpa Course</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.code} - {course.title}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-11 border border-border/70 bg-background">
+                  <SelectValue placeholder="Pilih mata kuliah" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tanpa Mata Kuliah</SelectItem>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.code} - {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="pl-1 text-[11px] text-muted-foreground">
+                Materi di editor ini akan masuk ke kelompok mata kuliah, bukan
+                ke kelas tertentu.
+              </p>
             </div>
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
@@ -244,28 +283,56 @@ export default function NewMaterialPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="h-11"
+                className="h-11 border border-border/70 bg-background"
                 placeholder="Contoh: Pengantar Basis Data"
               />
             </div>
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                Modul
+                Topik/Modul
               </label>
-              <Input
-                required
-                value={form.module}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, module: e.target.value }))
-                }
-                className="h-11"
-                placeholder="Contoh: Modul 1"
-              />
+              <div className="rounded-md border border-border/70 bg-background p-3 space-y-2">
+                <p className="text-[11px] font-semibold text-muted-foreground">
+                  Pilih dari daftar (opsional)
+                </p>
+                <Select
+                  value={MODULE_SUGGESTIONS.includes(form.module) ? form.module : "__none"}
+                  onValueChange={(value) => {
+                    if (value !== "__none") {
+                      setForm((prev) => ({ ...prev, module: value }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-10 border border-border/70 bg-background">
+                    <SelectValue placeholder="Pilih topik/modul" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Tidak pilih (isi manual)</SelectItem>
+                    {MODULE_SUGGESTIONS.map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] font-semibold text-muted-foreground pt-1">
+                  Atau isi sendiri
+                </p>
+                <Input
+                  required
+                  value={form.module}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, module: e.target.value }))
+                  }
+                  className="h-11 border border-border/70 bg-background"
+                  placeholder="Contoh: Pertemuan 3 - Normalisasi Database"
+                />
+              </div>
             </div>
           </div>
           <div className="mt-3 rounded-md border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
-            Semua data dari halaman ini langsung tersimpan ke Bank Materi, jadi
-            sinkron dengan menu Bank Materi.
+            Semua data dari halaman ini langsung tersimpan ke Bank Materi per
+            mata kuliah, jadi sinkron dengan menu Bank Materi.
           </div>
         </Card>
 

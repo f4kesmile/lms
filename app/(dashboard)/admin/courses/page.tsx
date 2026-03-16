@@ -1,20 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { CourseStatus } from "@prisma/client";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import {
-  createCourseAction,
   createAcademicYearAction,
+  createCourseAction,
+  createSubjectCourseAction,
   deleteAcademicYearAction,
   deleteCourseAction,
+  deleteSubjectCourseAction,
   setAcademicYearActiveAction,
   updateCourseAction,
+  updateSubjectCourseAction,
 } from "@/lib/actions/courseActions";
 import {
   BookOpen,
   Calendar,
   Edit,
+  GraduationCap,
   LayoutGrid,
   Plus,
   Search,
@@ -51,6 +56,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils/index";
 
+type ActiveTab = "mataKuliah" | "kelas" | "years";
+
 type ClassItem = {
   id: string;
   name: string;
@@ -61,6 +68,17 @@ type ClassItem = {
   capacity: number;
   students: Array<{ userId: string }>;
   createdAt: string;
+};
+
+type SubjectCourseItem = {
+  id: string;
+  code: string;
+  title: string;
+  description: string | null;
+  learningOutcomes: string | null;
+  status: CourseStatus;
+  updatedAt: string;
+  _count?: { materials: number };
 };
 
 type AcademicYear = {
@@ -76,24 +94,52 @@ type Teacher = {
   name: string;
 };
 
+type ClassForm = {
+  name: string;
+  academicYearId: string;
+  classTeacherId: string;
+  capacity: number;
+};
+
+type SubjectForm = {
+  code: string;
+  title: string;
+  description: string;
+  learningOutcomes: string;
+  status: CourseStatus;
+};
+
+const EMPTY_CLASS_FORM: ClassForm = {
+  name: "",
+  academicYearId: "",
+  classTeacherId: "",
+  capacity: 40,
+};
+
+const EMPTY_SUBJECT_FORM: SubjectForm = {
+  code: "",
+  title: "",
+  description: "",
+  learningOutcomes: "",
+  status: CourseStatus.published,
+};
+
 export default function AdminCoursesPage() {
-  const [activeTab, setActiveTab] = useState<"courses" | "years">("courses");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("mataKuliah");
   const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [subjectCourses, setSubjectCourses] = useState<SubjectCourseItem[]>([]);
   const [years, setYears] = useState<AcademicYear[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [showClassModal, setShowClassModal] = useState(false);
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [showYearModal, setShowYearModal] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<ClassItem | null>(null);
+  const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
+  const [editingSubject, setEditingSubject] = useState<SubjectCourseItem | null>(null);
 
-  const [courseForm, setCourseForm] = useState({
-    name: "",
-    academicYearId: "",
-    classTeacherId: "",
-    capacity: 40,
-  });
-
+  const [classForm, setClassForm] = useState<ClassForm>(EMPTY_CLASS_FORM);
+  const [subjectForm, setSubjectForm] = useState<SubjectForm>(EMPTY_SUBJECT_FORM);
   const [yearForm, setYearForm] = useState({
     name: "",
     fromYear: "",
@@ -132,16 +178,28 @@ export default function AdminCoursesPage() {
   });
 
   useEffect(() => {
-    loadData();
-    loadMeta();
+    void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
+
+  useEffect(() => {
+    void loadMeta();
+  }, []);
 
   async function fetchClasses() {
     const res = await fetch("/api/classes?limit=100");
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message || "Gagal mengambil data kelas");
     return data.classes ?? [];
+  }
+
+  async function fetchSubjectCourses() {
+    const res = await fetch("/api/kb/courses");
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.message || "Gagal mengambil data mata kuliah");
+    }
+    return data.courses ?? [];
   }
 
   async function fetchAcademicYears() {
@@ -156,7 +214,10 @@ export default function AdminCoursesPage() {
   async function loadData() {
     setLoading(true);
     try {
-      if (activeTab === "courses") {
+      if (activeTab === "mataKuliah") {
+        const data = await fetchSubjectCourses();
+        setSubjectCourses(data);
+      } else if (activeTab === "kelas") {
         const data = await fetchClasses();
         setClasses(data);
       } else {
@@ -164,8 +225,9 @@ export default function AdminCoursesPage() {
         setYears(data);
       }
     } catch {
-      if (activeTab === "courses") setClasses([]);
-      else setYears([]);
+      if (activeTab === "mataKuliah") setSubjectCourses([]);
+      if (activeTab === "kelas") setClasses([]);
+      if (activeTab === "years") setYears([]);
     } finally {
       setLoading(false);
     }
@@ -184,20 +246,20 @@ export default function AdminCoursesPage() {
     }
   }
 
-  function resetCourseForm() {
-    setEditingCourse(null);
-    setCourseForm({
-      name: "",
-      academicYearId: "",
-      classTeacherId: "",
-      capacity: 40,
-    });
+  function resetClassForm() {
+    setEditingClass(null);
+    setClassForm(EMPTY_CLASS_FORM);
   }
 
-  async function handleCourseSubmit(e: React.FormEvent) {
+  function resetSubjectForm() {
+    setEditingSubject(null);
+    setSubjectForm(EMPTY_SUBJECT_FORM);
+  }
+
+  async function handleClassSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!courseForm.academicYearId) {
+    if (!classForm.academicYearId) {
       setNotice({
         open: true,
         title: "Data Belum Lengkap",
@@ -209,26 +271,64 @@ export default function AdminCoursesPage() {
     setLoading(true);
     try {
       const payload = {
-        name: courseForm.name,
-        academicYearId: courseForm.academicYearId,
-        classTeacherId: courseForm.classTeacherId || null,
-        capacity: courseForm.capacity,
+        name: classForm.name,
+        academicYearId: classForm.academicYearId,
+        classTeacherId: classForm.classTeacherId || null,
+        capacity: classForm.capacity,
       };
 
-      const res = editingCourse
-        ? await updateCourseAction(editingCourse.id, payload)
+      const res = editingClass
+        ? await updateCourseAction(editingClass.id, payload)
         : await createCourseAction(payload);
 
-      if (!res.success) throw new Error(res.error || "Gagal menyimpan kursus");
+      if (!res.success) throw new Error(res.error || "Gagal menyimpan kelas");
 
-      setShowCourseModal(false);
-      resetCourseForm();
+      setShowClassModal(false);
+      resetClassForm();
       await loadData();
-    } catch (e) {
+    } catch (error) {
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
-        message: e instanceof Error ? e.message : "Gagal menyimpan kursus",
+        message:
+          error instanceof Error ? error.message : "Gagal menyimpan kelas",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubjectSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload = {
+        code: subjectForm.code.trim().toUpperCase(),
+        title: subjectForm.title.trim(),
+        description: subjectForm.description.trim() || null,
+        learningOutcomes: subjectForm.learningOutcomes.trim() || null,
+        status: subjectForm.status,
+      };
+
+      const res = editingSubject
+        ? await updateSubjectCourseAction(editingSubject.id, payload)
+        : await createSubjectCourseAction(payload);
+
+      if (!res.success) {
+        throw new Error(res.error || "Gagal menyimpan mata kuliah");
+      }
+
+      setShowSubjectModal(false);
+      resetSubjectForm();
+      await loadData();
+    } catch (error) {
+      setNotice({
+        open: true,
+        title: "Gagal Menyimpan",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan mata kuliah",
       });
     } finally {
       setLoading(false);
@@ -254,30 +354,32 @@ export default function AdminCoursesPage() {
       setYearForm({ name: "", fromYear: "", toYear: "", isCurrent: false });
       await loadData();
       await loadMeta();
-    } catch (e) {
+    } catch (error) {
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
         message:
-          e instanceof Error ? e.message : "Gagal menyimpan tahun akademik",
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan tahun akademik",
       });
     } finally {
       setLoading(false);
     }
   }
 
-  async function deleteCourse(id: string) {
+  function deleteClass(id: string) {
     setConfirmState({
       open: true,
-      title: "Hapus Kursus",
-      message: "Hapus kursus ini secara permanen?",
+      title: "Hapus Kelas",
+      message: "Hapus kelas ini secara permanen?",
       onConfirm: async () => {
         const res = await deleteCourseAction(id);
         if (!res.success) {
           setNotice({
             open: true,
             title: "Gagal Menghapus",
-            message: res.error || "Gagal menghapus kursus",
+            message: res.error || "Gagal menghapus kelas",
           });
           return;
         }
@@ -286,7 +388,28 @@ export default function AdminCoursesPage() {
     });
   }
 
-  async function deleteYear(id: string) {
+  function deleteSubject(id: string) {
+    setConfirmState({
+      open: true,
+      title: "Hapus Mata Kuliah",
+      message:
+        "Hapus mata kuliah ini? Materi yang terhubung akan menjadi tidak terikat ke mata kuliah mana pun.",
+      onConfirm: async () => {
+        const res = await deleteSubjectCourseAction(id);
+        if (!res.success) {
+          setNotice({
+            open: true,
+            title: "Gagal Menghapus",
+            message: res.error || "Gagal menghapus mata kuliah",
+          });
+          return;
+        }
+        await loadData();
+      },
+    });
+  }
+
+  function deleteYear(id: string) {
     setConfirmState({
       open: true,
       title: "Hapus Tahun Akademik",
@@ -297,7 +420,7 @@ export default function AdminCoursesPage() {
           setNotice({
             open: true,
             title: "Gagal Menghapus",
-            message: res.error || "Gagal menghapus",
+            message: res.error || "Gagal menghapus tahun akademik",
           });
           return;
         }
@@ -320,65 +443,116 @@ export default function AdminCoursesPage() {
     await loadData();
   }
 
-  const filteredClasses = classes.filter((cls) => {
+  const filteredSubjectCourses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      cls.name.toLowerCase().includes(q) ||
-      cls.academicYear.name.toLowerCase().includes(q) ||
-      (cls.classTeacher?.name || "").toLowerCase().includes(q)
-    );
-  });
+    if (!q) return subjectCourses;
+    return subjectCourses.filter((item) => {
+      return [item.code, item.title, item.description || "", item.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [searchQuery, subjectCourses]);
 
-  const filteredYears = years.filter((year) => {
+  const filteredClasses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
-    return year.name.toLowerCase().includes(q);
-  });
+    if (!q) return classes;
+    return classes.filter((cls) => {
+      return [cls.name, cls.academicYear.name, cls.classTeacher?.name || ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [classes, searchQuery]);
+
+  const filteredYears = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return years;
+    return years.filter((year) => year.name.toLowerCase().includes(q));
+  }, [searchQuery, years]);
+
+  const searchPlaceholder =
+    activeTab === "mataKuliah"
+      ? "Cari kode atau nama mata kuliah..."
+      : activeTab === "kelas"
+        ? "Cari nama kelas, dosen, tahun..."
+        : "Cari tahun akademik...";
+
+  const addButtonLabel =
+    activeTab === "mataKuliah"
+      ? "Tambah Mata Kuliah"
+      : activeTab === "kelas"
+        ? "Tambah Kelas"
+        : "Tambah Tahun";
+
+  const uploadQuery =
+    activeTab === "mataKuliah" ? { from: "courses" } : { from: "knowledge" };
 
   return (
     <AdminLayout
-      title="Pusat Kursus"
+      title="Pusat Akademik"
       headerActions={
         <div className="flex items-center gap-2">
-          <Button size="sm" className="font-bold" asChild>
-            <Link
-              href={{
-                pathname: "/admin/materials/new",
-                query: { from: "courses" },
-              }}
-            >
-              <Plus className="mr-1 size-4" />
-              Upload Materi
-            </Link>
-          </Button>
+          {activeTab !== "years" && (
+            <Button size="sm" className="font-bold" asChild>
+              <Link
+                href={{
+                  pathname: "/admin/materials/new",
+                  query: uploadQuery,
+                }}
+              >
+                <Plus className="mr-1 size-4" />
+                Upload Materi
+              </Link>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             className="font-bold"
             onClick={() => {
-              if (activeTab === "courses") {
-                resetCourseForm();
-                setShowCourseModal(true);
-              } else {
-                setYearForm({
-                  name: "",
-                  fromYear: "",
-                  toYear: "",
-                  isCurrent: false,
-                });
-                setShowYearModal(true);
+              if (activeTab === "mataKuliah") {
+                resetSubjectForm();
+                setShowSubjectModal(true);
+                return;
               }
+
+              if (activeTab === "kelas") {
+                resetClassForm();
+                setShowClassModal(true);
+                return;
+              }
+
+              setYearForm({
+                name: "",
+                fromYear: "",
+                toYear: "",
+                isCurrent: false,
+              });
+              setShowYearModal(true);
             }}
           >
             <Plus className="mr-1 size-4" />
-            {activeTab === "courses" ? "Tambah Kursus" : "Tambah Tahun"}
+            {addButtonLabel}
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card className="border-none bg-card p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <GraduationCap className="size-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Total Mata Kuliah
+                </p>
+                <p className="text-xl font-black">{subjectCourses.length}</p>
+              </div>
+            </div>
+          </Card>
           <Card className="border-none bg-card p-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -392,19 +566,6 @@ export default function AdminCoursesPage() {
               </div>
             </div>
           </Card>
-          <Card className="border-none bg-card p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
-                <Calendar className="size-5" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Tahun Akademik
-                </p>
-                <p className="text-xl font-black">{meta.years.length}</p>
-              </div>
-            </div>
-          </Card>
           <div className="flex items-center justify-end">
             <div className="relative w-full sm:max-w-xs">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -412,11 +573,7 @@ export default function AdminCoursesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-11 border-border/50 bg-card pl-9"
-                placeholder={
-                  activeTab === "courses"
-                    ? "Cari nama kelas, dosen, tahun..."
-                    : "Cari tahun akademik..."
-                }
+                placeholder={searchPlaceholder}
               />
             </div>
           </div>
@@ -427,13 +584,25 @@ export default function AdminCoursesPage() {
             type="button"
             className={cn(
               "rounded-md px-3 py-2 text-xs font-black uppercase tracking-wide transition",
-              activeTab === "courses"
+              activeTab === "mataKuliah"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground",
             )}
-            onClick={() => setActiveTab("courses")}
+            onClick={() => setActiveTab("mataKuliah")}
           >
-            Kelas & Kursus
+            Mata Kuliah
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "rounded-md px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+              activeTab === "kelas"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground",
+            )}
+            onClick={() => setActiveTab("kelas")}
+          >
+            Kelas
           </button>
           <button
             type="button"
@@ -449,11 +618,29 @@ export default function AdminCoursesPage() {
           </button>
         </div>
 
-        <Card className="hidden overflow-hidden border-none bg-card shadow-xl lg:block">
+        <Card className="overflow-hidden border-none bg-card shadow-xl">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="border-none hover:bg-transparent">
-                {activeTab === "courses" ? (
+                {activeTab === "mataKuliah" ? (
+                  <>
+                    <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest">
+                      Mata Kuliah
+                    </TableHead>
+                    <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                      Status
+                    </TableHead>
+                    <TableHead className="h-12 text-center text-[10px] font-black uppercase tracking-widest">
+                      Materi
+                    </TableHead>
+                    <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                      Diperbarui
+                    </TableHead>
+                    <TableHead className="h-12 px-6 text-right text-[10px] font-black uppercase tracking-widest">
+                      Aksi
+                    </TableHead>
+                  </>
+                ) : activeTab === "kelas" ? (
                   <>
                     <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest">
                       Kelas
@@ -493,24 +680,108 @@ export default function AdminCoursesPage() {
               {loading ? (
                 Array(5)
                   .fill(0)
-                  .map((_, i) => (
-                    <TableRow key={`skeleton-${i}`}>
-                      <TableCell colSpan={activeTab === "courses" ? 5 : 4}>
+                  .map((_, index) => (
+                    <TableRow key={`skeleton-${index}`}>
+                      <TableCell colSpan={activeTab === "years" ? 4 : 5}>
                         <Skeleton className="h-12 w-full" />
                       </TableCell>
                     </TableRow>
                   ))
-              ) : activeTab === "courses" ? (
+              ) : activeTab === "mataKuliah" ? (
+                filteredSubjectCourses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="p-6">
+                      <EmptyState
+                        icon={GraduationCap}
+                        title="Belum ada mata kuliah"
+                        description={
+                          searchQuery
+                            ? "Tidak ada mata kuliah yang cocok dengan pencarian."
+                            : "Tambahkan mata kuliah agar Bank Materi dan AI bisa dikelompokkan dengan rapi."
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSubjectCourses.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="group border-b border-border/30 transition-colors hover:bg-muted/20"
+                    >
+                      <TableCell className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <BookOpen className="size-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold">
+                              {item.code} - {item.title}
+                            </p>
+                            <p className="truncate text-[11px] text-muted-foreground">
+                              {item.description || "Belum ada deskripsi mata kuliah."}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Badge variant={item.status === CourseStatus.published ? "default" : "outline"}>
+                          {item.status === CourseStatus.published
+                            ? "Dipublikasikan"
+                            : item.status === CourseStatus.draft
+                              ? "Draft"
+                              : "Diarsipkan"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-4 text-center text-sm font-semibold">
+                        {item._count?.materials ?? 0}
+                      </TableCell>
+                      <TableCell className="py-4 text-sm font-semibold text-muted-foreground">
+                        {new Date(item.updatedAt).toLocaleDateString("id-ID")}
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                            onClick={() => {
+                              setEditingSubject(item);
+                              setSubjectForm({
+                                code: item.code,
+                                title: item.title,
+                                description: item.description || "",
+                                learningOutcomes: item.learningOutcomes || "",
+                                status: item.status,
+                              });
+                              setShowSubjectModal(true);
+                            }}
+                          >
+                            <Edit className="size-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            onClick={() => deleteSubject(item.id)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )
+              ) : activeTab === "kelas" ? (
                 filteredClasses.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="p-6">
                       <EmptyState
-                        icon={BookOpen}
-                        title="Belum ada kursus ditemukan"
+                        icon={LayoutGrid}
+                        title="Belum ada kelas"
                         description={
                           searchQuery
-                            ? "Coba kata kunci lain atau kosongkan filter pencarian."
-                            : "Tambahkan kursus baru agar data kelas bisa dikelola dari halaman ini."
+                            ? "Coba kata kunci lain atau kosongkan pencarian."
+                            : "Tambahkan kelas baru setelah mata kuliah dan tahun akademik siap."
                         }
                       />
                     </TableCell>
@@ -524,7 +795,7 @@ export default function AdminCoursesPage() {
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <BookOpen className="size-4" />
+                            <LayoutGrid className="size-4" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold">{cls.name}</p>
@@ -558,14 +829,14 @@ export default function AdminCoursesPage() {
                             size="icon"
                             className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
                             onClick={() => {
-                              setEditingCourse(cls);
-                              setCourseForm({
+                              setEditingClass(cls);
+                              setClassForm({
                                 name: cls.name,
                                 academicYearId: cls.academicYearId,
                                 classTeacherId: cls.classTeacherId || "",
                                 capacity: cls.capacity,
                               });
-                              setShowCourseModal(true);
+                              setShowClassModal(true);
                             }}
                           >
                             <Edit className="size-4" />
@@ -574,7 +845,7 @@ export default function AdminCoursesPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => deleteCourse(cls.id)}
+                            onClick={() => deleteClass(cls.id)}
                           >
                             <Trash2 className="size-4" />
                           </Button>
@@ -591,7 +862,7 @@ export default function AdminCoursesPage() {
                       title="Belum ada tahun akademik"
                       description={
                         searchQuery
-                          ? "Tidak ada tahun akademik yang cocok dengan kata kunci pencarian."
+                          ? "Tidak ada tahun akademik yang cocok dengan pencarian."
                           : "Tambahkan periode akademik untuk mengelola kelas per semester."
                       }
                     />
@@ -604,7 +875,7 @@ export default function AdminCoursesPage() {
                       <p className="text-sm font-semibold">{year.name}</p>
                     </TableCell>
                     <TableCell className="py-4 text-sm font-semibold text-muted-foreground">
-                      {new Date(year.fromYear).getFullYear()} -{" "}
+                      {new Date(year.fromYear).getFullYear()} - {" "}
                       {new Date(year.toYear).getFullYear()}
                     </TableCell>
                     <TableCell className="py-4 text-center">
@@ -652,35 +923,160 @@ export default function AdminCoursesPage() {
       </div>
 
       <Dialog
-        open={showCourseModal}
+        open={showSubjectModal}
         onOpenChange={(open) => {
-          setShowCourseModal(open);
-          if (!open) resetCourseForm();
+          setShowSubjectModal(open);
+          if (!open) resetSubjectForm();
         }}
       >
-        <DialogContent className="border-none">
+        <DialogContent className="border border-border/60">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
-              {editingCourse ? "Sunting Kursus" : "Kursus Baru"}
+              {editingSubject ? "Sunting Mata Kuliah" : "Mata Kuliah Baru"}
             </DialogTitle>
             <DialogDescription className="text-sm font-medium">
-              Lengkapi formulir di bawah ini dengan informasi yang valid.
+              Mata kuliah ini akan menjadi pengelompokan utama untuk Bank Materi dan referensi AI.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCourseSubmit} className="space-y-4">
+          <form onSubmit={handleSubjectSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Kode Mata Kuliah
+                </label>
+                <Input
+                  required
+                  value={subjectForm.code}
+                  onChange={(e) =>
+                    setSubjectForm((prev) => ({ ...prev, code: e.target.value }))
+                  }
+                  className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                  placeholder="Contoh: IF301"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Status
+                </label>
+                <Select
+                  value={subjectForm.status}
+                  onValueChange={(value: CourseStatus) =>
+                    setSubjectForm((prev) => ({ ...prev, status: value }))
+                  }
+                >
+                  <SelectTrigger className="h-11 border border-border bg-background font-bold focus:ring-2 focus:ring-primary/30">
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CourseStatus.published}>Dipublikasikan</SelectItem>
+                    <SelectItem value={CourseStatus.draft}>Draft</SelectItem>
+                    <SelectItem value={CourseStatus.archived}>Diarsipkan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                Nama Kursus / Kelas
+                Nama Mata Kuliah
               </label>
               <Input
                 required
-                value={courseForm.name}
+                value={subjectForm.title}
                 onChange={(e) =>
-                  setCourseForm({ ...courseForm, name: e.target.value })
+                  setSubjectForm((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="h-11 border-none bg-muted/30"
-                placeholder="Contoh: Algoritma Lanjut A"
+                className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Contoh: Rekayasa Perangkat Lunak"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Deskripsi
+              </label>
+              <textarea
+                value={subjectForm.description}
+                onChange={(e) =>
+                  setSubjectForm((prev) => ({ ...prev, description: e.target.value }))
+                }
+                className="min-h-24 w-full rounded-md border border-border bg-background p-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Ringkasan singkat tentang mata kuliah ini."
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Capaian Pembelajaran
+              </label>
+              <textarea
+                value={subjectForm.learningOutcomes}
+                onChange={(e) =>
+                  setSubjectForm((prev) => ({
+                    ...prev,
+                    learningOutcomes: e.target.value,
+                  }))
+                }
+                className="min-h-28 w-full rounded-md border border-border bg-background p-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Tuliskan hasil belajar utama yang harus dicapai mahasiswa."
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                className="font-bold text-muted-foreground"
+                onClick={() => {
+                  setShowSubjectModal(false);
+                  resetSubjectForm();
+                }}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={loading} className="min-w-[140px] font-bold">
+                {loading
+                  ? "Menyimpan..."
+                  : editingSubject
+                    ? "Update Mata Kuliah"
+                    : "Simpan Mata Kuliah"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showClassModal}
+        onOpenChange={(open) => {
+          setShowClassModal(open);
+          if (!open) resetClassForm();
+        }}
+      >
+        <DialogContent className="border border-border/60">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black tracking-tight">
+              {editingClass ? "Sunting Kelas" : "Kelas Baru"}
+            </DialogTitle>
+            <DialogDescription className="text-sm font-medium">
+              Kelas adalah wadah operasional per periode akademik untuk mahasiswa dan dosen.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleClassSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Nama Kelas
+              </label>
+              <Input
+                required
+                value={classForm.name}
+                onChange={(e) =>
+                  setClassForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Contoh: IF301 - A"
               />
             </div>
 
@@ -690,18 +1086,18 @@ export default function AdminCoursesPage() {
                   Tahun Akademik
                 </label>
                 <Select
-                  value={courseForm.academicYearId}
+                  value={classForm.academicYearId}
                   onValueChange={(value) =>
-                    setCourseForm({ ...courseForm, academicYearId: value })
+                    setClassForm((prev) => ({ ...prev, academicYearId: value }))
                   }
                 >
-                  <SelectTrigger className="h-11 border-none bg-muted/30 font-bold">
-                    <SelectValue placeholder="Pilih Tahun..." />
+                  <SelectTrigger className="h-11 border border-border bg-background font-bold focus:ring-2 focus:ring-primary/30">
+                    <SelectValue placeholder="Pilih tahun" />
                   </SelectTrigger>
                   <SelectContent>
-                    {meta.years.map((y) => (
-                      <SelectItem key={y.id} value={y.id}>
-                        {y.name}
+                    {meta.years.map((year) => (
+                      <SelectItem key={year.id} value={year.id}>
+                        {year.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -714,14 +1110,15 @@ export default function AdminCoursesPage() {
                 </label>
                 <Input
                   type="number"
-                  value={courseForm.capacity}
+                  min={1}
+                  value={classForm.capacity}
                   onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
+                    setClassForm((prev) => ({
+                      ...prev,
                       capacity: Number.parseInt(e.target.value || "0", 10),
-                    })
+                    }))
                   }
-                  className="h-11 border-none bg-muted/30"
+                  className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
                 />
               </div>
             </div>
@@ -731,22 +1128,22 @@ export default function AdminCoursesPage() {
                 Dosen Pengampu
               </label>
               <Select
-                value={courseForm.classTeacherId || "none"}
+                value={classForm.classTeacherId || "none"}
                 onValueChange={(value) =>
-                  setCourseForm({
-                    ...courseForm,
+                  setClassForm((prev) => ({
+                    ...prev,
                     classTeacherId: value === "none" ? "" : value,
-                  })
+                  }))
                 }
               >
-                <SelectTrigger className="h-11 border-none bg-muted/30 font-bold">
-                  <SelectValue placeholder="Pilih Dosen (Opsional)" />
+                <SelectTrigger className="h-11 border border-border bg-background font-bold focus:ring-2 focus:ring-primary/30">
+                  <SelectValue placeholder="Pilih dosen" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Tanpa Dosen</SelectItem>
-                  {meta.teachers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
+                  {meta.teachers.map((teacher) => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
+                      {teacher.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -759,22 +1156,18 @@ export default function AdminCoursesPage() {
                 variant="ghost"
                 className="font-bold text-muted-foreground"
                 onClick={() => {
-                  setShowCourseModal(false);
-                  resetCourseForm();
+                  setShowClassModal(false);
+                  resetClassForm();
                 }}
               >
                 Batal
               </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="min-w-[120px] font-bold"
-              >
+              <Button type="submit" disabled={loading} className="min-w-[120px] font-bold">
                 {loading
                   ? "Menyimpan..."
-                  : editingCourse
-                    ? "Update Kursus"
-                    : "Simpan Kursus"}
+                  : editingClass
+                    ? "Update Kelas"
+                    : "Simpan Kelas"}
               </Button>
             </div>
           </form>
@@ -782,7 +1175,7 @@ export default function AdminCoursesPage() {
       </Dialog>
 
       <Dialog open={showYearModal} onOpenChange={setShowYearModal}>
-        <DialogContent className="border-none">
+        <DialogContent className="border border-border/60">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tight">
               Periode Akademik Baru
@@ -801,10 +1194,10 @@ export default function AdminCoursesPage() {
                 required
                 value={yearForm.name}
                 onChange={(e) =>
-                  setYearForm({ ...yearForm, name: e.target.value })
+                  setYearForm((prev) => ({ ...prev, name: e.target.value }))
                 }
-                className="h-11 border-none bg-muted/30"
-                placeholder="Contoh: 2024/2025 Genap"
+                className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Contoh: 2025/2026 Genap"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -817,9 +1210,9 @@ export default function AdminCoursesPage() {
                   required
                   value={yearForm.fromYear}
                   onChange={(e) =>
-                    setYearForm({ ...yearForm, fromYear: e.target.value })
+                    setYearForm((prev) => ({ ...prev, fromYear: e.target.value }))
                   }
-                  className="h-11 border-none bg-muted/30"
+                  className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
                 />
               </div>
               <div className="space-y-1.5">
@@ -831,45 +1224,27 @@ export default function AdminCoursesPage() {
                   required
                   value={yearForm.toYear}
                   onChange={(e) =>
-                    setYearForm({ ...yearForm, toYear: e.target.value })
+                    setYearForm((prev) => ({ ...prev, toYear: e.target.value }))
                   }
-                  className="h-11 border-none bg-muted/30"
+                  className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
                 />
               </div>
             </div>
-
-            <div className="flex items-center gap-3 py-2 pl-1">
+            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <input
                 type="checkbox"
-                id="isCurrent"
                 checked={yearForm.isCurrent}
                 onChange={(e) =>
-                  setYearForm({ ...yearForm, isCurrent: e.target.checked })
+                  setYearForm((prev) => ({ ...prev, isCurrent: e.target.checked }))
                 }
-                className="size-4 rounded accent-primary"
               />
-              <label
-                htmlFor="isCurrent"
-                className="cursor-pointer text-sm font-bold text-muted-foreground"
-              >
-                Set sebagai Tahun Berjalan
-              </label>
-            </div>
-
+              Jadikan periode aktif
+            </label>
             <div className="flex items-center justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                className="font-bold text-muted-foreground"
-                onClick={() => setShowYearModal(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => setShowYearModal(false)}>
                 Batal
               </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="min-w-[120px] font-bold"
-              >
+              <Button type="submit" disabled={loading} className="font-bold">
                 {loading ? "Menyimpan..." : "Simpan Tahun"}
               </Button>
             </div>
@@ -887,10 +1262,8 @@ export default function AdminCoursesPage() {
             <DialogDescription>{notice.message}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end">
-            <Button
-              onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
-            >
-              OK
+            <Button onClick={() => setNotice((prev) => ({ ...prev, open: false }))}>
+              Tutup
             </Button>
           </div>
         </DialogContent>
@@ -899,11 +1272,7 @@ export default function AdminCoursesPage() {
       <Dialog
         open={confirmState.open}
         onOpenChange={(open) =>
-          setConfirmState((prev) => ({
-            ...prev,
-            open,
-            onConfirm: open ? prev.onConfirm : null,
-          }))
+          setConfirmState((prev) => ({ ...prev, open, onConfirm: open ? prev.onConfirm : null }))
         }
       >
         <DialogContent className="sm:max-w-md">
@@ -913,14 +1282,9 @@ export default function AdminCoursesPage() {
           </DialogHeader>
           <div className="flex justify-end gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() =>
-                setConfirmState({
-                  open: false,
-                  title: "",
-                  message: "",
-                  onConfirm: null,
-                })
+                setConfirmState({ open: false, title: "", message: "", onConfirm: null })
               }
             >
               Batal
@@ -928,17 +1292,11 @@ export default function AdminCoursesPage() {
             <Button
               variant="destructive"
               onClick={async () => {
-                const action = confirmState.onConfirm;
-                setConfirmState({
-                  open: false,
-                  title: "",
-                  message: "",
-                  onConfirm: null,
-                });
-                if (action) await action();
+                await confirmState.onConfirm?.();
+                setConfirmState({ open: false, title: "", message: "", onConfirm: null });
               }}
             >
-              Ya, Lanjutkan
+              Ya, hapus
             </Button>
           </div>
         </DialogContent>
