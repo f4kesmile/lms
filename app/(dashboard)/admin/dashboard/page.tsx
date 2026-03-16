@@ -172,12 +172,12 @@ export default function AdminDashboardPage() {
                 </CardTitle>
               </div>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 asChild
-                className="text-xs font-bold text-primary hover:bg-primary/5"
+                className="text-[10px] font-black uppercase tracking-widest border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white shadow-md transition-all duration-200"
               >
-                <Link href={"/admin/dashboard" as Route}>Lihat Laporan</Link>
+                <Link href={"/admin/insights" as Route}>Lihat Laporan</Link>
               </Button>
             </CardHeader>
             <div className="p-0">
@@ -330,20 +330,20 @@ export default function AdminDashboardPage() {
                 <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner">
                   <Lightbulb className="size-6 text-emerald-300 group-hover:animate-pulse" />
                 </div>
-                <h3 className="mb-2 text-lg font-black tracking-tight">
+                <h3 className="mb-2 text-xl font-black tracking-tight text-white">
                   AI Platform Insight
                 </h3>
-                <p className="mb-6 text-sm leading-relaxed text-emerald-100/80">
+                <p className="mb-6 text-sm leading-relaxed !text-white font-medium">
                   Platform Anda tercatat memiliki{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-black !text-white underline decoration-emerald-400 decoration-2 underline-offset-4">
                     {metricValues[0]} pengguna
                   </span>{" "}
                   aktif dengan{" "}
-                  <span className="font-bold text-white">
+                  <span className="font-black !text-white underline decoration-emerald-400 decoration-2 underline-offset-4">
                     {metricValues[1]} kursus
                   </span>{" "}
                   berjalan. Efisiensi penggunaan AI bulan ini mencapai{" "}
-                  {metricValues[3]}, menunjukkan adopsi fitur yang sangat
+                  <span className="font-black !text-white">{metricValues[3]}</span>, menunjukkan adopsi fitur yang sangat
                   positif.
                 </p>
                 <Button

@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate, getInitials } from "@/lib/utils/index";
+import { formatDate, formatDateTime, getInitials } from "@/lib/utils/index";
 import {
   Bot,
   BrainCircuit,
@@ -251,34 +251,32 @@ export default function AdminInsightsPage() {
                       </p>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="grid grid-cols-[110px_70px_80px_100px] items-center gap-4">
                         <Badge
                           variant="outline"
-                          className="text-[10px] font-black uppercase"
+                          className="w-full justify-center text-[10px] font-black uppercase text-center truncate"
                         >
                           {item.status}
                         </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] font-black"
-                        >
+                        <span className="text-[10px] font-black text-muted-foreground whitespace-nowrap">
                           {item.citationCount} sitasi
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] font-black"
-                        >
+                        </span>
+                        <span className="text-[10px] font-black text-muted-foreground whitespace-nowrap">
                           {(item.responseTimeMs / 1000).toFixed(2)} dtk
-                        </Badge>
-                        {item.rating !== null && (
-                          <Badge className="bg-emerald-500 text-[10px] font-black">
+                        </span>
+                        {item.rating !== null ? (
+                          <Badge className="bg-emerald-500 text-[10px] font-black justify-center w-full">
                             Rating {item.rating}/5
                           </Badge>
+                        ) : (
+                          <span className="text-[10px] font-black text-muted-foreground/30 text-center">
+                            -
+                          </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground">
-                      {formatDate(item.createdAt)}
+                    <TableCell className="px-6 py-4 text-right text-[11px] font-bold text-muted-foreground leading-relaxed whitespace-nowrap">
+                      {formatDateTime(item.createdAt)}
                     </TableCell>
                   </TableRow>
                 ))
@@ -344,8 +342,8 @@ export default function AdminInsightsPage() {
                     {(item.responseTimeMs / 1000).toFixed(2)} dtk
                   </Badge>
                 </div>
-                <p className="mt-3 text-[11px] font-medium text-muted-foreground">
-                  {formatDate(item.createdAt)}
+                <p className="mt-3 text-[11px] font-bold text-muted-foreground">
+                  {formatDateTime(item.createdAt)}
                 </p>
               </Card>
             ))
