@@ -26,7 +26,7 @@ export default function CourseSearch({ initialQuery = "" }: { initialQuery?: str
         <input
           type="text"
           className="input input-with-icon"
-          placeholder="Cari nama kursus atau kode..."
+          placeholder="Cari nama kelas atau kode..."
           style={{ background: "var(--bg-card)" }}
           value={query}
           onChange={(e) => setQuery(e.target.value)}

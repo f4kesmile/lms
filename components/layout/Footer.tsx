@@ -32,7 +32,7 @@ export function Footer() {
           <div className="footer-col">
             <h4 className="footer-heading">Navigasi</h4>
             <Link href="/">Beranda</Link>
-            <Link href="/courses">Daftar Kursus</Link>
+            <Link href="/courses">Daftar Kelas</Link>
             <Link href="/about">Tentang Kami</Link>
           </div>
 

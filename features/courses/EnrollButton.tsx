@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function EnrollButton({
   classId,
@@ -56,13 +57,15 @@ export default function EnrollButton({
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.message);
-        router.refresh();
+        toast.success(data.message || "Berhasil mendaftar ke kelas.");
+        window.setTimeout(() => {
+          router.refresh();
+        }, 700);
       } else {
-        alert(data.message || "Gagal mendaftar kelas");
+        toast.error(data.message || "Gagal mendaftar kelas");
       }
     } catch {
-      alert("Terjadi kesalahan jaringan");
+      toast.error("Terjadi kesalahan jaringan");
     } finally {
       setLoading(false);
     }
@@ -83,7 +86,7 @@ export default function EnrollButton({
           fontWeight: 700,
         }}
       >
-        Login untuk Mendaftar
+        Login untuk Daftar Kelas
       </button>
     );
   }
@@ -103,7 +106,7 @@ export default function EnrollButton({
           fontWeight: 700,
         }}
       >
-        Daftar Kelas (Enroll)
+        Daftar ke Kelas
       </button>
     );
   }

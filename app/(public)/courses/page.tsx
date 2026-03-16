@@ -62,10 +62,10 @@ export default async function CourseCatalogPage({
 
         {/* ===== HEADER ===== */}
         <div className="catalog-header">
-          <h1>Eksplorasi Kursus Akademik</h1>
+          <h1>Eksplorasi Kelas Akademik</h1>
           <p>
-            Akses materi berkualitas dari pengajar terbaik secara gratis.
-            Tingkatkan wawasan dan kompetensi Anda di sini.
+            Jelajahi kelas yang sedang dibuka, temukan pengajarnya, lalu daftar
+            sesuai kebutuhan belajarmu.
           </p>
         </div>
 
@@ -88,11 +88,11 @@ export default async function CourseCatalogPage({
           </div>
         </div>
 
-        {/* ===== COURSE GRID ===== */}
+        {/* ===== CLASS GRID ===== */}
         <section className="course-grid">
           {courses.length === 0 ? (
             <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem", color: "var(--text-dim)" }}>
-              Belum ada kursus publik untuk saat ini.
+              Belum ada kelas publik untuk saat ini.
             </p>
           ) : (
             coursesWithKeyStatus.map((cls, idx: number) => {

@@ -81,7 +81,7 @@ export default async function HomePage() {
           <div className="stat-box">
             <div className="stat-box-label">
               <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--primary)" }}>school</span>
-              Kursus Tersedia
+              Kelas Tersedia
             </div>
             <p className="stat-box-value">{classCount.toLocaleString("id-ID")}+</p>
           </div>
@@ -94,11 +94,11 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ===== FEATURED COURSES ===== */}
+        {/* ===== FEATURED CLASSES ===== */}
         <section style={{ display: "grid", gap: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2 style={{ fontSize: "1.5rem", fontWeight: 800, borderBottom: "3px solid var(--primary)", paddingBottom: "0.2rem", display: "inline-block" }}>
-              Kursus Unggulan
+              Kelas Unggulan
             </h2>
             <Link href="/courses" style={{ color: "var(--primary)", fontWeight: 700, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
               Lihat Semua
@@ -109,7 +109,7 @@ export default async function HomePage() {
           <div className="course-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {featuredClasses.length === 0 ? (
               <p className="text-muted" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem" }}>
-                Belum ada kursus tersedia.
+                Belum ada kelas tersedia.
               </p>
             ) : (
               featuredClasses.map((cls, idx) => {

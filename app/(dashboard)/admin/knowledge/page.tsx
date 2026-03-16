@@ -17,6 +17,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import {
@@ -71,6 +78,27 @@ const EMPTY_FORM: MaterialForm = {
   page: "",
   content: "",
 };
+
+const MODULE_SUGGESTIONS = [
+  "Pertemuan 1 - Pengantar",
+  "Pertemuan 2",
+  "Pertemuan 3",
+  "Pertemuan 4",
+  "Pertemuan 5",
+  "Pertemuan 6",
+  "Pertemuan 7",
+  "Pertemuan 8 - UTS",
+  "Pertemuan 9",
+  "Pertemuan 10",
+  "Pertemuan 11",
+  "Pertemuan 12",
+  "Pertemuan 13",
+  "Pertemuan 14",
+  "Pertemuan 15",
+  "Pertemuan 16 - UAS",
+  "Praktikum",
+  "Studi Kasus",
+];
 
 export default function KnowledgeAdminPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -298,18 +326,24 @@ export default function KnowledgeAdminPage() {
           </Card>
           <div className="flex items-center justify-end">
             <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <select
-                value={selectedCourseId}
-                onChange={(e) => setSelectedCourseId(e.target.value)}
-                className="h-11 w-full rounded-md border border-border/50 bg-card px-3 text-sm font-medium outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20 sm:max-w-xs"
+              <Select
+                value={selectedCourseId || "all"}
+                onValueChange={(value) =>
+                  setSelectedCourseId(value === "all" ? "" : value)
+                }
               >
-                <option value="">Semua Course</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.code} - {course.title}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-11 w-full bg-card font-medium sm:max-w-xs">
+                  <SelectValue placeholder="Semua Mata Kuliah" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Mata Kuliah</SelectItem>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.code} - {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <div className="relative w-full sm:max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -333,10 +367,10 @@ export default function KnowledgeAdminPage() {
                   Judul Materi
                 </TableHead>
                 <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                  Course
+                  Mata Kuliah
                 </TableHead>
                 <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                  Modul
+                  Topik/Modul
                 </TableHead>
                 <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-center">
                   Chunks
@@ -399,8 +433,8 @@ export default function KnowledgeAdminPage() {
                           <span className="text-sm font-black tracking-tight">
                             {item.title}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-bold tracking-tighter">
-                            TERUNGGAH: {formatDate(item.createdAt)}
+                          <span className="text-[10px] text-muted-foreground font-semibold">
+                            MATA KULIAH: {item.course ? `${item.course.code} - ${item.course.title}` : "Tanpa Mata Kuliah"}
                           </span>
                         </div>
                       </div>
@@ -408,9 +442,11 @@ export default function KnowledgeAdminPage() {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className="font-bold px-2.5 py-0.5 text-[10px] uppercase"
+                        className="max-w-[280px] truncate font-bold px-2.5 py-0.5 text-[10px]"
                       >
-                        {item.course?.code ?? "Tanpa Course"}
+                        {item.course
+                          ? `${item.course.code} - ${item.course.title}`
+                          : "Tanpa Mata Kuliah"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -497,6 +533,9 @@ export default function KnowledgeAdminPage() {
                     <p className="truncate text-sm font-black tracking-tight">
                       {item.title}
                     </p>
+                    <p className="mt-1 truncate text-[11px] font-semibold text-muted-foreground">
+                      Mata Kuliah: {item.course ? `${item.course.code} - ${item.course.title}` : "Tanpa Mata Kuliah"}
+                    </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       {formatDate(item.createdAt)}
                     </p>
@@ -509,9 +548,11 @@ export default function KnowledgeAdminPage() {
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className="px-2.5 py-0.5 text-[10px] font-bold uppercase"
+                      className="max-w-[220px] truncate px-2.5 py-0.5 text-[10px] font-bold"
                     >
-                      {item.course?.code ?? "Tanpa Course"}
+                      {item.course
+                        ? `${item.course.code} - ${item.course.title}`
+                        : "Tanpa Mata Kuliah"}
                     </Badge>
                     <Badge
                       variant="secondary"
@@ -563,22 +604,33 @@ export default function KnowledgeAdminPage() {
           <form onSubmit={saveMaterial} className="space-y-4">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                Course (Opsional)
+                Mata Kuliah (Opsional)
               </label>
-              <select
-                value={form.courseId}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, courseId: e.target.value }))
+              <Select
+                value={form.courseId || "none"}
+                onValueChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    courseId: value === "none" ? "" : value,
+                  }))
                 }
-                className="h-11 w-full rounded-md border-none bg-muted/30 px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/20"
               >
-                <option value="">Tanpa Course</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.code} - {course.title}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-11 border border-border/70 bg-background focus:ring-primary/20">
+                  <SelectValue placeholder="Pilih mata kuliah" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tanpa Mata Kuliah</SelectItem>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.code} - {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="pl-1 text-[11px] text-muted-foreground">
+                Bank Materi dikelompokkan per mata kuliah. Kelas publik tetap
+                dikelola terpisah.
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -591,7 +643,7 @@ export default function KnowledgeAdminPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
+                className="h-11 border border-border/70 bg-background focus-visible:ring-primary/20"
                 placeholder="Contoh: Dasar Pemrograman Python"
               />
             </div>
@@ -599,17 +651,45 @@ export default function KnowledgeAdminPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                  Modul
+                  Topik/Modul
                 </label>
-                <Input
-                  required
-                  value={form.module}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, module: e.target.value }))
-                  }
-                  className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
-                  placeholder="Contoh: Modul 1"
-                />
+                <div className="rounded-md border border-border/70 bg-background p-3 space-y-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
+                    Pilih dari daftar (opsional)
+                  </p>
+                  <Select
+                    value={MODULE_SUGGESTIONS.includes(form.module) ? form.module : "__none"}
+                    onValueChange={(value) => {
+                      if (value !== "__none") {
+                        setForm((prev) => ({ ...prev, module: value }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-10 border border-border/70 bg-background">
+                      <SelectValue placeholder="Pilih topik/modul" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Tidak pilih (isi manual)</SelectItem>
+                      {MODULE_SUGGESTIONS.map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] font-semibold text-muted-foreground pt-1">
+                    Atau isi sendiri
+                  </p>
+                  <Input
+                    required
+                    value={form.module}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, module: e.target.value }))
+                    }
+                    className="h-11 border border-border/70 bg-background"
+                    placeholder="Contoh: Pertemuan 3 - Normalisasi Database"
+                  />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
@@ -620,7 +700,7 @@ export default function KnowledgeAdminPage() {
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, page: e.target.value }))
                   }
-                  className="h-11 border-none bg-muted/30 focus-visible:ring-primary/20"
+                  className="h-11 border border-border/70 bg-background focus-visible:ring-primary/20"
                   placeholder="Contoh: 12-20"
                 />
               </div>
@@ -637,7 +717,7 @@ export default function KnowledgeAdminPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, content: e.target.value }))
                 }
-                className="w-full min-h-56 rounded-md border-none bg-muted/30 p-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
+                className="w-full min-h-56 rounded-md border border-border/70 bg-background p-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
                 placeholder="Tempelkan konten materi lengkap di sini agar dapat diproses untuk RAG..."
               />
             </div>
