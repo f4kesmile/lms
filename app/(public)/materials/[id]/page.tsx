@@ -116,7 +116,9 @@ export default async function MaterialDetailPage({
             </div>
             <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
               {material.course && (
-                <span className="pill">Mata Kuliah: {material.course.code}</span>
+                <span className="pill">
+                  Mata Kuliah: {material.course.code}
+                </span>
               )}
               <span className="pill">Modul: {material.module}</span>
               {material.page && (

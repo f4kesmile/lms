@@ -136,10 +136,12 @@ export default function AdminCoursesPage() {
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [showYearModal, setShowYearModal] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
-  const [editingSubject, setEditingSubject] = useState<SubjectCourseItem | null>(null);
+  const [editingSubject, setEditingSubject] =
+    useState<SubjectCourseItem | null>(null);
 
   const [classForm, setClassForm] = useState<ClassForm>(EMPTY_CLASS_FORM);
-  const [subjectForm, setSubjectForm] = useState<SubjectForm>(EMPTY_SUBJECT_FORM);
+  const [subjectForm, setSubjectForm] =
+    useState<SubjectForm>(EMPTY_SUBJECT_FORM);
   const [yearForm, setYearForm] = useState({
     name: "",
     fromYear: "",
@@ -718,13 +720,20 @@ export default function AdminCoursesPage() {
                               {item.code} - {item.title}
                             </p>
                             <p className="truncate text-[11px] text-muted-foreground">
-                              {item.description || "Belum ada deskripsi mata kuliah."}
+                              {item.description ||
+                                "Belum ada deskripsi mata kuliah."}
                             </p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
-                        <Badge variant={item.status === CourseStatus.published ? "default" : "outline"}>
+                        <Badge
+                          variant={
+                            item.status === CourseStatus.published
+                              ? "default"
+                              : "outline"
+                          }
+                        >
                           {item.status === CourseStatus.published
                             ? "Dipublikasikan"
                             : item.status === CourseStatus.draft
@@ -875,7 +884,7 @@ export default function AdminCoursesPage() {
                       <p className="text-sm font-semibold">{year.name}</p>
                     </TableCell>
                     <TableCell className="py-4 text-sm font-semibold text-muted-foreground">
-                      {new Date(year.fromYear).getFullYear()} - {" "}
+                      {new Date(year.fromYear).getFullYear()} -{" "}
                       {new Date(year.toYear).getFullYear()}
                     </TableCell>
                     <TableCell className="py-4 text-center">
@@ -935,7 +944,8 @@ export default function AdminCoursesPage() {
               {editingSubject ? "Sunting Mata Kuliah" : "Mata Kuliah Baru"}
             </DialogTitle>
             <DialogDescription className="text-sm font-medium">
-              Mata kuliah ini akan menjadi pengelompokan utama untuk Bank Materi dan referensi AI.
+              Mata kuliah ini akan menjadi pengelompokan utama untuk Bank Materi
+              dan referensi AI.
             </DialogDescription>
           </DialogHeader>
 
@@ -949,7 +959,10 @@ export default function AdminCoursesPage() {
                   required
                   value={subjectForm.code}
                   onChange={(e) =>
-                    setSubjectForm((prev) => ({ ...prev, code: e.target.value }))
+                    setSubjectForm((prev) => ({
+                      ...prev,
+                      code: e.target.value,
+                    }))
                   }
                   className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
                   placeholder="Contoh: IF301"
@@ -969,9 +982,13 @@ export default function AdminCoursesPage() {
                     <SelectValue placeholder="Pilih status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={CourseStatus.published}>Dipublikasikan</SelectItem>
+                    <SelectItem value={CourseStatus.published}>
+                      Dipublikasikan
+                    </SelectItem>
                     <SelectItem value={CourseStatus.draft}>Draft</SelectItem>
-                    <SelectItem value={CourseStatus.archived}>Diarsipkan</SelectItem>
+                    <SelectItem value={CourseStatus.archived}>
+                      Diarsipkan
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -999,7 +1016,10 @@ export default function AdminCoursesPage() {
               <textarea
                 value={subjectForm.description}
                 onChange={(e) =>
-                  setSubjectForm((prev) => ({ ...prev, description: e.target.value }))
+                  setSubjectForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
                 }
                 className="min-h-24 w-full rounded-md border border-border bg-background p-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary/30"
                 placeholder="Ringkasan singkat tentang mata kuliah ini."
@@ -1035,7 +1055,11 @@ export default function AdminCoursesPage() {
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={loading} className="min-w-[140px] font-bold">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="min-w-[140px] font-bold"
+              >
                 {loading
                   ? "Menyimpan..."
                   : editingSubject
@@ -1060,7 +1084,8 @@ export default function AdminCoursesPage() {
               {editingClass ? "Sunting Kelas" : "Kelas Baru"}
             </DialogTitle>
             <DialogDescription className="text-sm font-medium">
-              Kelas adalah wadah operasional per periode akademik untuk mahasiswa dan dosen.
+              Kelas adalah wadah operasional per periode akademik untuk
+              mahasiswa dan dosen.
             </DialogDescription>
           </DialogHeader>
 
@@ -1162,7 +1187,11 @@ export default function AdminCoursesPage() {
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={loading} className="min-w-[120px] font-bold">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="min-w-[120px] font-bold"
+              >
                 {loading
                   ? "Menyimpan..."
                   : editingClass
@@ -1210,7 +1239,10 @@ export default function AdminCoursesPage() {
                   required
                   value={yearForm.fromYear}
                   onChange={(e) =>
-                    setYearForm((prev) => ({ ...prev, fromYear: e.target.value }))
+                    setYearForm((prev) => ({
+                      ...prev,
+                      fromYear: e.target.value,
+                    }))
                   }
                   className="h-11 border border-border bg-background focus-visible:ring-2 focus-visible:ring-primary/30"
                 />
@@ -1235,13 +1267,20 @@ export default function AdminCoursesPage() {
                 type="checkbox"
                 checked={yearForm.isCurrent}
                 onChange={(e) =>
-                  setYearForm((prev) => ({ ...prev, isCurrent: e.target.checked }))
+                  setYearForm((prev) => ({
+                    ...prev,
+                    isCurrent: e.target.checked,
+                  }))
                 }
               />
               Jadikan periode aktif
             </label>
             <div className="flex items-center justify-end gap-3 pt-4">
-              <Button type="button" variant="ghost" onClick={() => setShowYearModal(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowYearModal(false)}
+              >
                 Batal
               </Button>
               <Button type="submit" disabled={loading} className="font-bold">
@@ -1262,7 +1301,9 @@ export default function AdminCoursesPage() {
             <DialogDescription>{notice.message}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end">
-            <Button onClick={() => setNotice((prev) => ({ ...prev, open: false }))}>
+            <Button
+              onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
+            >
               Tutup
             </Button>
           </div>
@@ -1272,7 +1313,11 @@ export default function AdminCoursesPage() {
       <Dialog
         open={confirmState.open}
         onOpenChange={(open) =>
-          setConfirmState((prev) => ({ ...prev, open, onConfirm: open ? prev.onConfirm : null }))
+          setConfirmState((prev) => ({
+            ...prev,
+            open,
+            onConfirm: open ? prev.onConfirm : null,
+          }))
         }
       >
         <DialogContent className="sm:max-w-md">
@@ -1284,7 +1329,12 @@ export default function AdminCoursesPage() {
             <Button
               variant="ghost"
               onClick={() =>
-                setConfirmState({ open: false, title: "", message: "", onConfirm: null })
+                setConfirmState({
+                  open: false,
+                  title: "",
+                  message: "",
+                  onConfirm: null,
+                })
               }
             >
               Batal
@@ -1293,7 +1343,12 @@ export default function AdminCoursesPage() {
               variant="destructive"
               onClick={async () => {
                 await confirmState.onConfirm?.();
-                setConfirmState({ open: false, title: "", message: "", onConfirm: null });
+                setConfirmState({
+                  open: false,
+                  title: "",
+                  message: "",
+                  onConfirm: null,
+                });
               }}
             >
               Ya, hapus

@@ -8,22 +8,60 @@ export function Footer() {
           {/* Brand */}
           <div className="footer-brand">
             <Link href="/" className="brand" style={{ marginBottom: "1rem" }}>
-              <div className="brand-icon" style={{ borderRadius: 6, width: 28, height: 28, transform: "rotate(45deg)", background: "var(--primary)", position: "relative" }}>
-                <div style={{ position: "absolute", top: 5, left: 5, right: 5, bottom: 5, background: "var(--bg-dark)", transform: "rotate(-45deg)" }} />
+              <div
+                className="brand-icon"
+                style={{
+                  borderRadius: 6,
+                  width: 28,
+                  height: 28,
+                  transform: "rotate(45deg)",
+                  background: "var(--primary)",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 5,
+                    left: 5,
+                    right: 5,
+                    bottom: 5,
+                    background: "var(--bg-dark)",
+                    transform: "rotate(-45deg)",
+                  }}
+                />
               </div>
-              <span className="brand-text" style={{ color: "var(--text-main)", fontSize: "1.2rem" }}>
-                Uni<span style={{ color: "var(--text-soft)", fontWeight: 300 }}>Course</span>
+              <span
+                className="brand-text"
+                style={{ color: "var(--text-main)", fontSize: "1.2rem" }}
+              >
+                Uni
+                <span style={{ color: "var(--text-soft)", fontWeight: 300 }}>
+                  Course
+                </span>
               </span>
             </Link>
             <p className="footer-desc">
-              Platform pembelajaran terbuka yang menghubungkan mahasiswa dengan pengetahuan terbaik dunia. Belajar tanpa batas, kapan saja, di mana saja.
+              Platform pembelajaran terbuka yang menghubungkan mahasiswa dengan
+              pengetahuan terbaik dunia. Belajar tanpa batas, kapan saja, di
+              mana saja.
             </p>
             <div className="footer-socials">
               <a href="#" aria-label="WhatsApp" className="footer-social-btn">
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chat</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 18 }}
+                >
+                  chat
+                </span>
               </a>
               <a href="#" aria-label="Share" className="footer-social-btn">
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>share</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 18 }}
+                >
+                  share
+                </span>
               </a>
             </div>
           </div>
@@ -55,7 +93,10 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© 2024 UniCourse University. Seluruh hak cipta dilindungi undang-undang.</p>
+          <p>
+            © 2024 UniCourse University. Seluruh hak cipta dilindungi
+            undang-undang.
+          </p>
         </div>
       </div>
     </footer>

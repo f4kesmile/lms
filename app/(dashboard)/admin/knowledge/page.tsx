@@ -434,7 +434,10 @@ export default function KnowledgeAdminPage() {
                             {item.title}
                           </span>
                           <span className="text-[10px] text-muted-foreground font-semibold">
-                            MATA KULIAH: {item.course ? `${item.course.code} - ${item.course.title}` : "Tanpa Mata Kuliah"}
+                            MATA KULIAH:{" "}
+                            {item.course
+                              ? `${item.course.code} - ${item.course.title}`
+                              : "Tanpa Mata Kuliah"}
                           </span>
                         </div>
                       </div>
@@ -534,7 +537,10 @@ export default function KnowledgeAdminPage() {
                       {item.title}
                     </p>
                     <p className="mt-1 truncate text-[11px] font-semibold text-muted-foreground">
-                      Mata Kuliah: {item.course ? `${item.course.code} - ${item.course.title}` : "Tanpa Mata Kuliah"}
+                      Mata Kuliah:{" "}
+                      {item.course
+                        ? `${item.course.code} - ${item.course.title}`
+                        : "Tanpa Mata Kuliah"}
                     </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       {formatDate(item.createdAt)}
@@ -658,7 +664,11 @@ export default function KnowledgeAdminPage() {
                     Pilih dari daftar (opsional)
                   </p>
                   <Select
-                    value={MODULE_SUGGESTIONS.includes(form.module) ? form.module : "__none"}
+                    value={
+                      MODULE_SUGGESTIONS.includes(form.module)
+                        ? form.module
+                        : "__none"
+                    }
                     onValueChange={(value) => {
                       if (value !== "__none") {
                         setForm((prev) => ({ ...prev, module: value }));
@@ -669,7 +679,9 @@ export default function KnowledgeAdminPage() {
                       <SelectValue placeholder="Pilih topik/modul" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none">Tidak pilih (isi manual)</SelectItem>
+                      <SelectItem value="__none">
+                        Tidak pilih (isi manual)
+                      </SelectItem>
                       {MODULE_SUGGESTIONS.map((item) => (
                         <SelectItem key={item} value={item}>
                           {item}

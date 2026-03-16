@@ -58,8 +58,10 @@ export default async function CourseCatalogPage({
     <>
       <Navbar />
 
-      <main className="app-shell" style={{ display: "grid", gap: "2.5rem", paddingBottom: "5rem" }}>
-
+      <main
+        className="app-shell"
+        style={{ display: "grid", gap: "2.5rem", paddingBottom: "5rem" }}
+      >
         {/* ===== HEADER ===== */}
         <div className="catalog-header">
           <h1>Eksplorasi Kelas Akademik</h1>
@@ -71,7 +73,16 @@ export default async function CourseCatalogPage({
 
         {/* ===== SEARCH + FILTERS ===== */}
         <div>
-          <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: "0.5rem" }}>
+          <p
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--text-dim)",
+              marginBottom: "0.5rem",
+            }}
+          >
             CARI MATERI
           </p>
           <div className="catalog-search-row">
@@ -80,10 +91,18 @@ export default async function CourseCatalogPage({
               <CourseSearch initialQuery={q} />
             </div>
             <div className="catalog-filters">
-              <button className="filter-pill active" type="button">Semua</button>
-              <button className="filter-pill" type="button">Teknologi</button>
-              <button className="filter-pill" type="button">Bisnis</button>
-              <button className="filter-pill" type="button">Humaniora</button>
+              <button className="filter-pill active" type="button">
+                Semua
+              </button>
+              <button className="filter-pill" type="button">
+                Teknologi
+              </button>
+              <button className="filter-pill" type="button">
+                Bisnis
+              </button>
+              <button className="filter-pill" type="button">
+                Humaniora
+              </button>
             </div>
           </div>
         </div>
@@ -91,7 +110,14 @@ export default async function CourseCatalogPage({
         {/* ===== CLASS GRID ===== */}
         <section className="course-grid">
           {courses.length === 0 ? (
-            <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem", color: "var(--text-dim)" }}>
+            <p
+              style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "3rem",
+                color: "var(--text-dim)",
+              }}
+            >
               Belum ada kelas publik untuk saat ini.
             </p>
           ) : (
@@ -101,26 +127,57 @@ export default async function CourseCatalogPage({
               const studentCount = userId ? cls.students.length : 0;
               return (
                 <article key={cls.id} className="catalog-card">
-                  <div className="catalog-card-img" style={{ background: gradients[idx % gradients.length] }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 56, color: "rgba(255,255,255,0.12)" }}>
-                      {["science", "psychology", "terminal", "language", "palette", "code"][idx % 6]}
+                  <div
+                    className="catalog-card-img"
+                    style={{ background: gradients[idx % gradients.length] }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 56, color: "rgba(255,255,255,0.12)" }}
+                    >
+                      {
+                        [
+                          "science",
+                          "psychology",
+                          "terminal",
+                          "language",
+                          "palette",
+                          "code",
+                        ][idx % 6]
+                      }
                     </span>
-                    {idx === 0 && <span className="card-badge">TERPOPULER</span>}
+                    {idx === 0 && (
+                      <span className="card-badge">TERPOPULER</span>
+                    )}
                   </div>
                   <div className="catalog-card-body">
-                    <p className="catalog-card-category">{subjectName.substring(0, 20)}</p>
+                    <p className="catalog-card-category">
+                      {subjectName.substring(0, 20)}
+                    </p>
                     <h3 className="catalog-card-title">{cls.name}</h3>
                     <div className="catalog-card-instructor">
-                      <div className="avatar-tiny">{getInitials(teacherName)}</div>
+                      <div className="avatar-tiny">
+                        {getInitials(teacherName)}
+                      </div>
                       {teacherName}
                     </div>
                     <div className="catalog-card-meta">
                       <span>
-                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>schedule</span>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 14 }}
+                        >
+                          schedule
+                        </span>
                         12 Minggu
                       </span>
                       <span>
-                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>group</span>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 14 }}
+                        >
+                          group
+                        </span>
                         {studentCount > 0 ? `${studentCount} Siswa` : "Baru"}
                       </span>
                     </div>
@@ -143,7 +200,12 @@ export default async function CourseCatalogPage({
         {courses.length > 0 && (
           <button className="load-more-btn" type="button">
             Muat Lebih Banyak
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>expand_more</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 18 }}
+            >
+              expand_more
+            </span>
           </button>
         )}
       </main>
