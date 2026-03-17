@@ -4,7 +4,8 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AppToaster } from "@/components/shared/AppToaster";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
-import { FloatingChatbot } from "@/features/chatbot/FloatingChatbot";
+import { ChatbotVisibilityGuard } from "@/features/chatbot/ChatbotVisibilityGuard";
+import { SITE_CONFIG } from "@/lib/constants";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -13,8 +14,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "EduNexus – LMS Pintar",
-  description: "Platform LMS cerdas dengan AI chatbot akademik",
+  title: SITE_CONFIG.name,
+  description: SITE_CONFIG.description,
 };
 
 export default function RootLayout({
@@ -40,7 +41,7 @@ export default function RootLayout({
           {children}
           <AppToaster />
           <Suspense fallback={null}>
-            <FloatingChatbot />
+            <ChatbotVisibilityGuard />
           </Suspense>
         </ThemeProvider>
       </body>

@@ -76,10 +76,10 @@ export const AdminLayout = ({
               </div>
               <div className="flex flex-col gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
                 <span className="font-bold tracking-tight text-sidebar-foreground">
-                  {SITE_CONFIG.shortName} Admin
+                  {SITE_CONFIG.name} Admin
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 font-bold">
-                  University LMS
+                  {SITE_CONFIG.adminSubtitle}
                 </span>
               </div>
             </div>

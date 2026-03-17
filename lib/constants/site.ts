@@ -1,7 +1,16 @@
 export const SITE_CONFIG = {
-  name: "EduNexus",
-  shortName: "LMS",
-  description: "Platform E-Learning Universitas modern untuk masa depan pendidikan yang lebih baik dan interaktif dengan dukungan asisten AI.",
-  author: "EduNexus Team",
+  name: "Nusa Belajar",
+  shortName: "Nusa",
+  accentName: "Belajar",
+  description:
+    "Platform pembelajaran cerdas untuk kelas, materi, dan pendampingan akademik berbasis AI.",
+  author: "Tim Nusa Belajar",
+  supportEmail: "halo@nusabelajar.id",
+  assistantName: "Asisten Nusa Belajar",
+  adminSubtitle: "Platform Pembelajaran",
   year: new Date().getFullYear(),
 };
+
+export function getCurrentYear() {
+  return new Date().getFullYear();
+}

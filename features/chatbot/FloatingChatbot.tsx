@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { SITE_CONFIG } from "@/lib/constants";
 
 type Source = {
   id: string;
@@ -499,7 +500,7 @@ export const FloatingChatbot = () => {
                 letterSpacing: "-0.01em",
               }}
             >
-              UniLMS Chatbot
+              {SITE_CONFIG.assistantName}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
