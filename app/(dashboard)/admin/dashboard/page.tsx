@@ -106,18 +106,7 @@ export default function AdminDashboardPage() {
     : ["0", "0", "0", "0%"];
 
   return (
-    <AdminLayout
-      title="Ringkasan Eksekutif"
-      headerActions={
-        <Button
-          className="font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
-          size="sm"
-        >
-          <Plus className="mr-1 size-4" />
-          Kelas Baru
-        </Button>
-      }
-    >
+    <AdminLayout title="Ringkasan Eksekutif">
       <div className="flex flex-col gap-8">
         {/* Stat Cards Row */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -343,8 +332,10 @@ export default function AdminDashboardPage() {
                     {metricValues[1]} kursus
                   </span>{" "}
                   berjalan. Efisiensi penggunaan AI bulan ini mencapai{" "}
-                  <span className="font-black !text-white">{metricValues[3]}</span>, menunjukkan adopsi fitur yang sangat
-                  positif.
+                  <span className="font-black !text-white">
+                    {metricValues[3]}
+                  </span>
+                  , menunjukkan adopsi fitur yang sangat positif.
                 </p>
                 <Button
                   variant="outline"

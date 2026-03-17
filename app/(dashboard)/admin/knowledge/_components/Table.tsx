@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils/index";
 
-
 interface TableProps {
   materials: Material[];
   loading: boolean;
@@ -38,7 +37,7 @@ export function Table({
 }: TableProps) {
   return (
     <Card className="hidden overflow-hidden border-none bg-card shadow-xl lg:block">
-      <div className="relative overflow-auto max-h-[65dvh]">
+      <div className="relative overflow-x-auto overflow-y-visible">
         <UITable>
           <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-md">
             <TableRow className="border-none hover:bg-transparent">

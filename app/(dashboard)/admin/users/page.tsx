@@ -7,7 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { Filters } from "./_components/Filters";
 import { Table } from "./_components/Table";
 import { List } from "./_components/List";
-import { Pagination } from "../_components/Pagination";
+import { DataViewportControls } from "../_components/DataViewportControls";
 
 type UserItem = {
   id: string;
@@ -17,14 +17,14 @@ type UserItem = {
   createdAt: string;
 };
 
-type UsersResponse = { 
+type UsersResponse = {
   users: UserItem[];
   pagination: {
     total: number;
     pages: number;
     currentPage: number;
     limit: number;
-  }
+  };
 };
 type UserRole = UserItem["role"];
 
@@ -58,12 +58,15 @@ export default function AdminUsersPage() {
   const [role, setRole] = useState<"all" | UserRole>("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Pagination State
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+
+  const startItem = total === 0 ? 0 : (page - 1) * limit + 1;
+  const endItem = total === 0 ? 0 : Math.min(page * limit, total);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -73,9 +76,9 @@ export default function AdminUsersPage() {
       setError(null);
 
       try {
-        const params = new URLSearchParams({ 
-          page: page.toString(), 
-          limit: limit.toString() 
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
         });
         if (search.trim()) params.set("search", search.trim());
         if (role !== "all") params.set("role", role);
@@ -145,7 +148,13 @@ export default function AdminUsersPage() {
 
   return (
     <AdminLayout title="Manajemen Sivitas Akademika">
-      <Suspense fallback={<div className="h-[60dvh] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <Suspense
+        fallback={
+          <div className="h-[60dvh] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }
+      >
         <div className="flex flex-col gap-6">
           <Filters
             search={search}
@@ -153,8 +162,6 @@ export default function AdminUsersPage() {
             role={role}
             setRole={setRole}
             totalUsers={total}
-            limit={limit}
-            setLimit={setLimit}
           />
 
           <Table
@@ -173,11 +180,17 @@ export default function AdminUsersPage() {
             handleRoleChange={handleRoleChange}
           />
 
-          <Pagination
-             currentPage={page}
-             totalPages={totalPages}
-             onPageChange={setPage}
-             loading={loading}
+          <DataViewportControls
+            startItem={startItem}
+            endItem={endItem}
+            totalItems={total}
+            rowsPerPage={limit}
+            onRowsPerPageChange={setLimit}
+            entityLabel="pengguna"
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            loading={loading}
           />
         </div>
       </Suspense>

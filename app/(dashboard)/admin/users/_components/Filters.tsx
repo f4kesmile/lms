@@ -19,8 +19,6 @@ interface FiltersProps {
   role: "all" | UserRole;
   setRole: (val: "all" | UserRole) => void;
   totalUsers: number;
-  limit: number;
-  setLimit: (val: number) => void;
 }
 
 export function Filters({
@@ -29,12 +27,10 @@ export function Filters({
   role,
   setRole,
   totalUsers,
-  limit,
-  setLimit,
 }: FiltersProps) {
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-2xl">
+      <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-xl">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
@@ -52,25 +48,18 @@ export function Filters({
             <SelectValue placeholder="Filter Role" />
           </SelectTrigger>
           <SelectContent className="rounded-xl border-border/50">
-            <SelectItem value="all" className="rounded-lg">Semua Role</SelectItem>
-            <SelectItem value="admin" className="rounded-lg">Admin</SelectItem>
-            <SelectItem value="dosen" className="rounded-lg">Dosen</SelectItem>
-            <SelectItem value="mahasiswa" className="rounded-lg">Mahasiswa</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={limit.toString()}
-          onValueChange={(val) => setLimit(parseInt(val))}
-        >
-          <SelectTrigger className="h-11 w-full border-border/20 bg-muted/30 text-[11px] font-black uppercase tracking-wider sm:w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-border/50">
-            <SelectItem value="10" className="rounded-lg text-[10px] font-black">10 Baris</SelectItem>
-            <SelectItem value="25" className="rounded-lg text-[10px] font-black">25 Baris</SelectItem>
-            <SelectItem value="50" className="rounded-lg text-[10px] font-black">50 Baris</SelectItem>
-            <SelectItem value="100" className="rounded-lg text-[10px] font-black">100 Baris</SelectItem>
+            <SelectItem value="all" className="rounded-lg">
+              Semua Role
+            </SelectItem>
+            <SelectItem value="admin" className="rounded-lg">
+              Admin
+            </SelectItem>
+            <SelectItem value="dosen" className="rounded-lg">
+              Dosen
+            </SelectItem>
+            <SelectItem value="mahasiswa" className="rounded-lg">
+              Mahasiswa
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

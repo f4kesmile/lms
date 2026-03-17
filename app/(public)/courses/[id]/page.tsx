@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import Link from "next/link";
+import type { Route } from "next";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserIdFromCookie } from "@/lib/auth";
 import EnrollButton from "@/features/courses/EnrollButton";
@@ -17,11 +18,20 @@ export default async function CourseDetailPage({
       OR: [{ id }, { name: { contains: id, mode: "insensitive" } }],
     },
     include: {
-      classTeacher: { select: { name: true } },
       students: { select: { userId: true } },
       subjects: {
         include: {
-          subject: { select: { name: true, code: true } },
+          subject: {
+            select: {
+              name: true,
+              code: true,
+              teachers: {
+                select: {
+                  user: { select: { name: true } },
+                },
+              },
+            },
+          },
         },
       },
       academicYear: { select: { name: true } },
@@ -35,12 +45,89 @@ export default async function CourseDetailPage({
 
   const title = course?.name ?? "Kelas Tidak Ditemukan";
   const year = course?.academicYear?.name ?? "Tahun Ajaran Aktif";
-  const teacher = course?.classTeacher?.name ?? "Belum ada Dosen";
+  const teacherNames = Array.from(
+    new Set(
+      (course?.subjects ?? [])
+        .flatMap((item) => item.subject.teachers)
+        .map((item) => item.user.name)
+        .filter(Boolean),
+    ),
+  );
+  const teacher =
+    teacherNames.length > 0
+      ? teacherNames.join(", ")
+      : "Belum ada dosen pengampu mata kuliah";
   const studentCount = course?.students.length ?? 0;
   const capacity = course?.capacity ?? 0;
   const subjectList: Array<{ name: string; code: string }> =
-    course?.subjects.map((item) => item.subject) ?? [];
+    course?.subjects.map((item) => ({
+      name: item.subject.name,
+      code: item.subject.code,
+    })) ?? [];
   const isOpen = studentCount < capacity;
+
+  const subjectCodes = subjectList
+    .map((subject) => subject.code)
+    .filter(Boolean);
+  const subjectNames = subjectList
+    .map((subject) => subject.name)
+    .filter(Boolean);
+
+  const courseWithMaterials =
+    subjectList.length > 0
+      ? await prisma.course.findMany({
+          where: {
+            OR: [
+              { code: { in: subjectCodes } },
+              { title: { in: subjectNames } },
+            ],
+          },
+          select: {
+            code: true,
+            title: true,
+            materials: {
+              select: {
+                id: true,
+                title: true,
+                module: true,
+              },
+              orderBy: [{ updatedAt: "desc" }],
+              take: 1,
+            },
+          },
+        })
+      : [];
+
+  const materialByCode = new Map(
+    courseWithMaterials
+      .filter((courseItem) => courseItem.materials[0])
+      .map((courseItem) => [courseItem.code, courseItem.materials[0]]),
+  );
+
+  const materialByTitle = new Map(
+    courseWithMaterials
+      .filter((courseItem) => courseItem.materials[0])
+      .map((courseItem) => [
+        courseItem.title.toLowerCase(),
+        courseItem.materials[0],
+      ]),
+  );
+
+  const subjectMaterialLinks = subjectList
+    .map((subject) => {
+      const material =
+        materialByCode.get(subject.code) ||
+        materialByTitle.get(subject.name.toLowerCase()) ||
+        null;
+
+      return {
+        ...subject,
+        material,
+      };
+    })
+    .filter((item) => item.material);
+
+  const featuredMaterial = subjectMaterialLinks[0]?.material ?? null;
 
   return (
     <>
@@ -55,7 +142,7 @@ export default async function CourseDetailPage({
             Beranda
           </Link>
           <span>›</span>
-          <Link href="/student">Kelas Saya</Link>
+          <Link href="/courses">Kelas Saya</Link>
           <span>›</span>
           <span style={{ color: "var(--text-main)" }}>{title}</span>
         </nav>
@@ -109,7 +196,9 @@ export default async function CourseDetailPage({
                     >
                       person
                     </span>
-                    {teacher}
+                    {teacherNames.length > 0
+                      ? `${teacherNames.length} Dosen Pengampu`
+                      : "Belum ada Dosen Pengampu"}
                   </span>
                   <span className="pill">
                     <span
@@ -138,8 +227,8 @@ export default async function CourseDetailPage({
               <h2 className="title-lg">Informasi Kelas</h2>
               <p className="text-muted" style={{ lineHeight: 1.7 }}>
                 Kelas <strong>{title}</strong> merupakan bagian dari tahun
-                ajaran {year}. Kelas ini diampu oleh {teacher} dan dapat
-                menampung hingga {capacity} mahasiswa.
+                ajaran {year}. Mata kuliah pada kelas ini diampu oleh {teacher}
+                dan dapat menampung hingga {capacity} mahasiswa.
               </p>
             </section>
 
@@ -148,61 +237,131 @@ export default async function CourseDetailPage({
               <h2 className="title-lg">Daftar Mata Pelajaran</h2>
               <div style={{ display: "grid", gap: "0.5rem" }}>
                 {subjectList.length > 0 ? (
-                  subjectList.map((subject, idx: number) => (
-                    <div
-                      key={subject.code}
-                      className="row"
-                      style={{
-                        padding: "1rem",
-                        border: "1px solid var(--border-primary)",
-                        borderRadius: "var(--radius-sm)",
-                        background: "var(--bg-card)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          background: "rgba(190,239,0,0.12)",
-                          color: "var(--primary)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {idx + 1}
-                      </div>
-                      <div
-                        style={{
-                          flex: 1,
-                          display: "flex",
-                          flexDirection: "column",
-                        }}
-                      >
-                        <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>
-                          {subject.name}
-                        </span>
-                        <span
+                  subjectList.map((subject, idx: number) => {
+                    const material =
+                      materialByCode.get(subject.code) ||
+                      materialByTitle.get(subject.name.toLowerCase()) ||
+                      null;
+
+                    if (material) {
+                      return (
+                        <Link
+                          key={subject.code}
+                          href={`/materials/${material.id}` as Route}
+                          className="row"
                           style={{
-                            fontSize: "0.75rem",
-                            color: "var(--text-dim)",
+                            padding: "1rem",
+                            border: "1px solid var(--border-primary)",
+                            borderRadius: "var(--radius-sm)",
+                            background: "var(--bg-card)",
+                            textDecoration: "none",
+                            color: "inherit",
                           }}
                         >
-                          Kode: {subject.code}
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              background: "rgba(190,239,0,0.12)",
+                              color: "var(--primary)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {idx + 1}
+                          </div>
+                          <div
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <span
+                              style={{ fontWeight: 500, fontSize: "0.9rem" }}
+                            >
+                              {subject.name}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "var(--text-dim)",
+                              }}
+                            >
+                              Kode: {subject.code} · Buka materi
+                            </span>
+                          </div>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{ color: "var(--text-dim)", fontSize: 18 }}
+                          >
+                            chevron_right
+                          </span>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={subject.code}
+                        className="row"
+                        style={{
+                          padding: "1rem",
+                          border: "1px solid var(--border-primary)",
+                          borderRadius: "var(--radius-sm)",
+                          background: "var(--bg-card)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            background: "rgba(190,239,0,0.12)",
+                            color: "var(--primary)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "0.75rem",
+                            fontWeight: 700,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {idx + 1}
+                        </div>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                            {subject.name}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "0.75rem",
+                              color: "var(--text-dim)",
+                            }}
+                          >
+                            Kode: {subject.code} · Materi belum tersedia
+                          </span>
+                        </div>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ color: "var(--text-dim)", fontSize: 18 }}
+                        >
+                          chevron_right
                         </span>
                       </div>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ color: "var(--text-dim)", fontSize: 18 }}
-                      >
-                        chevron_right
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div
                     className="row"
@@ -273,6 +432,23 @@ export default async function CourseDetailPage({
                   isEnrolled={isEnrolled}
                   requiresKey={requiresKey}
                 />
+                {featuredMaterial && (
+                  <Link
+                    href={`/materials/${featuredMaterial.id}` as Route}
+                    className="btn-ghost"
+                    style={{
+                      width: "100%",
+                      fontSize: "0.85rem",
+                      padding: "0.5rem",
+                      borderColor: "var(--border-primary-strong)",
+                      color: "var(--text-main)",
+                      fontWeight: 700,
+                      textAlign: "center",
+                    }}
+                  >
+                    Buka Materi Kelas
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -281,20 +457,25 @@ export default async function CourseDetailPage({
               style={{ padding: "1.5rem", display: "grid", gap: "0.75rem" }}
             >
               <h3 style={{ fontWeight: 700 }}>Materi Pendukung</h3>
-              {subjectList.length > 0 ? (
-                subjectList.map((subject) => (
-                  <article className="doc-card" key={subject.code}>
+              {subjectMaterialLinks.length > 0 ? (
+                subjectMaterialLinks.map((subject) => (
+                  <Link
+                    key={`${subject.code}-${subject.material?.id}`}
+                    href={`/materials/${subject.material!.id}` as Route}
+                    className="doc-card"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
                     <strong style={{ fontSize: "0.9rem" }}>
                       {subject.name}
                     </strong>
                     <p className="text-dim" style={{ fontSize: "0.8rem" }}>
-                      Kode: {subject.code}
+                      Kode: {subject.code} · {subject.material!.module}
                     </p>
-                  </article>
+                  </Link>
                 ))
               ) : (
                 <p className="text-dim" style={{ fontSize: "0.85rem" }}>
-                  Belum ada materi tercantum.
+                  Belum ada materi yang terhubung untuk kelas ini.
                 </p>
               )}
             </div>

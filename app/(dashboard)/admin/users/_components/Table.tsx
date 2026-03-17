@@ -54,7 +54,7 @@ export function Table({
 }: TableProps) {
   return (
     <Card className="hidden overflow-hidden border-none bg-card shadow-xl animate-in fade-in duration-700 lg:block">
-      <div className="relative overflow-auto max-h-[60dvh]">
+      <div className="relative overflow-x-auto overflow-y-visible">
         <UITable>
           <TableHeader className="sticky top-0 z-10 bg-muted/90 backdrop-blur-md">
             <TableRow className="hover:bg-transparent border-none">
@@ -177,9 +177,7 @@ export function Table({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="mahasiswa">
-                              Mahasiswa
-                            </SelectItem>
+                            <SelectItem value="mahasiswa">Mahasiswa</SelectItem>
                             <SelectItem value="dosen">Dosen</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>

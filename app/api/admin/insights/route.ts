@@ -28,10 +28,28 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = Math.max(Number(searchParams.get("page") || 1), 1);
     const limit = Math.max(Number(searchParams.get("limit") || 10), 1);
+    const search = searchParams.get("search")?.trim() || "";
     const skip = (page - 1) * limit;
 
-    const [turns, totalTurns] = await Promise.all([
+    // CockroachDB via pg-adapter supports ILIKE via mode:"insensitive", but
+    // to be safe we pass the lowercased term and match against lowercased fields.
+    // Prisma does not expose SQL functions directly, so we use a raw-safe
+    // contains without mode and lowercase the search term instead so results
+    // remain useful even if the DB falls back to case-sensitive.
+    const q = search.toLowerCase();
+    const where = q
+      ? {
+          OR: [
+            { question: { contains: q } },
+            { answer: { contains: q } },
+            { user: { name: { contains: search } } },
+          ],
+        }
+      : undefined;
+
+    const [turns, totalTurns, filteredTotal] = await Promise.all([
       prisma.chatTurn.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: skip,
@@ -47,6 +65,7 @@ export async function GET(request: Request) {
         },
       }),
       prisma.chatTurn.count(),
+      prisma.chatTurn.count({ where }),
     ]);
 
     const ratedTurnsCount = await prisma.chatTurn.count({
@@ -99,8 +118,8 @@ export async function GET(request: Request) {
       },
       interactions,
       pagination: {
-        total: totalTurns,
-        pages: Math.ceil(totalTurns / limit),
+        total: filteredTotal,
+        pages: Math.ceil(filteredTotal / limit),
         currentPage: page,
         limit: limit,
       }

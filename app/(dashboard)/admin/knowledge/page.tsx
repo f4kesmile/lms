@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Plus, RefreshCw } from "lucide-react";
@@ -16,6 +16,7 @@ import { Filters } from "./_components/Filters";
 import { Table } from "./_components/Table";
 import { List } from "./_components/List";
 import { MaterialDialog } from "./_components/MaterialDialog";
+import { DataViewportControls } from "../_components/DataViewportControls";
 
 export type Material = {
   id: string;
@@ -82,6 +83,8 @@ export default function KnowledgeAdminPage() {
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [form, setForm] = useState<MaterialForm>(EMPTY_FORM);
@@ -152,6 +155,10 @@ export default function KnowledgeAdminPage() {
 
     return () => clearTimeout(timer);
   }, [search, selectedCourseId]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedCourseId, rowsPerPage]);
 
   function openCreateModal() {
     setEditingMaterial(null);
@@ -237,6 +244,18 @@ export default function KnowledgeAdminPage() {
     }
   }
 
+  const totalItems = materials.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedMaterials = useMemo(() => {
+    const start = (safePage - 1) * rowsPerPage;
+    return materials.slice(start, start + rowsPerPage);
+  }, [materials, safePage, rowsPerPage]);
+
+  const startItem = totalItems === 0 ? 0 : (safePage - 1) * rowsPerPage + 1;
+  const endItem =
+    totalItems === 0 ? 0 : Math.min(safePage * rowsPerPage, totalItems);
+
   return (
     <AdminLayout
       title="Basis Pengetahuan & Training AI"
@@ -269,7 +288,13 @@ export default function KnowledgeAdminPage() {
         </div>
       }
     >
-      <Suspense fallback={<div className="h-[60dvh] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <Suspense
+        fallback={
+          <div className="h-[60dvh] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }
+      >
         <div className="flex flex-col gap-6">
           <Filters
             materialsCount={materials.length}
@@ -281,7 +306,7 @@ export default function KnowledgeAdminPage() {
           />
 
           <Table
-            materials={materials}
+            materials={pagedMaterials}
             loading={loading}
             search={search}
             openCreateModal={openCreateModal}
@@ -290,12 +315,25 @@ export default function KnowledgeAdminPage() {
           />
 
           <List
-            materials={materials}
+            materials={pagedMaterials}
             loading={loading}
             search={search}
             openCreateModal={openCreateModal}
             openEditModal={openEditModal}
             deleteMaterial={deleteMaterial}
+          />
+
+          <DataViewportControls
+            startItem={startItem}
+            endItem={endItem}
+            totalItems={totalItems}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={setRowsPerPage}
+            entityLabel="materi"
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            loading={loading}
           />
         </div>
 
@@ -348,14 +386,20 @@ export default function KnowledgeAdminPage() {
         >
           <DialogContent className="sm:max-w-md border-none">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black">{confirmState.title}</DialogTitle>
-              <DialogDescription className="font-medium">{confirmState.message}</DialogDescription>
+              <DialogTitle className="text-xl font-black">
+                {confirmState.title}
+              </DialogTitle>
+              <DialogDescription className="font-medium">
+                {confirmState.message}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-3 pt-6">
               <Button
                 variant="ghost"
                 className="font-bold text-muted-foreground"
-                onClick={() => setConfirmState((prev) => ({ ...prev, open: false }))}
+                onClick={() =>
+                  setConfirmState((prev) => ({ ...prev, open: false }))
+                }
               >
                 Batal
               </Button>
