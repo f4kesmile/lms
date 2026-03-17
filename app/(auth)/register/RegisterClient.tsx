@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
+import { toast } from "sonner";
 
 export default function RegisterClient() {
   const router = useRouter();
@@ -13,14 +14,12 @@ export default function RegisterClient() {
   const [showPw, setShowPw] = useState(false);
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    setMessage(null);
 
     if (!agree) {
-      setMessage("Anda harus menyetujui syarat dan ketentuan.");
+      toast.error("Anda harus menyetujui syarat dan ketentuan.");
       return;
     }
 
@@ -37,13 +36,17 @@ export default function RegisterClient() {
         throw new Error(data.message || "Registrasi gagal");
       }
 
-      setMessage("Registrasi berhasil. Anda akan diarahkan ke dashboard.");
+      toast.success("Registrasi berhasil. Anda akan diarahkan ke dashboard.");
       setTimeout(() => {
         router.push("/courses");
         router.refresh();
       }, 600);
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Terjadi kesalahan");
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : "Terjadi kesalahan sistem. Cek log dan hubungi admin.",
+      );
     } finally {
       setLoading(false);
     }
@@ -291,12 +294,6 @@ export default function RegisterClient() {
                 </span>
               </label>
 
-              {message && (
-                <p className="text-muted" style={{ fontSize: "0.85rem" }}>
-                  {message}
-                </p>
-              )}
-
               <button
                 className="btn"
                 type="submit"
@@ -365,16 +362,44 @@ export default function RegisterClient() {
                 <button
                   className="btn-ghost"
                   type="button"
-                  style={{ justifyContent: "center" }}
+                  onClick={() =>
+                    window.location.assign("/api/auth/oauth/microsoft/start")
+                  }
+                  style={{
+                    justifyContent: "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
                 >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18 }}
+                    aria-hidden="true"
+                  >
+                    google
+                  </span>
                   Google
                 </button>
                 <button
                   className="btn-ghost"
                   type="button"
-                  style={{ justifyContent: "center" }}
+                  onClick={() => router.push("/api/auth/oauth/google/start")}
+                  style={{
+                    justifyContent: "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
                 >
-                  Facebook
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18 }}
+                    aria-hidden="true"
+                  >
+                    window
+                  </span>
+                  Microsoft
                 </button>
               </div>
             </form>
