@@ -5,6 +5,7 @@ export const ADMIN_NAV_LINKS = [
   { href: "/admin/users", label: "Manajemen Pengguna", icon: "groups" },
   { href: "/admin/insights", label: "AI & Wawasan", icon: "monitoring" },
   { href: "/admin/stats", label: "Manajemen Chatbot", icon: "query_stats" },
+  { href: "/admin/logs", label: "Log Sistem", icon: "terminal" },
 ];
 
 export const STUDENT_NAV_LINKS = [

@@ -4,8 +4,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { setAuthCookie } from "@/lib/auth";
-import { badRequest, serverError } from "@/lib/http";
+import {
+  getAllowedEmailDomainsText,
+  isAllowedEmail,
+  isDomainRestrictionEnabled,
+} from "@/lib/auth-domain";
+import { badRequest, serverError, tooManyRequests } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { writeSystemLog } from "@/lib/system-log";
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -15,6 +22,25 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit({
+      key: `auth:register:${ip}`,
+      limit: 5,
+      windowMs: 60 * 1000,
+    });
+    if (!rateLimit.allowed) {
+      writeSystemLog({
+        level: "WARNING",
+        category: "AUTH_REGISTER",
+        message: "Rate limit register tercapai",
+        meta: { ip, retryAfterMs: rateLimit.retryAfterMs },
+      });
+      return tooManyRequests(
+        "Terlalu banyak percobaan registrasi. Coba lagi sebentar.",
+        rateLimit.retryAfterMs / 1000
+      );
+    }
+
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
 
@@ -23,9 +49,31 @@ export async function POST(request: Request) {
     }
 
     const { name, email, password } = parsed.data;
+    if (!isAllowedEmail(email)) {
+      writeSystemLog({
+        level: "WARNING",
+        category: "AUTH_REGISTER",
+        message: "Registrasi ditolak: domain email tidak diizinkan",
+        meta: {
+          email,
+          domainRestrictionEnabled: isDomainRestrictionEnabled(),
+          allowedDomains: getAllowedEmailDomainsText(),
+        },
+      });
+      return badRequest(
+        `Hanya email domain berikut yang diizinkan: ${getAllowedEmailDomainsText()}`
+      );
+    }
+
     const existing = await prisma.user.findUnique({ where: { email } });
 
     if (existing) {
+      writeSystemLog({
+        level: "WARNING",
+        category: "AUTH_REGISTER",
+        message: "Registrasi ditolak: email sudah terdaftar",
+        meta: { email },
+      });
       return badRequest("Email already registered");
     }
 
@@ -50,11 +98,18 @@ export async function POST(request: Request) {
 
     await setAuthCookie(user.id);
 
+    writeSystemLog({
+      level: "INFO",
+      category: "AUTH_REGISTER",
+      message: "Registrasi berhasil",
+      meta: { userId: user.id, email: user.email },
+    });
+
     return NextResponse.json({
       message: "User registered successfully",
       user,
     });
   } catch (error) {
-    return serverError(error);
+    return serverError(error, "AUTH_REGISTER");
   }
 }

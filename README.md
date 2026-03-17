@@ -22,6 +22,29 @@ Required:
 - `DATABASE_URL`
 - `JWT_SECRET`
 
+OAuth/SSO (Google Workspace compatible):
+
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_OAUTH_CLIENT_SECRET`
+- `MICROSOFT_OAUTH_CLIENT_ID`
+- `MICROSOFT_OAUTH_CLIENT_SECRET`
+- `MICROSOFT_OAUTH_TENANT_ID` (contoh: `common` atau tenant id organisasi)
+- `NEXT_PUBLIC_APP_URL` (contoh: `http://localhost:3000`)
+- `AUTH_EMAIL_MODE` (`restricted` untuk domain-only, `public` untuk bebas umum)
+- `AUTH_ALLOWED_EMAIL_DOMAINS` (contoh: `kampus.ac.id,student.kampus.ac.id`)
+
+Catatan mode domain:
+
+- Jika `AUTH_EMAIL_MODE=restricted`, maka login/register (password + OAuth Google + OAuth Microsoft) wajib sesuai `AUTH_ALLOWED_EMAIL_DOMAINS`.
+- Jika `AUTH_EMAIL_MODE=public`, maka pembatasan domain dimatikan untuk semua metode login/register.
+- Dengan ini cukup ubah 1 variabel `AUTH_EMAIL_MODE` untuk aktif/nonaktifkan pembatasan domain global.
+
+Akses log sistem:
+
+- Buka panel admin di `/admin/logs` (khusus role `admin`).
+- Halaman ini live refresh tiap 2 detik, bisa filter level log (INFO, WARNING, ERROR, EMERGENCY, DANGER).
+- Untuk Vercel production, log in-memory hanya sementara per instance. Untuk audit permanen tetap disarankan pakai layanan log eksternal.
+
 ## 3) Generate Prisma client and run migration
 
 ```bash
@@ -52,6 +75,11 @@ Use Cockroach SQL client or Prisma Studio after migration, then insert one `User
 
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
+- `POST /api/auth/register`
+- `GET /api/auth/oauth/google/start`
+- `GET /api/auth/oauth/google/callback`
+- `GET /api/auth/oauth/microsoft/start`
+- `GET /api/auth/oauth/microsoft/callback`
 - `GET /api/users/me`
 - `GET /api/users`
 - `POST /api/users`

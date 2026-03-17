@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
+import { toast } from "sonner";
 
 type LoginResponse = {
   user: {
@@ -14,16 +15,34 @@ type LoginResponse = {
 
 export default function LoginClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const oauthError = searchParams.get("error");
+  const allowedDomains = searchParams.get("allowed");
+
+  const oauthErrorMessage =
+    oauthError === "oauth_domain_not_allowed"
+      ? `Domain email tidak diizinkan. Gunakan email kampus: ${allowedDomains || "kampus.ac.id"}`
+      : oauthError === "oauth_not_configured"
+        ? "OAuth belum dikonfigurasi di server."
+        : oauthError === "oauth_email_unverified"
+          ? "Email Google harus terverifikasi untuk login."
+          : oauthError
+            ? "Login Google gagal. Silakan coba lagi."
+            : null;
+
+  useEffect(() => {
+    if (!oauthErrorMessage) return;
+    toast.error(oauthErrorMessage);
+  }, [oauthErrorMessage]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -37,6 +56,8 @@ export default function LoginClient() {
       };
       if (!response.ok) throw new Error(data.message || "Login gagal");
 
+      toast.success("Login berhasil");
+
       if (data.user.role === "mahasiswa") {
         router.push("/courses");
       } else {
@@ -44,7 +65,11 @@ export default function LoginClient() {
       }
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Terjadi kesalahan saat login");
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : "Terjadi kesalahan sistem. Cek log dan hubungi admin.",
+      );
     } finally {
       setLoading(false);
     }
@@ -249,15 +274,6 @@ export default function LoginClient() {
                 </div>
               </div>
 
-              {error && (
-                <p
-                  className="text-muted"
-                  style={{ fontSize: "0.85rem", color: "var(--rose)" }}
-                >
-                  {error}
-                </p>
-              )}
-
               <button
                 className="btn"
                 type="submit"
@@ -326,16 +342,44 @@ export default function LoginClient() {
                 <button
                   className="btn-ghost"
                   type="button"
-                  style={{ justifyContent: "center" }}
+                  onClick={() =>
+                    window.location.assign("/api/auth/oauth/microsoft/start")
+                  }
+                  style={{
+                    justifyContent: "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
                 >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18 }}
+                    aria-hidden="true"
+                  >
+                    google
+                  </span>
                   Google
                 </button>
                 <button
                   className="btn-ghost"
                   type="button"
-                  style={{ justifyContent: "center" }}
+                  onClick={() => router.push("/api/auth/oauth/google/start")}
+                  style={{
+                    justifyContent: "center",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}
                 >
-                  Facebook
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18 }}
+                    aria-hidden="true"
+                  >
+                    window
+                  </span>
+                  Microsoft
                 </button>
               </div>
             </form>
