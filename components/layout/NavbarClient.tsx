@@ -137,7 +137,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   background: "var(--primary)",
                   border: "none",
                   cursor: "pointer",
-                  color: "#000",
+                  color: "var(--on-primary)",
                 }}
                 className="avatar avatar-sm"
                 aria-label="Menu Pengguna"

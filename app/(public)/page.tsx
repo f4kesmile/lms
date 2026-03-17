@@ -22,10 +22,10 @@ export default async function HomePage() {
   });
 
   const gradients = [
-    "linear-gradient(135deg, #10b981 0%, #064e3b 100%)",
-    "linear-gradient(135deg, #f59e0b 0%, #78350f 100%)",
-    "linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)",
-    "linear-gradient(135deg, #f43f5e 0%, #881337 100%)",
+    "var(--catalog-gradient-1)",
+    "var(--catalog-gradient-2)",
+    "var(--catalog-gradient-3)",
+    "var(--catalog-gradient-4)",
   ];
 
   return (
@@ -51,21 +51,21 @@ export default async function HomePage() {
             </p>
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
               <Link
-                href="/register"
+                href="/courses"
                 className="btn"
                 style={{ padding: "0.75rem 2rem" }}
               >
-                Mulai Belajar Sekarang
+                Eksplorasi Kelas
               </Link>
               <Link
-                href="/courses"
+                href="/register"
                 className="btn-ghost"
                 style={{
                   padding: "0.75rem 2rem",
                   border: "1px solid var(--border-primary-strong)",
                 }}
               >
-                Eksplorasi Kelas
+                Daftar Akun Gratis
               </Link>
             </div>
           </div>
@@ -196,7 +196,7 @@ export default async function HomePage() {
                         className="material-symbols-outlined"
                         style={{
                           fontSize: 56,
-                          color: "rgba(255,255,255,0.15)",
+                          color: "var(--icon-tint-on-gradient)",
                         }}
                       >
                         {

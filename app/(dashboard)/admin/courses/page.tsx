@@ -746,7 +746,7 @@ export default function AdminCoursesPage() {
                 Batal
               </Button>
               <Button
-                className="font-black text-[11px] uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white px-8 rounded-xl shadow-lg shadow-red-500/20"
+                className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-xl shadow-lg shadow-destructive/20"
                 onClick={async () => {
                   if (confirmState.onConfirm) await confirmState.onConfirm();
                   setConfirmState((p) => ({ ...p, open: false }));

@@ -99,7 +99,7 @@ export function Table({
                   </TableHead>
                 </>
               )}
-              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest">
                 Aksi
               </TableHead>
             </TableRow>
@@ -186,7 +186,7 @@ export function Table({
                                 className={cn(
                                   "font-black uppercase tracking-tighter text-[9px] px-2.5 py-0.5 rounded-full",
                                   subject.status === "published"
-                                    ? "bg-emerald-500 hover:bg-emerald-600"
+                                    ? "bg-primary hover:bg-primary/90"
                                     : "",
                                 )}
                               >
@@ -220,7 +220,7 @@ export function Table({
                             <>
                               <TableCell className="px-6 py-4">
                                 <div className="flex items-center gap-4">
-                                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 shadow-inner">
+                                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner">
                                     <LayoutGrid className="size-5" />
                                   </div>
                                   <p className="text-sm font-black tracking-tight">
@@ -273,7 +273,7 @@ export function Table({
                             <>
                               <TableCell className="px-6 py-4">
                                 <div className="flex items-center gap-4">
-                                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 shadow-inner">
+                                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary-brand/10 text-secondary-brand shadow-inner">
                                     <Calendar className="size-5" />
                                   </div>
                                   <p className="text-sm font-black tracking-tight">
@@ -288,8 +288,8 @@ export function Table({
                               </TableCell>
                               <TableCell className="text-center">
                                 {year.isCurrent ? (
-                                  <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 shadow-sm">
-                                    <CheckCircle2 className="size-3.5 fill-emerald-500/20" />
+                                  <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-sm">
+                                    <CheckCircle2 className="size-3.5 fill-primary/20" />
                                     <span className="text-[10px] font-black uppercase tracking-widest leading-none">
                                       TAHUN AKTIF
                                     </span>
@@ -298,7 +298,7 @@ export function Table({
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-primary/30 text-primary hover:bg-primary hover:text-white rounded-xl shadow-sm transition-all duration-300"
+                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-primary/30 text-primary hover:bg-primary hover:text-on-primary rounded-xl shadow-sm transition-all duration-300"
                                     onClick={() => onYearActive?.(year.id)}
                                   >
                                     Set Aktif
@@ -308,7 +308,7 @@ export function Table({
                             </>
                           );
                         })()}
-                  <TableCell className="sticky right-0 z-10 bg-card px-6 text-right shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] transition-colors group-hover:bg-muted/50">
+                  <TableCell className="sticky right-0 z-10 bg-card px-6 text-right transition-colors group-hover:bg-muted/50">
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
@@ -321,7 +321,7 @@ export function Table({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white rounded-lg hover:scale-110"
+                        className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground rounded-lg hover:scale-110"
                         onClick={() => onDelete(item.id)}
                       >
                         <Trash2 className="size-4" />

@@ -87,15 +87,15 @@ export default function RegisterClient() {
                 style={{
                   padding: "1rem",
                   borderRadius: "var(--radius-md)",
-                  background: "rgba(190,239,0,0.04)",
-                  border: "1px solid rgba(190,239,0,0.1)",
+                  background: "var(--surface-primary-muted)",
+                  border: "1px solid var(--border-primary)",
                 }}
               >
                 <div
                   style={{
                     padding: "0.75rem",
                     borderRadius: "var(--radius-sm)",
-                    background: "rgba(190,239,0,0.1)",
+                    background: "var(--surface-primary-soft)",
                     color: "var(--primary)",
                   }}
                 >
@@ -117,15 +117,15 @@ export default function RegisterClient() {
                 style={{
                   padding: "1rem",
                   borderRadius: "var(--radius-md)",
-                  background: "rgba(190,239,0,0.04)",
-                  border: "1px solid rgba(190,239,0,0.1)",
+                  background: "var(--surface-primary-muted)",
+                  border: "1px solid var(--border-primary)",
                 }}
               >
                 <div
                   style={{
                     padding: "0.75rem",
                     borderRadius: "var(--radius-sm)",
-                    background: "rgba(190,239,0,0.1)",
+                    background: "var(--surface-primary-soft)",
                     color: "var(--primary)",
                   }}
                 >
@@ -150,12 +150,13 @@ export default function RegisterClient() {
                 padding: "2rem",
                 position: "relative",
                 overflow: "hidden",
-                background: "linear-gradient(135deg, var(--primary), #000)",
+                background:
+                  "linear-gradient(135deg, var(--primary), var(--brand-heavy))",
               }}
             >
               <p
                 style={{
-                  color: "#fff",
+                  color: "var(--on-inverse)",
                   fontSize: "1.05rem",
                   fontStyle: "italic",
                   fontWeight: 500,

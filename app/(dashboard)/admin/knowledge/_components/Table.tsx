@@ -56,7 +56,7 @@ export function Table({
               <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest min-w-[140px]">
                 Diperbarui
               </TableHead>
-              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest">
                 Aksi
               </TableHead>
             </TableRow>
@@ -146,7 +146,7 @@ export function Table({
                       {formatDate(item.updatedAt)}
                     </span>
                   </TableCell>
-                  <TableCell className="sticky right-0 z-10 bg-card px-6 text-right shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] transition-colors group-hover:bg-muted/50">
+                  <TableCell className="sticky right-0 z-10 bg-card px-6 text-right transition-colors group-hover:bg-muted/50">
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
@@ -159,7 +159,7 @@ export function Table({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
+                        className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground"
                         onClick={() => deleteMaterial(item.id)}
                       >
                         <Trash2 className="size-4" />

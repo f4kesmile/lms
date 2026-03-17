@@ -153,7 +153,7 @@ export default function LoginClient() {
             >
               <p
                 style={{
-                  color: "#fff",
+                  color: "var(--on-inverse)",
                   fontSize: "1.05rem",
                   fontStyle: "italic",
                   fontWeight: 500,

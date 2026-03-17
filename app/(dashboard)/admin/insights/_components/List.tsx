@@ -48,7 +48,11 @@ export function List({ loading, error, interactions, search }: ListProps) {
         <EmptyState
           icon={Bot}
           title="Belum ada data interaksi"
-          description={search ? "Tidak ada hasil pencarian." : "Menunggu interaksi pengguna..."}
+          description={
+            search
+              ? "Tidak ada hasil pencarian."
+              : "Menunggu interaksi pengguna..."
+          }
         />
       ) : (
         interactions.map((item) => (
@@ -59,45 +63,53 @@ export function List({ loading, error, interactions, search }: ListProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                   <div className="size-6 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
-                     {getInitials(item.user.name)}
-                   </div>
-                   <p className="text-sm font-black tracking-tight truncate">{item.user.name}</p>
+                  <div className="size-6 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                    {getInitials(item.user.name)}
+                  </div>
+                  <p className="text-sm font-black tracking-tight truncate">
+                    {item.user.name}
+                  </p>
                 </div>
                 <div className="relative">
-                   <Quote className="absolute -left-1 -top-1 size-3 text-primary/10 rotate-180" />
-                   <p className="mt-1 line-clamp-3 text-sm font-medium text-muted-foreground/80 leading-relaxed pl-3 italic">
-                     {item.query}
-                   </p>
+                  <Quote className="absolute -left-1 -top-1 size-3 text-primary/10 rotate-180" />
+                  <p className="mt-1 line-clamp-3 text-sm font-medium text-muted-foreground/80 leading-relaxed pl-3 italic">
+                    {item.query}
+                  </p>
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className="shrink-0 text-[9px] font-black uppercase bg-emerald-50/10 border-emerald-500/30 text-emerald-600 px-2.5 rounded-full"
+                className="shrink-0 text-[9px] font-black uppercase bg-primary/10 border-primary/30 text-primary px-2.5 rounded-full"
               >
                 {item.status === "COMPLETED" ? "SUCCESS" : item.status}
               </Badge>
             </div>
-            
+
             <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-border/30">
               <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/40 rounded-full">
-                <span className="text-[10px] font-black uppercase text-muted-foreground/60">{item.citationCount} Citasi</span>
+                <span className="text-[10px] font-black uppercase text-muted-foreground/60">
+                  {item.citationCount} Citasi
+                </span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/40 rounded-full">
-                <Clock3 className="size-3 text-blue-500" />
-                <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-tighter">{(item.responseTimeMs / 1000).toFixed(2)}s</span>
+                <Clock3 className="size-3 text-secondary-brand" />
+                <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-tighter">
+                  {(item.responseTimeMs / 1000).toFixed(2)}s
+                </span>
               </div>
               {item.rating !== null && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/20">
-                   <span className="text-[10px] font-black uppercase tracking-widest">Rate {item.rating}/5</span>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20">
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    Rate {item.rating}/5
+                  </span>
                 </div>
               )}
             </div>
-            
+
             <div className="mt-4 flex justify-end">
-               <span className="text-[10px] font-bold text-muted-foreground/40 font-mono">
-                  {formatDateTime(item.createdAt)}
-               </span>
+              <span className="text-[10px] font-bold text-muted-foreground/40 font-mono">
+                {formatDateTime(item.createdAt)}
+              </span>
             </div>
           </Card>
         ))

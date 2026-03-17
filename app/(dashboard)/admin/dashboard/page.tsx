@@ -47,10 +47,10 @@ type DashboardResponse = {
 };
 
 const statColors = [
-  "from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-  "from-blue-500/20 to-blue-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  "from-amber-500/20 to-amber-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  "from-purple-500/20 to-purple-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20",
+  "from-primary/20 to-primary/5 text-primary dark:text-primary border-primary/20",
+  "from-secondary-brand/20 to-secondary-brand/5 text-secondary-brand dark:text-secondary-brand border-secondary-brand/20",
+  "from-secondary-brand/20 to-secondary-brand/5 text-secondary-brand dark:text-secondary-brand border-secondary-brand/20",
+  "from-secondary-brand/20 to-secondary-brand/5 text-secondary-brand dark:text-secondary-brand border-secondary-brand/20",
 ];
 
 const statIcons = [Users, BookOpen, Component, Cpu];
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
                     <span className="text-3xl font-black tracking-tight">
                       {metricValues[i]}
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+                    <span className="text-[10px] font-bold text-primary flex items-center gap-0.5">
                       <ArrowUpRight className="size-3" />
                       12%
                     </span>
@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
                 variant="outline"
                 size="sm"
                 asChild
-                className="text-[10px] font-black uppercase tracking-widest border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white shadow-md transition-all duration-200"
+                className="text-[10px] font-black uppercase tracking-widest border-primary bg-primary/5 text-primary hover:bg-primary hover:text-on-primary shadow-md transition-all duration-200"
               >
                 <Link href={"/admin/insights" as Route}>Lihat Laporan</Link>
               </Button>
@@ -275,12 +275,12 @@ export default function AdminDashboardPage() {
             <Card className="border-none bg-card shadow-lg p-6 overflow-hidden">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="size-5 text-emerald-500" />
+                  <TrendingUp className="size-5 text-primary" />
                   <h3 className="font-bold">Kurva Pertumbuhan</h3>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[9px] font-bold border-emerald-500/30 text-emerald-500 bg-emerald-500/5"
+                  className="text-[9px] font-bold border-primary/30 text-primary bg-primary/5"
                 >
                   7 Hari Terakhir
                 </Badge>
@@ -310,36 +310,36 @@ export default function AdminDashboardPage() {
             </Card>
 
             {/* AI Insight Card */}
-            <Card className="group relative border-none bg-emerald-900 text-emerald-50 p-6 shadow-lg shadow-emerald-900/20 overflow-hidden">
+            <Card className="group relative border-none bg-card text-foreground p-6 shadow-lg shadow-primary/20 overflow-hidden">
               {/* Background pattern */}
-              <div className="absolute -right-8 -top-8 size-32 rounded-full bg-emerald-800/50 blur-3xl" />
-              <div className="absolute -left-8 -bottom-8 size-32 rounded-full bg-emerald-800/50 blur-3xl" />
+              <div className="absolute -right-8 -top-8 size-32 rounded-full bg-primary/20 blur-3xl" />
+              <div className="absolute -left-8 -bottom-8 size-32 rounded-full bg-primary/20 blur-3xl" />
 
               <div className="relative">
-                <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner">
-                  <Lightbulb className="size-6 text-emerald-300 group-hover:animate-pulse" />
+                <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-card/10 backdrop-blur-md shadow-inner">
+                  <Lightbulb className="size-6 text-primary group-hover:animate-pulse" />
                 </div>
-                <h3 className="mb-2 text-xl font-black tracking-tight text-white">
+                <h3 className="mb-2 text-xl font-black tracking-tight text-foreground">
                   AI Platform Insight
                 </h3>
-                <p className="mb-6 text-sm leading-relaxed !text-white font-medium">
+                <p className="mb-6 text-sm leading-relaxed !text-foreground font-medium">
                   Platform Anda tercatat memiliki{" "}
-                  <span className="font-black !text-white underline decoration-emerald-400 decoration-2 underline-offset-4">
+                  <span className="font-black !text-foreground underline decoration-primary/60 decoration-2 underline-offset-4">
                     {metricValues[0]} pengguna
                   </span>{" "}
                   aktif dengan{" "}
-                  <span className="font-black !text-white underline decoration-emerald-400 decoration-2 underline-offset-4">
+                  <span className="font-black !text-foreground underline decoration-primary/60 decoration-2 underline-offset-4">
                     {metricValues[1]} kursus
                   </span>{" "}
                   berjalan. Efisiensi penggunaan AI bulan ini mencapai{" "}
-                  <span className="font-black !text-white">
+                  <span className="font-black !text-foreground">
                     {metricValues[3]}
                   </span>
                   , menunjukkan adopsi fitur yang sangat positif.
                 </p>
                 <Button
                   variant="outline"
-                  className="w-full border-white/20 bg-white/10 font-bold tracking-tight hover:bg-white/20 hover:text-white"
+                  className="w-full border-primary/20 bg-card/10 font-bold tracking-tight hover:bg-card/20 hover:text-primary"
                   size="sm"
                   asChild
                 >

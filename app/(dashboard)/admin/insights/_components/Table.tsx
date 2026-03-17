@@ -50,7 +50,7 @@ export function Table({ loading, error, interactions, search }: TableProps) {
               <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
                 Sinyal Kualitas
               </TableHead>
-              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+              <TableHead className="sticky right-0 z-30 h-12 bg-muted/95 backdrop-blur-md px-6 text-right text-[10px] font-black uppercase tracking-widest">
                 Waktu
               </TableHead>
             </TableRow>
@@ -115,7 +115,7 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                     <div className="grid grid-cols-[100px_70px_80px_100px] items-center gap-5">
                       <Badge
                         variant="outline"
-                        className="w-full justify-center text-[9px] font-black uppercase text-center border-emerald-500/30 text-emerald-600 bg-emerald-50/10"
+                        className="w-full justify-center text-[9px] font-black uppercase text-center border-primary/30 text-primary bg-primary/10"
                       >
                         {item.status === "COMPLETED" ? "BERHASIL" : item.status}
                       </Badge>
@@ -127,7 +127,7 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                         {(item.responseTimeMs / 1000).toFixed(2)}s
                       </span>
                       {item.rating !== null ? (
-                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[9px] font-black justify-center w-full shadow-md shadow-emerald-500/20 py-1 rounded-lg">
+                        <Badge className="bg-primary hover:bg-primary/90 text-[9px] font-black justify-center w-full shadow-md shadow-primary/20 py-1 rounded-lg">
                           RATING {item.rating}/5
                         </Badge>
                       ) : (
@@ -137,7 +137,7 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="sticky right-0 z-10 bg-card px-6 py-4 text-right shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] transition-colors group-hover:bg-muted/50">
+                  <TableCell className="sticky right-0 z-10 bg-card px-6 py-4 text-right transition-colors group-hover:bg-muted/50">
                     <div className="flex flex-col items-end">
                       <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
                         {formatDateTime(item.createdAt)}

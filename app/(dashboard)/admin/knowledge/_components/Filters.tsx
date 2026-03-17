@@ -51,7 +51,7 @@ export function Filters({
           </div>
         </Card>
         <Card className="border-none bg-card shadow-sm p-4 flex items-center gap-4">
-          <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+          <div className="size-10 rounded-xl bg-secondary-brand/10 flex items-center justify-center text-secondary-brand">
             <FileText className="size-5" />
           </div>
           <div className="flex flex-col">

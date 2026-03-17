@@ -19,7 +19,7 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
+
   // Logical range for many pages
   let displayedPages = pages;
   if (totalPages > 7) {
@@ -28,7 +28,15 @@ export function Pagination({
     } else if (currentPage >= totalPages - 3) {
       displayedPages = [1, -1, ...pages.slice(totalPages - 5)];
     } else {
-      displayedPages = [1, -1, currentPage - 1, currentPage, currentPage + 1, -1, totalPages];
+      displayedPages = [
+        1,
+        -1,
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        -1,
+        totalPages,
+      ];
     }
   }
 
@@ -45,17 +53,22 @@ export function Pagination({
       </Button>
 
       <div className="flex items-center gap-1.5">
-        {displayedPages.map((page, i) => (
+        {displayedPages.map((page, i) =>
           page === -1 ? (
-            <span key={`gap-${i}`} className="px-2 text-muted-foreground font-black text-xs tracking-widest opacity-30">...</span>
+            <span
+              key={`gap-${i}`}
+              className="px-2 text-muted-foreground font-black text-xs tracking-widest opacity-30"
+            >
+              ...
+            </span>
           ) : (
             <Button
               key={`page-${page}`}
               variant={currentPage === page ? "default" : "outline"}
               size="sm"
               className={`h-10 min-w-10 rounded-xl font-black text-[11px] tracking-tight transition-all duration-300 ${
-                currentPage === page 
-                  ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105" 
+                currentPage === page
+                  ? "bg-primary text-on-primary shadow-lg shadow-primary/30 scale-105"
                   : "border-border/50 bg-card/60 backdrop-blur-sm hover:border-primary/30 hover:text-primary"
               }`}
               onClick={() => onPageChange(page)}
@@ -63,8 +76,8 @@ export function Pagination({
             >
               {page}
             </Button>
-          )
-        ))}
+          ),
+        )}
       </div>
 
       <Button
