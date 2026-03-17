@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function RegisterClient() {
@@ -302,6 +303,24 @@ export default function RegisterClient() {
               >
                 {loading ? "Memproses..." : "Daftar Sekarang"}
               </button>
+
+              <p
+                className="text-muted"
+                style={{
+                  textAlign: "center",
+                  fontSize: "0.9rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                Sudah punya akun?{" "}
+                <Link
+                  href="/login"
+                  className="accent"
+                  style={{ fontWeight: 700 }}
+                >
+                  Masuk
+                </Link>
+              </p>
 
               <div
                 className="row"

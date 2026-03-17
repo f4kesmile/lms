@@ -1343,6 +1343,10 @@ ul.clean-list {
   border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .catalog-card-body {
   padding: 1.25rem;
@@ -1417,55 +1421,88 @@ ul.clean-list {
   max-width: 600px;
 }
 .catalog-search-row {
-  display: flex;
+  display: grid;
   gap: 1rem;
-  align-items: center;
   margin: 1.5rem 0;
-  flex-wrap: wrap;
 }
-.catalog-search-input {
-  flex: 1;
-  min-width: 250px;
-  padding: 0.85rem 1rem 0.85rem 2.75rem;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-primary-strong);
+
+.catalog-search-form {
+  width: 100%;
+}
+
+.catalog-search-shell {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 132px;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-height: 60px;
+  border: 2px solid var(--border-primary-strong);
+  border-radius: var(--radius-md);
   background: var(--bg-card);
-  color: var(--text-main);
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.2s;
+  overflow: hidden;
 }
-.catalog-search-input:focus {
+
+.catalog-search-shell:focus-within {
   border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(12, 163, 127, 0.08);
 }
-.catalog-search-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 250px;
-}
-.catalog-search-wrap .material-symbols-outlined {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
+
+.catalog-search-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 100%;
+  background: transparent;
   color: var(--text-dim);
+  flex-shrink: 0;
 }
+
+.catalog-search-icon-box .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.catalog-search-field {
+  width: 100%;
+  min-height: 56px;
+  padding: 0.95rem 1rem 0.95rem 0;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 1rem;
+  outline: none;
+}
+
+.catalog-search-btn {
+  min-height: 100%;
+  min-width: 132px;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+}
+
 .catalog-filters {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 .filter-pill {
-  padding: 0.55rem 1.25rem;
-  border-radius: var(--radius-full);
+  min-height: 60px;
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-primary-strong);
-  background: transparent;
-  color: var(--text-soft);
+  background: var(--bg-card);
+  color: var(--text-main);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 .filter-pill:hover {
   border-color: var(--primary);
@@ -1498,12 +1535,57 @@ ul.clean-list {
 
 /* ===== FAQ ACCORDION ===== */
 .faq-section-title {
+  color: var(--primary);
+}
+
+@media (min-width: 1040px) {
+  .catalog-search-row {
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 767px) {
+  .catalog-search-form {
+    width: 100%;
+  }
+
+  .catalog-search-shell {
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 56px;
+  }
+
+  .catalog-search-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 50px;
+    border-radius: 0;
+  }
+
+  .catalog-search-icon-box {
+    width: 48px;
+    height: 48px;
+  }
+
+  .catalog-search-field {
+    min-height: 48px;
+    font-size: 0.95rem;
+    padding-right: 1rem;
+  }
+
+  .filter-pill {
+    min-height: 48px;
+  }
+}
+
+.faq-section-title {
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--text-main);
   text-align: center;
   margin-bottom: 0.5rem;
 }
+
 .faq-section-subtitle {
   text-align: center;
   color: var(--text-dim);
