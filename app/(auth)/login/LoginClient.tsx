@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type LoginResponse = {
@@ -264,6 +265,24 @@ export default function LoginClient() {
               >
                 {loading ? "Memproses..." : "Masuk"}
               </button>
+
+              <p
+                className="text-muted"
+                style={{
+                  textAlign: "center",
+                  fontSize: "0.9rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                Belum punya akun?{" "}
+                <Link
+                  href="/register"
+                  className="accent"
+                  style={{ fontWeight: 700 }}
+                >
+                  Daftar
+                </Link>
+              </p>
 
               <div
                 className="row"

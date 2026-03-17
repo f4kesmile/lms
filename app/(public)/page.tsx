@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { getInitials } from "@/lib/utils";
 
 export default async function HomePage() {
   const [userCount, classCount, materialCount] = await Promise.all([
@@ -186,7 +185,6 @@ export default async function HomePage() {
               </p>
             ) : (
               featuredClasses.map((cls, idx) => {
-                const teacherName = cls.classTeacher?.name || "Instruktur";
                 const subjectName = cls.subjects[0]?.subject.name || "Umum";
                 return (
                   <article key={cls.id} className="catalog-card">
@@ -207,21 +205,10 @@ export default async function HomePage() {
                           ]
                         }
                       </span>
-                      <span className="card-badge">
-                        {subjectName.substring(0, 15)}
-                      </span>
                     </div>
                     <div className="catalog-card-body">
-                      <p className="catalog-card-category">
-                        {subjectName.substring(0, 20)}
-                      </p>
+                      <p className="catalog-card-category">{subjectName}</p>
                       <h3 className="catalog-card-title">{cls.name}</h3>
-                      <div className="catalog-card-instructor">
-                        <div className="avatar-tiny">
-                          {getInitials(teacherName)}
-                        </div>
-                        {teacherName}
-                      </div>
                       <div style={{ marginTop: "auto", paddingTop: "0.75rem" }}>
                         <Link
                           href={`/courses/${cls.id}`}
