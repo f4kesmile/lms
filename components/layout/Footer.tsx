@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
 export function Footer() {
   return (
@@ -35,16 +36,15 @@ export function Footer() {
                 className="brand-text"
                 style={{ color: "var(--text-main)", fontSize: "1.2rem" }}
               >
-                Uni
+                {SITE_CONFIG.shortName}
                 <span style={{ color: "var(--text-soft)", fontWeight: 300 }}>
-                  Course
+                  {SITE_CONFIG.accentName}
                 </span>
               </span>
             </Link>
             <p className="footer-desc">
-              Platform pembelajaran terbuka yang menghubungkan mahasiswa dengan
-              pengetahuan terbaik dunia. Belajar tanpa batas, kapan saja, di
-              mana saja.
+              Platform pembelajaran cerdas untuk kampus modern, materi terarah,
+              dan pendampingan akademik yang lebih mudah diakses kapan saja.
             </p>
             <div className="footer-socials">
               <a href="#" aria-label="WhatsApp" className="footer-social-btn">
@@ -94,8 +94,8 @@ export function Footer() {
 
         <div className="footer-bottom">
           <p>
-            © 2024 UniCourse University. Seluruh hak cipta dilindungi
-            undang-undang.
+            © {getCurrentYear()} {SITE_CONFIG.name}. Seluruh hak cipta
+            dilindungi undang-undang.
           </p>
         </div>
       </div>

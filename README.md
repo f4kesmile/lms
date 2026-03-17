@@ -1,4 +1,4 @@
-# Edunexus Next.js 16 Migration Base
+# Nusa Belajar Next.js 16 Migration Base
 
 This folder is the migration target from the old Express + MongoDB stack to:
 

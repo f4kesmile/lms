@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/layout/Navbar";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export default function AboutPage() {
   return (
@@ -27,7 +28,7 @@ export default function AboutPage() {
               className="accent"
               style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
             >
-              UniLMS
+              {SITE_CONFIG.name}
             </span>
           </h1>
           <p
@@ -40,8 +41,9 @@ export default function AboutPage() {
             }}
           >
             Kami hadir untuk menjembatani batasan ruang dan waktu dalam
-            pendidikan. UniLMS adalah platform pembelajaran cerdas yang
-            memadukan keahlian akademik dengan kecanggihan kecerdasan buatan.
+            pendidikan. {SITE_CONFIG.name} adalah platform pembelajaran cerdas
+            yang memadukan keahlian akademik dengan kecanggihan kecerdasan
+            buatan.
           </p>
         </section>
 

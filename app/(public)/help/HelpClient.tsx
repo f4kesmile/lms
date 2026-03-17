@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { SITE_CONFIG } from "@/lib/constants";
 
 type FaqItem = {
   id: string;
@@ -208,7 +209,7 @@ export default function HelpClient() {
         </p>
         <div className="cta-buttons">
           <a
-            href="mailto:support@unilms.id"
+            href={`mailto:${SITE_CONFIG.supportEmail}`}
             className="btn"
             style={{
               padding: "0.7rem 1.75rem",
@@ -223,7 +224,7 @@ export default function HelpClient() {
             >
               mail
             </span>
-            Kirim Tiket Bantuan
+            Kirim Email ke {SITE_CONFIG.name}
           </a>
           <a
             href="tel:+620000000000"

@@ -79,9 +79,9 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
             />
           </div>
           <span className="brand-text" style={{ color: "var(--text-main)" }}>
-            Uni
+            {SITE_CONFIG.shortName}
             <span style={{ color: "var(--text-soft)", fontWeight: 300 }}>
-              {SITE_CONFIG.shortName}
+              {SITE_CONFIG.accentName}
             </span>
           </span>
         </Link>

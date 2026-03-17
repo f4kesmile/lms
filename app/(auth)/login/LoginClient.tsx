@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
 type LoginResponse = {
   user: {
@@ -344,7 +345,7 @@ export default function LoginClient() {
 
       <footer className="app-footer">
         <p className="text-dim" style={{ fontSize: "0.85rem" }}>
-          © 2024 LMS Pintar. Hak Cipta Dilindungi.
+          © {getCurrentYear()} {SITE_CONFIG.name}. Hak cipta dilindungi.
         </p>
         <div
           className="row"
@@ -354,13 +355,17 @@ export default function LoginClient() {
             marginTop: "0.75rem",
           }}
         >
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+          <a href="/about" className="text-dim" style={{ fontSize: "0.85rem" }}>
             Tentang Kami
           </a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+          <a href="/help" className="text-dim" style={{ fontSize: "0.85rem" }}>
             Bantuan
           </a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+          <a
+            href="#/about"
+            className="text-dim"
+            style={{ fontSize: "0.85rem" }}
+          >
             Kontak
           </a>
         </div>
