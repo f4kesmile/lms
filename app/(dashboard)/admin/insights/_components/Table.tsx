@@ -37,7 +37,7 @@ interface TableProps {
 export function Table({ loading, error, interactions, search }: TableProps) {
   return (
     <Card className="hidden overflow-hidden border-none bg-card shadow-xl lg:block rounded-3xl">
-      <div className="relative overflow-auto max-h-[55dvh]">
+      <div className="relative overflow-x-auto overflow-y-visible">
         <UITable>
           <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-md">
             <TableRow className="border-none hover:bg-transparent">

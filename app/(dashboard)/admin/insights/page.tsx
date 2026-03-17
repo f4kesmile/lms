@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Filters } from "./_components/Filters";
 import { Table } from "./_components/Table";
 import { List } from "./_components/List";
-import { Pagination } from "../_components/Pagination";
+import { DataViewportControls } from "../_components/DataViewportControls";
 
 type InsightSummary = {
   totalTurns: number;
@@ -43,8 +43,10 @@ export default function AdminInsightsPage() {
     setLoading(true);
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: limit.toString()
+      limit: limit.toString(),
     });
+    const query = search.trim();
+    if (query) params.set("search", query);
 
     fetch(`/api/admin/insights?${params.toString()}`)
       .then(async (response) => {
@@ -63,53 +65,46 @@ export default function AdminInsightsPage() {
         setError(e instanceof Error ? e.message : "Gagal memuat insight AI");
       })
       .finally(() => setLoading(false));
-  }, [page, limit]);
+  }, [page, limit, search]);
 
-  // Reset to page 1 on limit change
+  // Reset to page 1 on filter change
   useEffect(() => {
     setPage(1);
-  }, [limit]);
-
-  const filteredInteractions = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return interactions;
-
-    return interactions.filter((item) => {
-      return (
-        item.user.name.toLowerCase().includes(query) ||
-        item.query.toLowerCase().includes(query) ||
-        item.response.toLowerCase().includes(query)
-      );
-    });
-  }, [interactions, search]);
+  }, [limit, search]);
 
   return (
     <AdminLayout title="AI & Wawasan">
-      <Suspense fallback={<div className="h-[60dvh] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <Suspense
+        fallback={
+          <div className="h-[60dvh] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }
+      >
         <div className="flex flex-col gap-6">
-          <Filters
-            summary={summary}
-            search={search}
-            setSearch={setSearch}
-            limit={limit}
-            setLimit={setLimit}
-          />
+          <Filters summary={summary} search={search} setSearch={setSearch} />
 
           <Table
             loading={loading}
             error={error}
-            interactions={filteredInteractions}
+            interactions={interactions}
             search={search}
           />
 
           <List
             loading={loading}
             error={error}
-            interactions={filteredInteractions}
+            interactions={interactions}
             search={search}
           />
 
-          <Pagination
+          <DataViewportControls
+            startItem={totalItems === 0 ? 0 : (page - 1) * limit + 1}
+            endItem={totalItems === 0 ? 0 : Math.min(page * limit, totalItems)}
+            totalItems={totalItems}
+            rowsPerPage={limit}
+            onRowsPerPageChange={setLimit}
+            entityLabel="interaksi"
             currentPage={page}
             totalPages={totalPages}
             onPageChange={setPage}

@@ -3,8 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-
-
 export default function RegisterClient() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -39,7 +37,7 @@ export default function RegisterClient() {
 
       setMessage("Registrasi berhasil. Anda akan diarahkan ke dashboard.");
       setTimeout(() => {
-        router.push("/student");
+        router.push("/courses");
         router.refresh();
       }, 600);
     } catch (e) {
@@ -51,7 +49,6 @@ export default function RegisterClient() {
 
   return (
     <>
-
       <main
         style={{
           flexGrow: 1,
@@ -101,10 +98,14 @@ export default function RegisterClient() {
                     color: "var(--primary)",
                   }}
                 >
-                  <span className="material-symbols-outlined">auto_stories</span>
+                  <span className="material-symbols-outlined">
+                    auto_stories
+                  </span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>500+ Kursus</h3>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+                    500+ Kursus
+                  </h3>
                   <p className="text-dim" style={{ fontSize: "0.85rem" }}>
                     Materi yang selalu diperbarui
                   </p>
@@ -127,10 +128,14 @@ export default function RegisterClient() {
                     color: "var(--primary)",
                   }}
                 >
-                  <span className="material-symbols-outlined">workspace_premium</span>
+                  <span className="material-symbols-outlined">
+                    workspace_premium
+                  </span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Sertifikat Resmi</h3>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+                    Sertifikat Resmi
+                  </h3>
                   <p className="text-dim" style={{ fontSize: "0.85rem" }}>
                     Diakui oleh industri global
                   </p>
@@ -144,8 +149,7 @@ export default function RegisterClient() {
                 padding: "2rem",
                 position: "relative",
                 overflow: "hidden",
-                background:
-                  "linear-gradient(135deg, var(--primary), #000)",
+                background: "linear-gradient(135deg, var(--primary), #000)",
               }}
             >
               <p
@@ -184,14 +188,13 @@ export default function RegisterClient() {
               </p>
             </div>
 
-            <form
-              style={{ display: "grid", gap: "1.25rem" }}
-              onSubmit={submit}
-            >
+            <form style={{ display: "grid", gap: "1.25rem" }} onSubmit={submit}>
               <div>
                 <label className="input-label">Nama Lengkap</label>
                 <div className="input-group">
-                  <span className="input-icon material-symbols-outlined">person</span>
+                  <span className="input-icon material-symbols-outlined">
+                    person
+                  </span>
                   <input
                     className="input input-with-icon"
                     placeholder="Masukkan nama lengkap Anda"
@@ -204,7 +207,9 @@ export default function RegisterClient() {
               <div>
                 <label className="input-label">Email</label>
                 <div className="input-group">
-                  <span className="input-icon material-symbols-outlined">mail</span>
+                  <span className="input-icon material-symbols-outlined">
+                    mail
+                  </span>
                   <input
                     className="input input-with-icon"
                     type="email"
@@ -218,7 +223,9 @@ export default function RegisterClient() {
               <div>
                 <label className="input-label">Kata Sandi</label>
                 <div className="input-group">
-                  <span className="input-icon material-symbols-outlined">lock</span>
+                  <span className="input-icon material-symbols-outlined">
+                    lock
+                  </span>
                   <input
                     className="input input-with-icon"
                     type={showPw ? "text" : "password"}
@@ -250,15 +257,25 @@ export default function RegisterClient() {
 
               <label
                 className="row"
-                style={{ alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}
+                style={{
+                  alignItems: "flex-start",
+                  gap: "0.75rem",
+                  cursor: "pointer",
+                }}
               >
                 <input
                   type="checkbox"
                   checked={agree}
                   onChange={(e) => setAgree(e.target.checked)}
-                  style={{ marginTop: "0.25rem", accentColor: "var(--primary)" }}
+                  style={{
+                    marginTop: "0.25rem",
+                    accentColor: "var(--primary)",
+                  }}
                 />
-                <span className="text-muted" style={{ fontSize: "0.85rem", lineHeight: 1.5 }}>
+                <span
+                  className="text-muted"
+                  style={{ fontSize: "0.85rem", lineHeight: 1.5 }}
+                >
                   Saya menyetujui{" "}
                   <a className="accent" href="#" style={{ fontWeight: 700 }}>
                     Syarat &amp; Ketentuan
@@ -277,7 +294,12 @@ export default function RegisterClient() {
                 </p>
               )}
 
-              <button className="btn" type="submit" disabled={loading} style={{ width: "100%", padding: "1rem", fontSize: "1.05rem" }}>
+              <button
+                className="btn"
+                type="submit"
+                disabled={loading}
+                style={{ width: "100%", padding: "1rem", fontSize: "1.05rem" }}
+              >
                 {loading ? "Memproses..." : "Daftar Sekarang"}
               </button>
 
@@ -285,18 +307,52 @@ export default function RegisterClient() {
                 className="row"
                 style={{ justifyContent: "center", gap: "1rem" }}
               >
-                <div style={{ flex: 1, height: 1, background: "var(--border-primary)" }} />
-                <span className="text-dim" style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--border-primary)",
+                  }}
+                />
+                <span
+                  className="text-dim"
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                  }}
+                >
                   Atau daftar dengan
                 </span>
-                <div style={{ flex: 1, height: 1, background: "var(--border-primary)" }} />
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--border-primary)",
+                  }}
+                />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <button className="btn-ghost" type="button" style={{ justifyContent: "center" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "1rem",
+                }}
+              >
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  style={{ justifyContent: "center" }}
+                >
                   Google
                 </button>
-                <button className="btn-ghost" type="button" style={{ justifyContent: "center" }}>
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  style={{ justifyContent: "center" }}
+                >
                   Facebook
                 </button>
               </div>
@@ -309,10 +365,23 @@ export default function RegisterClient() {
         <p className="text-dim" style={{ fontSize: "0.85rem" }}>
           © 2024 LMS Pintar. Hak Cipta Dilindungi.
         </p>
-        <div className="row" style={{ justifyContent: "center", gap: "1.5rem", marginTop: "0.75rem" }}>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Tentang Kami</a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Bantuan</a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Kontak</a>
+        <div
+          className="row"
+          style={{
+            justifyContent: "center",
+            gap: "1.5rem",
+            marginTop: "0.75rem",
+          }}
+        >
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Tentang Kami
+          </a>
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Bantuan
+          </a>
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Kontak
+          </a>
         </div>
       </footer>
     </>

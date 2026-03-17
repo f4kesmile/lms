@@ -3,8 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-
-
 type LoginResponse = {
   user: {
     id: string;
@@ -38,7 +36,7 @@ export default function LoginClient() {
       if (!response.ok) throw new Error(data.message || "Login gagal");
 
       if (data.user.role === "mahasiswa") {
-        router.push("/student");
+        router.push("/courses");
       } else {
         router.push("/admin/dashboard");
       }
@@ -52,7 +50,6 @@ export default function LoginClient() {
 
   return (
     <>
-
       <main
         style={{
           flexGrow: 1,
@@ -105,7 +102,9 @@ export default function LoginClient() {
                   <span className="material-symbols-outlined">smart_toy</span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Asisten AI Pintar</h3>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+                    Asisten AI Pintar
+                  </h3>
                   <p className="text-dim" style={{ fontSize: "0.85rem" }}>
                     Dukungan 24/7 di semua tahapan komprehensif
                   </p>
@@ -131,7 +130,9 @@ export default function LoginClient() {
                   <span className="material-symbols-outlined">speed</span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>Akses Super Cepat</h3>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
+                    Akses Super Cepat
+                  </h3>
                   <p className="text-dim" style={{ fontSize: "0.85rem" }}>
                     Terdistribusi global bebas hambatan
                   </p>
@@ -159,9 +160,18 @@ export default function LoginClient() {
                   zIndex: 1,
                 }}
               >
-                &quot;Platform ini mempermudah saya mengawasi kemajuan belajar mahasiswa dalam hitungan detik.&quot;
+                &quot;Platform ini mempermudah saya mengawasi kemajuan belajar
+                mahasiswa dalam hitungan detik.&quot;
               </p>
-              <p style={{ marginTop: "1rem", color: "var(--primary-light)", fontWeight: 700 }}>— Dosen Senior Ilmu Komputer</p>
+              <p
+                style={{
+                  marginTop: "1rem",
+                  color: "var(--primary-light)",
+                  fontWeight: 700,
+                }}
+              >
+                — Dosen Senior Ilmu Komputer
+              </p>
             </div>
           </div>
 
@@ -185,14 +195,13 @@ export default function LoginClient() {
               </p>
             </div>
 
-            <form
-              style={{ display: "grid", gap: "1.25rem" }}
-              onSubmit={submit}
-            >
+            <form style={{ display: "grid", gap: "1.25rem" }} onSubmit={submit}>
               <div>
                 <label className="input-label">Email</label>
                 <div className="input-group">
-                  <span className="input-icon material-symbols-outlined">mail</span>
+                  <span className="input-icon material-symbols-outlined">
+                    mail
+                  </span>
                   <input
                     className="input input-with-icon"
                     type="email"
@@ -206,7 +215,9 @@ export default function LoginClient() {
               <div>
                 <label className="input-label">Kata Sandi</label>
                 <div className="input-group">
-                  <span className="input-icon material-symbols-outlined">lock</span>
+                  <span className="input-icon material-symbols-outlined">
+                    lock
+                  </span>
                   <input
                     className="input input-with-icon"
                     type={showPw ? "text" : "password"}
@@ -237,12 +248,20 @@ export default function LoginClient() {
               </div>
 
               {error && (
-                <p className="text-muted" style={{ fontSize: "0.85rem", color: "var(--rose)" }}>
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "0.85rem", color: "var(--rose)" }}
+                >
                   {error}
                 </p>
               )}
 
-              <button className="btn" type="submit" disabled={loading} style={{ width: "100%", padding: "1rem", fontSize: "1.05rem" }}>
+              <button
+                className="btn"
+                type="submit"
+                disabled={loading}
+                style={{ width: "100%", padding: "1rem", fontSize: "1.05rem" }}
+              >
                 {loading ? "Memproses..." : "Masuk"}
               </button>
 
@@ -250,18 +269,52 @@ export default function LoginClient() {
                 className="row"
                 style={{ justifyContent: "center", gap: "1rem" }}
               >
-                <div style={{ flex: 1, height: 1, background: "var(--border-primary)" }} />
-                <span className="text-dim" style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--border-primary)",
+                  }}
+                />
+                <span
+                  className="text-dim"
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                  }}
+                >
                   Atau masuk dengan
                 </span>
-                <div style={{ flex: 1, height: 1, background: "var(--border-primary)" }} />
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--border-primary)",
+                  }}
+                />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <button className="btn-ghost" type="button" style={{ justifyContent: "center" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "1rem",
+                }}
+              >
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  style={{ justifyContent: "center" }}
+                >
                   Google
                 </button>
-                <button className="btn-ghost" type="button" style={{ justifyContent: "center" }}>
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  style={{ justifyContent: "center" }}
+                >
                   Facebook
                 </button>
               </div>
@@ -274,10 +327,23 @@ export default function LoginClient() {
         <p className="text-dim" style={{ fontSize: "0.85rem" }}>
           © 2024 LMS Pintar. Hak Cipta Dilindungi.
         </p>
-        <div className="row" style={{ justifyContent: "center", gap: "1.5rem", marginTop: "0.75rem" }}>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Tentang Kami</a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Bantuan</a>
-          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>Kontak</a>
+        <div
+          className="row"
+          style={{
+            justifyContent: "center",
+            gap: "1.5rem",
+            marginTop: "0.75rem",
+          }}
+        >
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Tentang Kami
+          </a>
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Bantuan
+          </a>
+          <a href="#" className="text-dim" style={{ fontSize: "0.85rem" }}>
+            Kontak
+          </a>
         </div>
       </footer>
     </>

@@ -31,6 +31,7 @@ import { Filters } from "./_components/Filters";
 import { Table } from "./_components/Table";
 import { List } from "./_components/List";
 import { CourseDialogs } from "./_components/CourseDialogs";
+import { DataViewportControls } from "../_components/DataViewportControls";
 
 export type ActiveTab = "mataKuliah" | "kelas" | "years";
 
@@ -121,6 +122,8 @@ export default function AdminCoursesPage() {
   const [years, setYears] = useState<AcademicYear[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [showClassModal, setShowClassModal] = useState(false);
   const [showSubjectModal, setShowSubjectModal] = useState(false);
@@ -177,6 +180,10 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     void loadMeta();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, searchQuery, rowsPerPage]);
 
   async function fetchClasses() {
     const res = await fetch("/api/classes?limit=100");
@@ -277,7 +284,8 @@ export default function AdminCoursesPage() {
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
-        message: error instanceof Error ? error.message : "Gagal menyimpan kelas",
+        message:
+          error instanceof Error ? error.message : "Gagal menyimpan kelas",
       });
     } finally {
       setLoading(false);
@@ -298,7 +306,8 @@ export default function AdminCoursesPage() {
       const res = editingSubject
         ? await updateSubjectCourseAction(editingSubject.id, payload)
         : await createSubjectCourseAction(payload);
-      if (!res.success) throw new Error(res.error || "Gagal menyimpan mata kuliah");
+      if (!res.success)
+        throw new Error(res.error || "Gagal menyimpan mata kuliah");
       setShowSubjectModal(false);
       resetSubjectForm();
       await loadData();
@@ -306,7 +315,10 @@ export default function AdminCoursesPage() {
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
-        message: error instanceof Error ? error.message : "Gagal menyimpan mata kuliah",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan mata kuliah",
       });
     } finally {
       setLoading(false);
@@ -317,7 +329,7 @@ export default function AdminCoursesPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = editingYear 
+      const res = editingYear
         ? await updateAcademicYearAction(editingYear.id, {
             name: yearForm.name,
             fromYear: yearForm.fromYear,
@@ -330,7 +342,8 @@ export default function AdminCoursesPage() {
             toYear: yearForm.toYear,
             isCurrent: yearForm.isCurrent,
           });
-      if (!res.success) throw new Error(res.error || "Gagal menyimpan tahun akademik");
+      if (!res.success)
+        throw new Error(res.error || "Gagal menyimpan tahun akademik");
       setShowYearModal(false);
       setEditingYear(null);
       setYearForm(EMPTY_YEAR_FORM);
@@ -340,7 +353,10 @@ export default function AdminCoursesPage() {
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
-        message: error instanceof Error ? error.message : "Gagal menyimpan tahun akademik",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan tahun akademik",
       });
     } finally {
       setLoading(false);
@@ -355,7 +371,11 @@ export default function AdminCoursesPage() {
       onConfirm: async () => {
         const res = await deleteCourseAction(id);
         if (!res.success) {
-          setNotice({ open: true, title: "Gagal Menghapus", message: res.error || "Gagal menghapus kelas" });
+          setNotice({
+            open: true,
+            title: "Gagal Menghapus",
+            message: res.error || "Gagal menghapus kelas",
+          });
           return;
         }
         await loadData();
@@ -367,11 +387,16 @@ export default function AdminCoursesPage() {
     setConfirmState({
       open: true,
       title: "Hapus Mata Kuliah",
-      message: "Hapus mata kuliah ini? Materi yang terhubung akan menjadi tidak terikat ke mata kuliah mana pun.",
+      message:
+        "Hapus mata kuliah ini? Materi yang terhubung akan menjadi tidak terikat ke mata kuliah mana pun.",
       onConfirm: async () => {
         const res = await deleteSubjectCourseAction(id);
         if (!res.success) {
-          setNotice({ open: true, title: "Gagal Menghapus", message: res.error || "Gagal menghapus mata kuliah" });
+          setNotice({
+            open: true,
+            title: "Gagal Menghapus",
+            message: res.error || "Gagal menghapus mata kuliah",
+          });
           return;
         }
         await loadData();
@@ -387,7 +412,11 @@ export default function AdminCoursesPage() {
       onConfirm: async () => {
         const res = await deleteAcademicYearAction(id);
         if (!res.success) {
-          setNotice({ open: true, title: "Gagal Menghapus", message: res.error || "Gagal menghapus tahun akademik" });
+          setNotice({
+            open: true,
+            title: "Gagal Menghapus",
+            message: res.error || "Gagal menghapus tahun akademik",
+          });
           return;
         }
         await loadData();
@@ -399,7 +428,11 @@ export default function AdminCoursesPage() {
   async function setYearActive(id: string) {
     const res = await setAcademicYearActiveAction(id);
     if (!res.success) {
-      setNotice({ open: true, title: "Gagal Mengubah Status", message: res.error || "Gagal mengubah status aktif." });
+      setNotice({
+        open: true,
+        title: "Gagal Mengubah Status",
+        message: res.error || "Gagal mengubah status aktif.",
+      });
       return;
     }
     await loadData();
@@ -408,15 +441,43 @@ export default function AdminCoursesPage() {
   const currentData = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (activeTab === "mataKuliah") {
-      return q ? subjectCourses.filter(i => [i.code, i.title].join(" ").toLowerCase().includes(q)) : subjectCourses;
+      return q
+        ? subjectCourses.filter((i) =>
+            [i.code, i.title].join(" ").toLowerCase().includes(q),
+          )
+        : subjectCourses;
     }
     if (activeTab === "kelas") {
-      return q ? classes.filter(i => [i.name, i.academicYear.name, i.classTeacher?.name || ""].join(" ").toLowerCase().includes(q)) : classes;
+      return q
+        ? classes.filter((i) =>
+            [i.name, i.academicYear.name, i.classTeacher?.name || ""]
+              .join(" ")
+              .toLowerCase()
+              .includes(q),
+          )
+        : classes;
     }
-    return q ? years.filter(i => i.name.toLowerCase().includes(q)) : years;
+    return q ? years.filter((i) => i.name.toLowerCase().includes(q)) : years;
   }, [activeTab, searchQuery, subjectCourses, classes, years]);
 
-  const addButtonLabel = activeTab === "mataKuliah" ? "Tambah Mata Kuliah" : activeTab === "kelas" ? "Tambah Kelas" : "Tambah Tahun";
+  const totalItems = currentData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedData = useMemo(() => {
+    const start = (safePage - 1) * rowsPerPage;
+    return currentData.slice(start, start + rowsPerPage);
+  }, [currentData, safePage, rowsPerPage]);
+
+  const startItem = totalItems === 0 ? 0 : (safePage - 1) * rowsPerPage + 1;
+  const endItem =
+    totalItems === 0 ? 0 : Math.min(safePage * rowsPerPage, totalItems);
+
+  const addButtonLabel =
+    activeTab === "mataKuliah"
+      ? "Tambah Mata Kuliah"
+      : activeTab === "kelas"
+        ? "Tambah Kelas"
+        : "Tambah Tahun";
 
   return (
     <AdminLayout
@@ -424,8 +485,20 @@ export default function AdminCoursesPage() {
       headerActions={
         <div className="flex items-center gap-2">
           {activeTab !== "years" && (
-            <Button size="sm" className="font-bold shadow-lg shadow-primary/20 rounded-xl" asChild>
-              <Link href={{ pathname: "/admin/materials/new", query: activeTab === "mataKuliah" ? { from: "courses" } : { from: "knowledge" } }}>
+            <Button
+              size="sm"
+              className="font-bold shadow-lg shadow-primary/20 rounded-xl"
+              asChild
+            >
+              <Link
+                href={{
+                  pathname: "/admin/materials/new",
+                  query:
+                    activeTab === "mataKuliah"
+                      ? { from: "courses" }
+                      : { from: "knowledge" },
+                }}
+              >
                 <Plus className="mr-1 size-4" /> Upload Materi
               </Link>
             </Button>
@@ -435,9 +508,21 @@ export default function AdminCoursesPage() {
             size="sm"
             className="font-bold border-primary/30 text-primary hover:bg-primary/5 rounded-xl"
             onClick={() => {
-              if (activeTab === "mataKuliah") { resetSubjectForm(); setShowSubjectModal(true); }
-              else if (activeTab === "kelas") { resetClassForm(); setShowClassModal(true); }
-              else { setYearForm({ name: "", fromYear: "", toYear: "", isCurrent: false }); setShowYearModal(true); }
+              if (activeTab === "mataKuliah") {
+                resetSubjectForm();
+                setShowSubjectModal(true);
+              } else if (activeTab === "kelas") {
+                resetClassForm();
+                setShowClassModal(true);
+              } else {
+                setYearForm({
+                  name: "",
+                  fromYear: "",
+                  toYear: "",
+                  isCurrent: false,
+                });
+                setShowYearModal(true);
+              }
             }}
           >
             <Plus className="mr-1 size-4" /> {addButtonLabel}
@@ -445,7 +530,13 @@ export default function AdminCoursesPage() {
         </div>
       }
     >
-      <Suspense fallback={<div className="h-[60dvh] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <Suspense
+        fallback={
+          <div className="h-[60dvh] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }
+      >
         <div className="space-y-6">
           <Filters
             activeTab={activeTab}
@@ -454,51 +545,57 @@ export default function AdminCoursesPage() {
             classesCount={classes.length}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            searchPlaceholder={activeTab === "mataKuliah" ? "Cari kode atau nama MK..." : activeTab === "kelas" ? "Cari kelas atau dosen..." : "Cari tahun..."}
+            searchPlaceholder={
+              activeTab === "mataKuliah"
+                ? "Cari kode atau nama MK..."
+                : activeTab === "kelas"
+                  ? "Cari kelas atau dosen..."
+                  : "Cari tahun..."
+            }
           />
 
           <Table
             activeTab={activeTab}
             loading={loading}
-            data={currentData}
+            data={pagedData}
             onEdit={(item) => {
-               if (activeTab === "mataKuliah") {
-                 const subject = item as SubjectCourseItem;
-                 setEditingSubject(subject);
-                 setSubjectForm({ 
-                   code: subject.code, 
-                   title: subject.title, 
-                   description: subject.description || "", 
-                   learningOutcomes: subject.learningOutcomes || "", 
-                   status: subject.status 
-                 });
-                 setShowSubjectModal(true);
-               } else if (activeTab === "kelas") {
-                 const classItem = item as ClassItem;
-                 setEditingClass(classItem);
-                 setClassForm({ 
-                   name: classItem.name, 
-                   academicYearId: classItem.academicYearId, 
-                   classTeacherId: classItem.classTeacherId || "", 
-                   capacity: classItem.capacity 
-                 });
-                 setShowClassModal(true);
-               } else if (activeTab === "years") {
-                 const year = item as AcademicYear;
-                 setEditingYear(year);
-                 setYearForm({
-                   name: year.name,
-                   fromYear: year.fromYear,
-                   toYear: year.toYear,
-                   isCurrent: year.isCurrent
-                 });
-                 setShowYearModal(true);
-               }
+              if (activeTab === "mataKuliah") {
+                const subject = item as SubjectCourseItem;
+                setEditingSubject(subject);
+                setSubjectForm({
+                  code: subject.code,
+                  title: subject.title,
+                  description: subject.description || "",
+                  learningOutcomes: subject.learningOutcomes || "",
+                  status: subject.status,
+                });
+                setShowSubjectModal(true);
+              } else if (activeTab === "kelas") {
+                const classItem = item as ClassItem;
+                setEditingClass(classItem);
+                setClassForm({
+                  name: classItem.name,
+                  academicYearId: classItem.academicYearId,
+                  classTeacherId: classItem.classTeacherId || "",
+                  capacity: classItem.capacity,
+                });
+                setShowClassModal(true);
+              } else if (activeTab === "years") {
+                const year = item as AcademicYear;
+                setEditingYear(year);
+                setYearForm({
+                  name: year.name,
+                  fromYear: year.fromYear,
+                  toYear: year.toYear,
+                  isCurrent: year.isCurrent,
+                });
+                setShowYearModal(true);
+              }
             }}
             onDelete={(id) => {
-               if (activeTab === "mataKuliah") deleteSubject(id);
-               else if (activeTab === "kelas") deleteClass(id);
-               else deleteYear(id);
+              if (activeTab === "mataKuliah") deleteSubject(id);
+              else if (activeTab === "kelas") deleteClass(id);
+              else deleteYear(id);
             }}
             onYearActive={setYearActive}
             searchQuery={searchQuery}
@@ -507,48 +604,67 @@ export default function AdminCoursesPage() {
           <List
             activeTab={activeTab}
             loading={loading}
-            data={currentData}
+            data={pagedData}
             onEdit={(item) => {
-               if (activeTab === "mataKuliah") {
-                 const subject = item as SubjectCourseItem;
-                 setEditingSubject(subject);
-                 setSubjectForm({ 
-                   code: subject.code, 
-                   title: subject.title, 
-                   description: subject.description || "", 
-                   learningOutcomes: subject.learningOutcomes || "", 
-                   status: subject.status 
-                 });
-                 setShowSubjectModal(true);
-               } else if (activeTab === "kelas") {
-                 const classItem = item as ClassItem;
-                 setEditingClass(classItem);
-                 setClassForm({ 
-                   name: classItem.name, 
-                   academicYearId: classItem.academicYearId, 
-                   classTeacherId: classItem.classTeacherId || "", 
-                   capacity: classItem.capacity 
-                 });
-                 setShowClassModal(true);
-               } else if (activeTab === "years") {
-                 const year = item as AcademicYear;
-                 setEditingYear(year);
-                 setYearForm({
-                   name: year.name,
-                   fromYear: year.fromYear,
-                   toYear: year.toYear,
-                   isCurrent: year.isCurrent
-                 });
-                 setShowYearModal(true);
-               }
+              if (activeTab === "mataKuliah") {
+                const subject = item as SubjectCourseItem;
+                setEditingSubject(subject);
+                setSubjectForm({
+                  code: subject.code,
+                  title: subject.title,
+                  description: subject.description || "",
+                  learningOutcomes: subject.learningOutcomes || "",
+                  status: subject.status,
+                });
+                setShowSubjectModal(true);
+              } else if (activeTab === "kelas") {
+                const classItem = item as ClassItem;
+                setEditingClass(classItem);
+                setClassForm({
+                  name: classItem.name,
+                  academicYearId: classItem.academicYearId,
+                  classTeacherId: classItem.classTeacherId || "",
+                  capacity: classItem.capacity,
+                });
+                setShowClassModal(true);
+              } else if (activeTab === "years") {
+                const year = item as AcademicYear;
+                setEditingYear(year);
+                setYearForm({
+                  name: year.name,
+                  fromYear: year.fromYear,
+                  toYear: year.toYear,
+                  isCurrent: year.isCurrent,
+                });
+                setShowYearModal(true);
+              }
             }}
             onDelete={(id) => {
-               if (activeTab === "mataKuliah") deleteSubject(id);
-               else if (activeTab === "kelas") deleteClass(id);
-               else deleteYear(id);
+              if (activeTab === "mataKuliah") deleteSubject(id);
+              else if (activeTab === "kelas") deleteClass(id);
+              else deleteYear(id);
             }}
             onYearActive={setYearActive}
             searchQuery={searchQuery}
+          />
+
+          <DataViewportControls
+            startItem={startItem}
+            endItem={endItem}
+            totalItems={totalItems}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={setRowsPerPage}
+            entityLabel={
+              activeTab === "mataKuliah"
+                ? "mata kuliah"
+                : activeTab === "kelas"
+                  ? "kelas"
+                  : "tahun akademik"
+            }
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            loading={loading}
           />
         </div>
 
@@ -577,28 +693,67 @@ export default function AdminCoursesPage() {
         />
 
         {/* Basic Notice Dialog */}
-        <Dialog open={notice.open} onOpenChange={(o) => setNotice(p => ({ ...p, open: o }))}>
+        <Dialog
+          open={notice.open}
+          onOpenChange={(o) => setNotice((p) => ({ ...p, open: o }))}
+        >
           <DialogContent className="sm:max-w-md border-none rounded-3xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black">{notice.title}</DialogTitle>
-              <DialogDescription className="font-medium text-muted-foreground">{notice.message}</DialogDescription>
+              <DialogTitle className="text-xl font-black">
+                {notice.title}
+              </DialogTitle>
+              <DialogDescription className="font-medium text-muted-foreground">
+                {notice.message}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end pt-4">
-              <Button className="font-black px-10 rounded-xl" onClick={() => setNotice(p => ({ ...p, open: false }))}>OK</Button>
+              <Button
+                className="font-black px-10 rounded-xl"
+                onClick={() => setNotice((p) => ({ ...p, open: false }))}
+              >
+                OK
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         {/* Confirmation Dialog */}
-        <Dialog open={confirmState.open} onOpenChange={(o) => setConfirmState(p => ({ ...p, open: o, onConfirm: o ? p.onConfirm : null }))}>
+        <Dialog
+          open={confirmState.open}
+          onOpenChange={(o) =>
+            setConfirmState((p) => ({
+              ...p,
+              open: o,
+              onConfirm: o ? p.onConfirm : null,
+            }))
+          }
+        >
           <DialogContent className="sm:max-w-md border-none rounded-3xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black">{confirmState.title}</DialogTitle>
-              <DialogDescription className="font-medium">{confirmState.message}</DialogDescription>
+              <DialogTitle className="text-xl font-black">
+                {confirmState.title}
+              </DialogTitle>
+              <DialogDescription className="font-medium">
+                {confirmState.message}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-3 pt-6">
-              <Button variant="ghost" className="font-black text-[11px] uppercase tracking-widest" onClick={() => setConfirmState(p => ({ ...p, open: false }))}>Batal</Button>
-              <Button className="font-black text-[11px] uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white px-8 rounded-xl shadow-lg shadow-red-500/20" onClick={async () => { if (confirmState.onConfirm) await confirmState.onConfirm(); setConfirmState(p => ({ ...p, open: false })); }}>Ya, Hapus</Button>
+              <Button
+                variant="ghost"
+                className="font-black text-[11px] uppercase tracking-widest"
+                onClick={() => setConfirmState((p) => ({ ...p, open: false }))}
+              >
+                Batal
+              </Button>
+              <Button
+                className="font-black text-[11px] uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white px-8 rounded-xl shadow-lg shadow-red-500/20"
+                onClick={async () => {
+                  if (confirmState.onConfirm) await confirmState.onConfirm();
+                  setConfirmState((p) => ({ ...p, open: false }));
+                }}
+              >
+                Ya, Hapus
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
