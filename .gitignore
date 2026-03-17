@@ -9,3 +9,4 @@ out
 prisma/dev.db
 .vscode
 stitch_export
+TEST-ACCOUNTS.md
