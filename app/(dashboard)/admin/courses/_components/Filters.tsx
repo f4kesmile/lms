@@ -43,7 +43,7 @@ export function Filters({
         </Card>
         <Card className="border-none bg-card p-5 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 shadow-inner">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
               <LayoutGrid className="size-6" />
             </div>
             <div>

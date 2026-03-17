@@ -283,7 +283,7 @@ export default function NewMaterialPage() {
       "</head><body>",
       "<h1 style='font-size:18pt;margin-bottom:6pt'>" + safeHtmlTitle + "</h1>",
       safeHtmlModule
-        ? "<p style='color:#666;margin-bottom:18pt'>" + safeHtmlModule + "</p>"
+        ? "<p style='opacity:.7;margin-bottom:18pt'>" + safeHtmlModule + "</p>"
         : "",
       htmlBody,
       "</body></html>",
@@ -682,10 +682,10 @@ export default function NewMaterialPage() {
                   </span>
                 </div>
 
-                <div className="a4-sheet relative overflow-hidden rounded-md border border-border/60 bg-white px-[68px] pb-[72px] pt-[64px] shadow-sm">
+                <div className="a4-sheet relative overflow-hidden rounded-md border border-border/60 bg-card px-[68px] pb-[72px] pt-[64px] shadow-sm">
                   {printPreview ? (
                     <div
-                      className="editor-content min-h-[calc(100dvh-19rem)] text-[15px] leading-7 text-slate-900"
+                      className="editor-content min-h-[calc(100dvh-19rem)] text-[15px] leading-7 text-foreground"
                       dangerouslySetInnerHTML={{
                         __html: renderMaterialHtml(page),
                       }}
@@ -698,7 +698,7 @@ export default function NewMaterialPage() {
                         }}
                         contentEditable
                         suppressContentEditableWarning
-                        className="editor-wysiwyg h-full w-full overflow-y-auto rounded-sm border border-slate-200 bg-white px-2 py-1 text-slate-900 outline-none"
+                        className="editor-wysiwyg h-full w-full overflow-y-auto rounded-sm border border-border bg-card px-2 py-1 text-foreground outline-none"
                         style={{ fontSize: `${FONT_SIZES[fontSizeIndex]}px` }}
                         onFocus={() => setActivePageIndex(index)}
                         onInput={(event) => {
@@ -713,7 +713,7 @@ export default function NewMaterialPage() {
                     </div>
                   )}
 
-                  <div className="a4-footer pointer-events-none absolute bottom-0 left-[68px] right-[68px] flex items-center justify-between border-t border-slate-300 py-2 text-xs text-slate-600">
+                  <div className="a4-footer pointer-events-none absolute bottom-0 left-[68px] right-[68px] flex items-center justify-between border-t border-border py-2 text-xs text-muted-foreground">
                     <span>{form.title || "Judul Materi"}</span>
                     <span>Halaman {index + 1}</span>
                   </div>
@@ -784,7 +784,7 @@ export default function NewMaterialPage() {
 
           .a4-sheet {
             box-shadow: none !important;
-            border: 1px solid #bbb !important;
+            border: 1px solid var(--border-primary) !important;
             break-inside: avoid;
             page-break-inside: avoid;
             margin: 0 0 12mm 0 !important;

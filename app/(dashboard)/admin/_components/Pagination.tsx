@@ -72,7 +72,7 @@ export function Pagination({
                 size="sm"
                 className={`h-10 min-w-10 rounded-xl border font-black text-[11px] tracking-tight transition-all duration-300 ${
                   currentPage === page
-                    ? "border-primary bg-primary text-white shadow-lg shadow-primary/30 scale-105"
+                    ? "border-primary bg-primary text-on-primary shadow-lg shadow-primary/30 scale-105"
                     : "border-border bg-background hover:border-primary/40 hover:text-primary"
                 }`}
                 onClick={() => onPageChange(page)}

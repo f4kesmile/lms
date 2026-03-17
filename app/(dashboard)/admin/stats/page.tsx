@@ -142,19 +142,19 @@ export default function AdminStatsPage() {
       title: "Sesi Chat",
       value: stats?.totalSessions ?? 0,
       icon: MessageSquare,
-      accent: "bg-blue-500/10 text-blue-600",
+      accent: "bg-secondary-brand/10 text-secondary-brand",
     },
     {
       title: "Total Pertanyaan",
       value: stats?.totalTurns ?? 0,
       icon: Bot,
-      accent: "bg-amber-500/10 text-amber-600",
+      accent: "bg-secondary-brand/10 text-secondary-brand",
     },
     {
       title: "Rata-rata Rating",
       value: stats?.avgRating ?? "-",
       icon: Star,
-      accent: "bg-emerald-500/10 text-emerald-600",
+      accent: "bg-primary/10 text-primary",
     },
   ];
 
@@ -368,14 +368,14 @@ export default function AdminStatsPage() {
                 </div>
               </Card>
 
-              <Card className="border-none bg-emerald-950 p-5 text-emerald-50 shadow-sm">
+              <Card className="border-none bg-card p-5 text-foreground shadow-sm">
                 <div className="flex items-center gap-2">
                   <BrainCircuit className="size-4" />
                   <h2 className="text-base font-black tracking-tight">
                     Catatan Operasional
                   </h2>
                 </div>
-                <ul className="mt-4 space-y-3 text-sm text-emerald-50/85">
+                <ul className="mt-4 space-y-3 text-sm text-foreground/85">
                   <li>
                     Chatbot saat ini menggunakan RAG internal tanpa model AI
                     eksternal.

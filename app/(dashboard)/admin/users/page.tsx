@@ -33,20 +33,20 @@ const roleConfig: Record<
   { bg: string; text: string; label: string; icon: LucideIcon }
 > = {
   admin: {
-    bg: "bg-rose-500/10",
-    text: "text-rose-600",
+    bg: "bg-destructive/10",
+    text: "text-destructive",
     label: "Administrator",
     icon: ShieldCheck,
   },
   dosen: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-600",
+    bg: "bg-primary/10",
+    text: "text-primary",
     label: "Dosen Pengajar",
     icon: UserIcon,
   },
   mahasiswa: {
-    bg: "bg-blue-500/10",
-    text: "text-blue-600",
+    bg: "bg-secondary-brand/10",
+    text: "text-secondary-brand",
     label: "Mahasiswa",
     icon: GraduationCap,
   },

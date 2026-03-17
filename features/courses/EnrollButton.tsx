@@ -133,7 +133,7 @@ export default function EnrollButton({
           padding: "0.5rem",
           background: "var(--primary)",
           borderColor: "var(--primary-dark)",
-          color: "#000",
+          color: "var(--on-primary)",
           fontWeight: 700,
         }}
       >

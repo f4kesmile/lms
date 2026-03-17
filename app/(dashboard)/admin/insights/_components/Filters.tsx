@@ -39,21 +39,21 @@ export function Filters({ summary, search, setSearch }: FiltersProps) {
         ? `${(summary.avgResponseTimeMs / 1000).toFixed(2)}s`
         : "0s",
       icon: Clock3,
-      accent: "bg-blue-500/10 text-blue-600",
+      accent: "bg-secondary-brand/10 text-secondary-brand",
       note: "Dihitung dari interaksi terbaru",
     },
     {
       title: "Skor Kelayakan",
       value: summary ? `${summary.accuracyScore}%` : "0%",
       icon: BrainCircuit,
-      accent: "bg-amber-500/10 text-amber-600",
+      accent: "bg-secondary-brand/10 text-secondary-brand",
       note: "Jawaban dengan sitasi atau respons valid",
     },
     {
       title: "Rata-rata Rating",
       value: summary?.avgRating ?? "-",
       icon: Star,
-      accent: "bg-emerald-500/10 text-emerald-600",
+      accent: "bg-primary/10 text-primary",
       note: "Dari feedback pengguna yang masuk",
     },
   ];

@@ -23,12 +23,12 @@ type CatalogCourse = {
 };
 
 const gradients = [
-  "linear-gradient(135deg, #10b981 0%, #064e3b 100%)",
-  "linear-gradient(135deg, #f59e0b 0%, #78350f 100%)",
-  "linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)",
-  "linear-gradient(135deg, #f43f5e 0%, #881337 100%)",
-  "linear-gradient(135deg, #8b5cf6 0%, #4c1d95 100%)",
-  "linear-gradient(135deg, #06b6d4 0%, #164e63 100%)",
+  "var(--catalog-gradient-1)",
+  "var(--catalog-gradient-2)",
+  "var(--catalog-gradient-3)",
+  "var(--catalog-gradient-4)",
+  "var(--catalog-gradient-5)",
+  "var(--catalog-gradient-6)",
 ];
 
 const cardIcons = [
@@ -201,7 +201,10 @@ export default function CourseCatalogBrowser({
               >
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: 56, color: "rgba(255,255,255,0.12)" }}
+                  style={{
+                    fontSize: 56,
+                    color: "var(--icon-tint-on-gradient)",
+                  }}
                 >
                   {cardIcons[index % cardIcons.length]}
                 </span>

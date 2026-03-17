@@ -95,7 +95,7 @@ export function DataViewportControls({
                 className={cn(
                   "h-9 min-w-9 rounded-xl border text-[11px] font-black tracking-tight transition-all",
                   currentPage === page
-                    ? "border-primary bg-primary text-white shadow-md shadow-primary/30 scale-105"
+                    ? "border-primary bg-primary text-on-primary shadow-md shadow-primary/30 scale-105"
                     : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-primary",
                 )}
                 onClick={() => onPageChange(page)}

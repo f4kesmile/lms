@@ -404,7 +404,7 @@ export default function KnowledgeAdminPage() {
                 Batal
               </Button>
               <Button
-                className="font-bold bg-red-600 hover:bg-red-700 text-white px-6 rounded-xl shadow-lg shadow-red-500/20"
+                className="font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 rounded-xl shadow-lg shadow-destructive/20"
                 onClick={async () => {
                   if (confirmState.onConfirm) await confirmState.onConfirm();
                   setConfirmState((prev) => ({ ...prev, open: false }));

@@ -96,7 +96,7 @@ export function List({
             
             <div className="mt-6 flex items-center justify-between border-t border-border/30 pt-4">
               <p className="text-[10px] font-mono font-bold text-muted-foreground flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
+                <span className="size-1.5 rounded-full bg-primary" />
                 DIPERBARUI: {formatDate(item.updatedAt)}
               </p>
               
@@ -112,7 +112,7 @@ export function List({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors"
+                  className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-lg transition-colors"
                   onClick={() => deleteMaterial(item.id)}
                 >
                   <Trash2 className="size-4" />

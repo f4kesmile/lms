@@ -426,7 +426,7 @@ export const FloatingChatbot = () => {
           height: 56,
           borderRadius: "50%",
           background: "var(--primary)",
-          color: "#000",
+          color: "var(--on-primary)",
           border: "2px solid var(--primary-dark)",
           boxShadow: "4px 4px 0 var(--primary-dark)",
           cursor: "pointer",
@@ -475,7 +475,7 @@ export const FloatingChatbot = () => {
           style={{
             cursor: isMaximized ? "default" : "grab",
             background: "var(--primary)",
-            color: "#000",
+            color: "var(--on-primary)",
             padding: "0 0.75rem",
             height: HEADER_H,
             flexShrink: 0,
@@ -711,7 +711,9 @@ export const FloatingChatbot = () => {
                             ? "var(--primary)"
                             : "var(--bg-card)",
                         color:
-                          msg.role === "user" ? "#000" : "var(--text-main)",
+                          msg.role === "user"
+                            ? "var(--on-primary)"
+                            : "var(--text-main)",
                         border: "1.5px solid",
                         borderColor:
                           msg.role === "user"
@@ -799,7 +801,9 @@ export const FloatingChatbot = () => {
                                 cursor: loadingRate ? "wait" : "pointer",
                                 padding: 0,
                                 lineHeight: 1,
-                                color: active ? "#f59e0b" : "var(--text-dim)",
+                                color: active
+                                  ? "var(--secondary-brand)"
+                                  : "var(--text-dim)",
                                 opacity: loadingRate ? 0.65 : 1,
                               }}
                             >
@@ -975,7 +979,9 @@ export const FloatingChatbot = () => {
                         ? "var(--primary)"
                         : "var(--bg-dark)",
                     color:
-                      input.trim() && !loading ? "#000" : "var(--text-dim)",
+                      input.trim() && !loading
+                        ? "var(--on-primary)"
+                        : "var(--text-dim)",
                     border: "1.5px solid var(--border-primary)",
                     borderRadius: 8,
                     padding: "0 0.75rem",

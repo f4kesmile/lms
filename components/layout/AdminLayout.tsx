@@ -198,9 +198,9 @@ export const AdminLayout = ({
                   className="rounded-lg"
                 >
                   {theme === "dark" ? (
-                    <Sun className="size-4 text-amber-400 fill-amber-400" />
+                    <Sun className="size-4 text-secondary-brand fill-secondary-brand" />
                   ) : (
-                    <Moon className="size-4 text-emerald-600 fill-emerald-600" />
+                    <Moon className="size-4 text-primary fill-primary" />
                   )}
                 </Button>
               )}

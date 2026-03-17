@@ -43,7 +43,7 @@ export function Modal({
           left: 0,
           right: 0,
           bottom: 0,
-          background: "rgba(0,0,0,0.7)",
+          background: "var(--overlay-backdrop)",
           zIndex: 99,
         }}
         onClick={onClose}
@@ -62,7 +62,7 @@ export function Modal({
           width: `min(${width}, 96vw)`,
           maxHeight: "90dvh",
           overflowY: "auto",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.4)",
+          boxShadow: "var(--shadow-elevated)",
         }}
       >
         <div className="row space-between" style={{ marginBottom: "1.5rem" }}>

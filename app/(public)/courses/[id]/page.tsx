@@ -156,7 +156,7 @@ export default async function CourseDetailPage({
                 style={{
                   height: 200,
                   background:
-                    "linear-gradient(135deg, rgba(190,239,0,0.15), rgba(0,0,0,0.8))",
+                    "linear-gradient(135deg, var(--surface-primary-soft), var(--brand-heavy))",
                   position: "relative",
                   display: "flex",
                   alignItems: "flex-end",
@@ -263,7 +263,7 @@ export default async function CourseDetailPage({
                               width: 28,
                               height: 28,
                               borderRadius: "50%",
-                              background: "rgba(190,239,0,0.12)",
+                              background: "var(--surface-primary-soft)",
                               color: "var(--primary)",
                               display: "flex",
                               alignItems: "center",
@@ -322,7 +322,7 @@ export default async function CourseDetailPage({
                             width: 28,
                             height: 28,
                             borderRadius: "50%",
-                            background: "rgba(190,239,0,0.12)",
+                            background: "var(--surface-primary-soft)",
                             color: "var(--primary)",
                             display: "flex",
                             alignItems: "center",
