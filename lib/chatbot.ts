@@ -32,6 +32,31 @@ function isExerciseRequest(question: string): boolean {
   return /rancang|latihan|exercise|praktik|soal|tugas/.test(q);
 }
 
+function needsCaseBridge(question: string): boolean {
+  const q = question.toLowerCase();
+  return /studi kasus|hubungkan|kaitkan|praktis|penerapan/.test(q);
+}
+
+function uniqueByMeaning(lines: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const line of lines) {
+    const normalized = normalizeExcerpt(line)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .slice(0, 10)
+      .join(" ");
+
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(line);
+  }
+
+  return result;
+}
+
 function estimateComplexity(question: string): ComplexityLevel {
   const q = question.toLowerCase();
   const words = q.split(/\s+/).filter(Boolean).length;
@@ -189,6 +214,25 @@ function buildExerciseBlock(primary: Source, references: Source[]) {
   ];
 }
 
+function buildCaseBridgeBlock(primary: Source, references: Source[]) {
+  const focus = references.slice(0, 2);
+  const rows = focus.map((source, index) => {
+    const concept = firstSentence(source.excerpt, 140).replace(/[.!?]+$/, "");
+    const scenario =
+      index === 0
+        ? "prediksi hasil, klasifikasi data, atau rekomendasi sederhana"
+        : "evaluasi performa model lewat metrik yang relevan";
+
+    return `- Konsep: ${concept} -> Studi kasus: terapkan pada ${scenario}. ${citationMark(source)}`;
+  });
+
+  return [
+    "Hubungan konsep dengan studi kasus:",
+    ...rows,
+    "- Langkah praktik: definisikan masalah, siapkan data, pilih model dasar, lalu evaluasi hasil sebelum iterasi berikutnya.",
+  ];
+}
+
 export async function generateChatAnswer(params: {
   question: string;
   sources: Source[];
@@ -220,7 +264,9 @@ export async function generateChatAnswer(params: {
       const excerpt = firstSentence(source.excerpt, cfg.summaryMax - 20);
       return excerpt ? `- ${excerpt} ${citationMark(source)}` : "";
     })
-    .filter(Boolean)
+    .filter(Boolean);
+
+  const uniqueKeyPoints = uniqueByMeaning(keyPoints)
     .slice(0, cfg.keyPoints);
 
   const deepDivePoints = references
@@ -234,6 +280,8 @@ export async function generateChatAnswer(params: {
     })
     .filter(Boolean);
 
+  const uniqueDeepDivePoints = uniqueByMeaning(deepDivePoints);
+
   const practicalPoints = references
     .slice(0, 2)
     .map((source) => `- Penerapan praktis dapat dimulai dari topik ${source.title} pada ${source.module}. ${citationMark(source)}`);
@@ -245,14 +293,17 @@ export async function generateChatAnswer(params: {
         `- ${coreSummary || normalizeExcerpt(primary.excerpt)} ${citationMark(primary)}`,
         "",
         "Uraian lebih panjang:",
-        ...(deepDivePoints.length > 0
-          ? deepDivePoints
+        ...(uniqueDeepDivePoints.length > 0
+          ? uniqueDeepDivePoints
           : ["- Materi tambahan belum cukup untuk memperluas pembahasan."]),
         "",
         "Poin penting:",
-        ...(keyPoints.length > 0
-          ? keyPoints
+        ...(uniqueKeyPoints.length > 0
+          ? uniqueKeyPoints
           : ["- Detail rinci dapat dilihat pada referensi sumber."]),
+        ...(needsCaseBridge(question)
+          ? ["", ...buildCaseBridgeBlock(primary, references)]
+          : []),
         ...(cfg.includePractical
           ? ["", "Kaitan praktis:", ...practicalPoints]
           : []),

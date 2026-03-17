@@ -8,6 +8,15 @@ import { badRequest, serverError, unauthorized } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { buildSources, rankChunks } from "@/lib/rag";
 
+function dedupeByMaterial<T extends { chunk: { materialId: string } }>(items: T[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.chunk.materialId)) return false;
+    seen.add(item.chunk.materialId);
+    return true;
+  });
+}
+
 const askSchema = z.object({
   question: z.string().min(5),
   sessionId: z.string().optional(),
@@ -27,7 +36,7 @@ export async function POST(request: Request) {
 
     const settings = await readChatbotSettings();
     const { question, topK = settings.topK } = parsed.data;
-    const fallbackTopK = Math.max(topK, 5);
+    const candidatePool = Math.min(40, Math.max(topK * 4, 12));
 
     const chunks = await prisma.materialChunk.findMany({
       select: {
@@ -49,13 +58,17 @@ export async function POST(request: Request) {
       take: 300,
     });
 
-    const ranked = rankChunks(question, chunks, fallbackTopK, 0);
-    const strictRanked = ranked
-      .filter((item) => item.score >= settings.minScore)
+    const ranked = rankChunks(question, chunks, candidatePool, 0);
+    const strictRanked = dedupeByMaterial(
+      ranked.filter((item) => item.score >= settings.minScore),
+    )
       .slice(0, topK);
 
+    const nearestRanked = dedupeByMaterial(ranked).slice(0, 5);
+
     const sources = buildSources(strictRanked);
-    const nearestSources = sources.length === 0 ? buildSources(ranked.slice(0, 5)) : [];
+    const nearestSources =
+      sources.length === 0 ? buildSources(nearestRanked) : [];
 
     const answer =
       sources.length > 0
