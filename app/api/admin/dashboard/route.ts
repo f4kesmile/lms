@@ -13,6 +13,27 @@ type ActivityItem = {
   date: string;
 };
 
+type GrowthPoint = {
+  day: "Sen" | "Sel" | "Rab" | "Kam" | "Jum" | "Sab" | "Min";
+  value: number;
+};
+
+const DAY_LABELS: GrowthPoint["day"][] = [
+  "Sen",
+  "Sel",
+  "Rab",
+  "Kam",
+  "Jum",
+  "Sab",
+  "Min",
+];
+
+function mapJsDayToLabel(day: number): GrowthPoint["day"] {
+  // JS Date#getDay(): 0=Sun .. 6=Sat
+  const map: GrowthPoint["day"][] = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+  return map[day] ?? "Sen";
+}
+
 export async function GET() {
   try {
     const currentUser = await getCurrentUser();
@@ -86,6 +107,23 @@ export async function GET() {
 
     const aiUsage = totalUsers > 0 ? Math.min(100, Math.round((totalTurns / totalUsers) * 10)) : 0;
 
+    const dailyCounter = new Map<GrowthPoint["day"], number>(
+      DAY_LABELS.map((day) => [day, 0])
+    );
+
+    for (const item of activities) {
+      const label = mapJsDayToLabel(new Date(item.date).getDay());
+      dailyCounter.set(label, (dailyCounter.get(label) ?? 0) + 1);
+    }
+
+    const growthSeries: GrowthPoint[] = DAY_LABELS.map((day) => {
+      const count = dailyCounter.get(day) ?? 0;
+      return {
+        day,
+        value: count,
+      };
+    });
+
     return NextResponse.json({
       metrics: {
         totalUsers,
@@ -94,6 +132,7 @@ export async function GET() {
         aiUsage,
       },
       activities,
+      growthSeries,
     });
   } catch (error) {
     return serverError(error);
