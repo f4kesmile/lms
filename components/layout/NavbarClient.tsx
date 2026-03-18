@@ -25,6 +25,39 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   }, [initialUser]);
 
   useEffect(() => {
+    let isCancelled = false;
+
+    async function syncUserSession() {
+      try {
+        const response = await fetch("/api/auth/session", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "include",
+        });
+
+        if (!response.ok) return;
+
+        const data = (await response.json()) as {
+          user: { name: string; role: string } | null;
+        };
+
+        if (isCancelled) return;
+        setUser(
+          data.user ? { name: data.user.name, role: data.user.role } : null,
+        );
+      } catch {
+        // Keep current navbar state when session check fails.
+      }
+    }
+
+    syncUserSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [pathname]);
+
+  useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
@@ -190,7 +223,9 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   </div>
                   <Link
                     href={
-                      (user.role === "admin" ? "/admin" : "/courses") as Route
+                      (user.role === "mahasiswa"
+                        ? "/courses"
+                        : "/admin/dashboard") as Route
                     }
                     className="btn-ghost row"
                     style={{
@@ -199,15 +234,31 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                       fontSize: "0.85rem",
                       padding: "0.5rem",
                       border: "none",
+                      borderRadius: "0.75rem",
+                      transition:
+                        "background 0.18s ease, color 0.18s ease, transform 0.18s ease",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.background =
+                        "var(--surface-primary-soft)";
+                      event.currentTarget.style.color = "var(--text-main)";
+                      event.currentTarget.style.transform = "translateX(2px)";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.background = "transparent";
+                      event.currentTarget.style.color = "";
+                      event.currentTarget.style.transform = "translateX(0)";
                     }}
                   >
                     <span
                       className="material-symbols-outlined"
                       style={{ fontSize: 18 }}
                     >
-                      grid_view
+                      {user.role === "mahasiswa" ? "school" : "grid_view"}
                     </span>
-                    Buka Dasbor
+                    {user.role === "mahasiswa"
+                      ? "Lihat Kursus"
+                      : "Buka Dashboard"}
                   </Link>
                   <button
                     onClick={handleSignOut}
@@ -217,13 +268,30 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                       justifyContent: "flex-start",
                       fontSize: "0.85rem",
                       padding: "0.5rem",
-                      border: "none",
-                      color: "var(--rose)",
+                      border: "1px solid #f2b8b5",
+                      borderRadius: "0.75rem",
+                      color: "#d92d20",
+                      background: "#fff1f1",
+                      fontWeight: 700,
+                      transition:
+                        "background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.background = "#ffe3e1";
+                      event.currentTarget.style.borderColor = "#e99a95";
+                      event.currentTarget.style.color = "#b42318";
+                      event.currentTarget.style.transform = "translateX(2px)";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.background = "#fff1f1";
+                      event.currentTarget.style.borderColor = "#f2b8b5";
+                      event.currentTarget.style.color = "#d92d20";
+                      event.currentTarget.style.transform = "translateX(0)";
                     }}
                   >
                     <span
                       className="material-symbols-outlined"
-                      style={{ fontSize: 18 }}
+                      style={{ fontSize: 18, color: "#d92d20" }}
                     >
                       logout
                     </span>

@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const level = parseLevel(requestUrl.searchParams.get("level"));
     const limit = Number(requestUrl.searchParams.get("limit") || "120");
 
-    const logs = getSystemLogs({
+    const logs = await getSystemLogs({
       level,
       limit: Number.isFinite(limit) ? limit : 120,
     });
