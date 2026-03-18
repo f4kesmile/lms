@@ -41,7 +41,11 @@ export const AdminLayout = ({
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+  } | null>(null);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
@@ -142,8 +146,8 @@ export const AdminLayout = ({
                       {user ? initials : <User className="size-5" />}
                     </div>
                     <div className="flex flex-col items-start gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
-                      <span className="font-bold text-sm truncate max-w-[120px]">
-                        {user?.name || "Memuat..."}
+                      <span className="font-bold text-sm truncate max-w-[170px]">
+                        {user?.email || "Memuat..."}
                       </span>
                       <span className="text-[10px] text-sidebar-foreground/50 uppercase font-black tracking-wider">
                         {user?.role || "Petugas"}

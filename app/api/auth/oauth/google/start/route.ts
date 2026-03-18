@@ -36,6 +36,8 @@ export async function GET(request: Request) {
 
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const allowedDomains = getAllowedEmailDomains();
+  const forceAccountChooser =
+    process.env.GOOGLE_OAUTH_FORCE_ACCOUNT_CHOOSER === "true";
 
   if (!clientId) {
     writeSystemLog({
@@ -67,8 +69,12 @@ export async function GET(request: Request) {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", state);
-  url.searchParams.set("prompt", "select_account");
-  url.searchParams.set("access_type", "online");
+
+  // Faster default: let Google reuse active session.
+  // Set GOOGLE_OAUTH_FORCE_ACCOUNT_CHOOSER=true to force account picker each time.
+  if (forceAccountChooser) {
+    url.searchParams.set("prompt", "select_account");
+  }
 
   // Hint to Google account picker; actual enforcement still happens in callback.
   if (allowedDomains.length === 1) {
@@ -79,7 +85,7 @@ export async function GET(request: Request) {
     level: "INFO",
     category: "AUTH_OAUTH_GOOGLE",
     message: "Memulai OAuth Google",
-    meta: { allowedDomains },
+    meta: { allowedDomains, forceAccountChooser },
   });
 
   return NextResponse.redirect(url);
