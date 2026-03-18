@@ -26,18 +26,48 @@ type MicrosoftUserInfo = {
   preferred_username?: string;
 };
 
+function isOAuthDebugTimingEnabled(): boolean {
+  return process.env.AUTH_OAUTH_DEBUG_TIMING === "true";
+}
+
+function getOAuthLatencyWarnMs(): number {
+  const raw = Number(process.env.AUTH_OAUTH_LATENCY_WARN_MS || "2500");
+  if (!Number.isFinite(raw)) return 2500;
+  return Math.min(Math.max(Math.floor(raw), 300), 20000);
+}
+
+function maskEmail(email: string): string {
+  const trimmed = email.trim().toLowerCase();
+  const atIndex = trimmed.indexOf("@");
+  if (atIndex <= 1) return "***";
+
+  const local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+  if (!domain) return "***";
+
+  if (local.length <= 2) {
+    return `${local[0] ?? "*"}***@${domain}`;
+  }
+
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+
 function getBaseUrl(request: Request): string {
   const envBaseUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (envBaseUrl) return envBaseUrl;
   return new URL(request.url).origin;
 }
 
-function redirectToLogin(request: Request, errorCode: string) {
+function redirectToLogin(
+  request: Request,
+  errorCode: string,
+  meta?: Record<string, unknown>
+) {
   writeSystemLog({
     level: "WARNING",
     category: "AUTH_OAUTH_MICROSOFT",
     message: "OAuth callback Microsoft gagal",
-    meta: { errorCode },
+    meta: { errorCode, ...(meta ?? {}) },
   });
 
   const url = new URL("/login", request.url);
@@ -46,21 +76,33 @@ function redirectToLogin(request: Request, errorCode: string) {
 }
 
 export async function GET(request: Request) {
+  const startedAt = Date.now();
+  let stage = "init";
+  const debugTimingEnabled = isOAuthDebugTimingEnabled();
+  const latencyWarnMs = getOAuthLatencyWarnMs();
+
   const clientId = process.env.MICROSOFT_OAUTH_CLIENT_ID;
   const clientSecret = process.env.MICROSOFT_OAUTH_CLIENT_SECRET;
   const tenantId = process.env.MICROSOFT_OAUTH_TENANT_ID || "common";
 
   if (!clientId || !clientSecret) {
-    return redirectToLogin(request, "oauth_not_configured");
+    return redirectToLogin(request, "oauth_not_configured", {
+      stage,
+      elapsedMs: Date.now() - startedAt,
+    });
   }
 
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const state = requestUrl.searchParams.get("state");
   if (!code || !state) {
-    return redirectToLogin(request, "oauth_invalid_callback");
+    return redirectToLogin(request, "oauth_invalid_callback", {
+      stage,
+      elapsedMs: Date.now() - startedAt,
+    });
   }
 
+  stage = "state_verification";
   const cookieStore = await cookies();
   const stateFromCookie = cookieStore.get(OAUTH_STATE_COOKIE)?.value;
   cookieStore.set(OAUTH_STATE_COOKIE, "", {
@@ -70,9 +112,14 @@ export async function GET(request: Request) {
   });
 
   if (!stateFromCookie || stateFromCookie !== state) {
-    return redirectToLogin(request, "oauth_state_mismatch");
+    return redirectToLogin(request, "oauth_state_mismatch", {
+      stage,
+      elapsedMs: Date.now() - startedAt,
+    });
   }
 
+  stage = "token_exchange";
+  const tokenStartedAt = Date.now();
   const tokenResponse = await fetch(
     `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
     {
@@ -87,31 +134,44 @@ export async function GET(request: Request) {
       }).toString(),
     }
   );
+  const tokenMs = Date.now() - tokenStartedAt;
 
   const tokenData = (await tokenResponse.json()) as MicrosoftTokenResponse;
   if (!tokenResponse.ok || !tokenData.access_token) {
-    return redirectToLogin(request, "oauth_token_failed");
+    return redirectToLogin(request, "oauth_token_failed", {
+      stage,
+      tokenMs,
+      elapsedMs: Date.now() - startedAt,
+    });
   }
 
+  stage = "profile_fetch";
+  const profileStartedAt = Date.now();
   const profileResponse = await fetch("https://graph.microsoft.com/oidc/userinfo", {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
     cache: "no-store",
   });
+  const profileMs = Date.now() - profileStartedAt;
 
   const profile = (await profileResponse.json()) as MicrosoftUserInfo;
   const emailRaw = profile.email || profile.preferred_username;
   if (!profileResponse.ok || !emailRaw) {
-    return redirectToLogin(request, "oauth_email_unverified");
+    return redirectToLogin(request, "oauth_email_unverified", {
+      stage,
+      profileMs,
+      elapsedMs: Date.now() - startedAt,
+    });
   }
 
   const email = emailRaw.toLowerCase();
+  const emailMasked = maskEmail(email);
   if (!isAllowedEmail(email)) {
     writeSystemLog({
       level: "WARNING",
       category: "AUTH_OAUTH_MICROSOFT",
-      message: "OAuth Microsoft ditolak: domain email tidak diizinkan",
+      message: "SSO Microsoft ditolak: domain email tidak diizinkan",
       meta: {
-        email,
+        email: emailMasked,
         domainRestrictionEnabled: isDomainRestrictionEnabled(),
         allowedDomains: getAllowedEmailDomainsText(),
       },
@@ -122,7 +182,19 @@ export async function GET(request: Request) {
     return NextResponse.redirect(url);
   }
 
+  stage = "db_lookup_user";
+  const lookupStartedAt = Date.now();
   const existingUser = await prisma.user.findUnique({ where: { email } });
+  const dbLookupMs = Date.now() - lookupStartedAt;
+
+  let dbCreateMs = 0;
+  let userWasCreated = false;
+  let createStartedAt = 0;
+
+  if (!existingUser) {
+    stage = "db_create_user";
+    createStartedAt = Date.now();
+  }
 
   const user =
     existingUser ??
@@ -141,18 +213,84 @@ export async function GET(request: Request) {
       },
     }));
 
-  if (!user.isActive) {
-    return redirectToLogin(request, "account_inactive");
+  if (!existingUser) {
+    userWasCreated = true;
+    dbCreateMs = Date.now() - createStartedAt;
   }
 
+  if (!user.isActive) {
+    return redirectToLogin(request, "account_inactive", {
+      stage,
+      dbLookupMs,
+      dbCreateMs,
+      elapsedMs: Date.now() - startedAt,
+    });
+  }
+
+  stage = "set_auth_cookie";
+  const setCookieStartedAt = Date.now();
   await setAuthCookie(user.id);
+  const setCookieMs = Date.now() - setCookieStartedAt;
+
+  const totalMs = Date.now() - startedAt;
+  const steps = [
+    { key: "tokenMs", value: tokenMs },
+    { key: "profileMs", value: profileMs },
+    { key: "dbLookupMs", value: dbLookupMs },
+    { key: "dbCreateMs", value: dbCreateMs },
+    { key: "setCookieMs", value: setCookieMs },
+  ];
+  const slowestStep = steps.reduce((prev, curr) =>
+    curr.value > prev.value ? curr : prev
+  );
 
   writeSystemLog({
     level: "INFO",
     category: "AUTH_OAUTH_MICROSOFT",
-    message: "OAuth Microsoft berhasil login",
-    meta: { userId: user.id, role: user.role, email },
+    message: "SSO Microsoft berhasil login",
+    meta: debugTimingEnabled
+      ? {
+          userId: user.id,
+          role: user.role,
+          email: emailMasked,
+          userWasCreated,
+          totalMs,
+          tokenMs,
+          profileMs,
+          dbLookupMs,
+          dbCreateMs,
+          setCookieMs,
+          slowestStep: slowestStep.key,
+          slowestStepMs: slowestStep.value,
+          debugTimingEnabled,
+        }
+      : {
+          userId: user.id,
+          role: user.role,
+          email: emailMasked,
+          userWasCreated,
+        },
   });
+
+  if (totalMs >= latencyWarnMs) {
+    writeSystemLog({
+      level: "WARNING",
+      category: "AUTH_OAUTH_MICROSOFT",
+      message: "SSO Microsoft latency tinggi",
+      meta: {
+        email: emailMasked,
+        latencyWarnMs,
+        totalMs,
+        tokenMs,
+        profileMs,
+        dbLookupMs,
+        dbCreateMs,
+        setCookieMs,
+        slowestStep: slowestStep.key,
+        slowestStepMs: slowestStep.value,
+      },
+    });
+  }
 
   const nextUrl = new URL(
     user.role === UserRole.mahasiswa ? "/courses" : "/admin/dashboard",

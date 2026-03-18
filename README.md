@@ -35,7 +35,7 @@ OAuth/SSO (Google Workspace compatible):
 
 Catatan mode domain:
 
-- Jika `AUTH_EMAIL_MODE=restricted`, maka login/register (password + OAuth Google + OAuth Microsoft) wajib sesuai `AUTH_ALLOWED_EMAIL_DOMAINS`.
+- Jika `AUTH_EMAIL_MODE=restricted`, maka login/register (password + OAuth Google + SSO Microsoft) wajib sesuai `AUTH_ALLOWED_EMAIL_DOMAINS`.
 - Jika `AUTH_EMAIL_MODE=public`, maka pembatasan domain dimatikan untuk semua metode login/register.
 - Dengan ini cukup ubah 1 variabel `AUTH_EMAIL_MODE` untuk aktif/nonaktifkan pembatasan domain global.
 
@@ -44,8 +44,11 @@ Akses log sistem:
 - Buka panel admin di `/admin/logs` (khusus role `admin`).
 - Halaman ini live refresh tiap 2 detik, bisa filter level log (INFO, WARNING, ERROR, EMERGENCY, DANGER).
 - Log sekarang disimpan ke database dan auto-prune berdasarkan:
-   - `LOG_MAX_RECORDS` (default: 10000)
-   - `LOG_RETENTION_DAYS` (default: 30)
+  - `LOG_MAX_RECORDS` (default: 10000)
+  - `LOG_RETENTION_DAYS` (default: 30)
+- Opsi debug latensi OAuth untuk production hardening:
+  - `AUTH_OAUTH_DEBUG_TIMING` (default: `false`) -> jika `true`, log INFO OAuth menyertakan detail timing per tahap.
+  - `AUTH_OAUTH_LATENCY_WARN_MS` (default: `2500`) -> ambang waktu total OAuth untuk memicu log WARNING latency tinggi.
 - Untuk Vercel production, ini lebih stabil dibanding in-memory karena data log tidak hilang saat instance berganti.
 
 ## 3) Generate Prisma client and run migration
@@ -99,10 +102,13 @@ Dua provider tersedia: **Google Workspace** dan **Microsoft (Azure Entra ID / Mi
 6. Tambahkan **Authorized redirect URIs** berikut ini:
 
    **Development:**
+
    ```
    http://localhost:3000/api/auth/oauth/google/callback
    ```
+
    **Production:**
+
    ```
    https://domain-produksi-anda.com/api/auth/oauth/google/callback
    ```
@@ -130,19 +136,22 @@ GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxx
 3. Isi **Name** (contoh: `Edunexus`).
 4. Pilih **Supported account types** sesuai kebutuhan:
 
-   | Pilihan | `MICROSOFT_OAUTH_TENANT_ID` |
-   |---|---|
-   | Hanya akun di direktori organisasi ini saja | ID tenant organisasi Anda (GUID) |
-   | Akun di semua direktori organisasi (multi-tenant) | `organizations` |
-   | Akun organisasi + akun Microsoft pribadi | `common` |
+   | Pilihan                                           | `MICROSOFT_OAUTH_TENANT_ID`      |
+   | ------------------------------------------------- | -------------------------------- |
+   | Hanya akun di direktori organisasi ini saja       | ID tenant organisasi Anda (GUID) |
+   | Akun di semua direktori organisasi (multi-tenant) | `organizations`                  |
+   | Akun organisasi + akun Microsoft pribadi          | `common`                         |
 
 5. Pada **Redirect URI**, pilih platform **Web**, lalu masukkan:
 
    **Development:**
+
    ```
    http://localhost:3000/api/auth/oauth/microsoft/callback
    ```
+
    **Production:**
+
    ```
    https://domain-produksi-anda.com/api/auth/oauth/microsoft/callback
    ```
@@ -154,6 +163,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxx
 #### Langkah 2 — Salin Client ID dan Tenant ID
 
 Setelah registrasi, di halaman **Overview**:
+
 - **Application (client) ID** → `MICROSOFT_OAUTH_CLIENT_ID`
 - **Directory (tenant) ID** → `MICROSOFT_OAUTH_TENANT_ID` (jika memilih organisasi saja di langkah 4)
 
