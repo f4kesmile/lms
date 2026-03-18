@@ -29,6 +29,15 @@ import {
   ArrowUpRight,
   TrendingUp,
 } from "lucide-react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type DashboardResponse = {
   metrics: {
@@ -37,6 +46,10 @@ type DashboardResponse = {
     totalModules: number;
     aiUsage: number;
   };
+  growthSeries?: Array<{
+    day: string;
+    value: number;
+  }>;
   activities: Array<{
     id: string;
     user: string;
@@ -61,6 +74,8 @@ const statLabels = [
   "Efisiensi AI",
 ];
 
+const DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+
 export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,19 +97,33 @@ export default function AdminDashboardPage() {
   }, []);
 
   const bars = useMemo(() => {
-    if (!data) return Array(7).fill(20);
-    const activityCount = data.activities.length;
-    return [1, 2, 3, 4, 5, 6, 7].map((day) => {
-      const dayActivities = data.activities.filter((item) => {
-        const d = new Date(item.date).getDay();
-        return d === day % 7;
-      }).length;
-      return Math.min(
-        100,
-        Math.max(15, (dayActivities / Math.max(activityCount, 1)) * 300),
-      );
-    });
+    if (!data) return Array(7).fill(0);
+
+    return [1, 2, 3, 4, 5, 6, 7].map(
+      (day) =>
+        data.activities.filter((item) => {
+          const d = new Date(item.date).getDay();
+          return d === day % 7;
+        }).length,
+    );
   }, [data]);
+
+  const growthData = useMemo(() => {
+    if (data?.growthSeries && data.growthSeries.length > 0) {
+      return DAY_LABELS.map((day) => {
+        const point = data.growthSeries?.find((item) => item.day === day);
+        return {
+          day,
+          value: Math.round(point?.value ?? 0),
+        };
+      });
+    }
+
+    return DAY_LABELS.map((day, index) => ({
+      day,
+      value: Math.round(bars[index] ?? 0),
+    }));
+  }, [bars, data?.growthSeries]);
 
   const metricValues = data
     ? [
@@ -276,7 +305,7 @@ export default function AdminDashboardPage() {
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="size-5 text-primary" />
-                  <h3 className="font-bold">Kurva Pertumbuhan</h3>
+                  <h3 className="font-bold">Kurva Aktivitas Harian</h3>
                 </div>
                 <Badge
                   variant="outline"
@@ -285,27 +314,72 @@ export default function AdminDashboardPage() {
                   7 Hari Terakhir
                 </Badge>
               </div>
-              <div className="flex h-40 items-end gap-2 px-1">
-                {bars.map((h, i) => (
-                  <div key={`bar-${i}`} className="group relative flex-1">
-                    <div
-                      className="w-full rounded-t-md bg-gradient-to-t from-primary/40 to-primary/90 transition-all duration-300 hover:scale-x-110 hover:to-primary"
-                      style={{ height: `${h}%` }}
+              <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={growthData}
+                    margin={{ top: 8, right: 8, left: -16, bottom: 8 }}
+                  >
+                    <CartesianGrid
+                      stroke="var(--border-primary)"
+                      strokeDasharray="3 3"
+                      opacity={0.35}
                     />
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-foreground px-1 py-0.5 text-[8px] font-bold text-background opacity-0 transition-opacity group-hover:opacity-100">
-                      {Math.round(h)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 flex justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                <span>Sen</span>
-                <span>Sel</span>
-                <span>Rab</span>
-                <span>Kam</span>
-                <span>Jum</span>
-                <span>Sab</span>
-                <span>Min</span>
+                    <XAxis
+                      dataKey="day"
+                      tick={{
+                        fill: "var(--text-dim)",
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fill: "var(--text-dim)", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={28}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: "var(--primary)", strokeOpacity: 0.25 }}
+                      contentStyle={{
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-primary)",
+                        borderRadius: "10px",
+                        color: "var(--text-main)",
+                        fontSize: "12px",
+                      }}
+                      labelStyle={{ color: "var(--text-dim)", fontWeight: 700 }}
+                      formatter={(value) => {
+                        const numeric =
+                          typeof value === "number"
+                            ? value
+                            : Number(value ?? 0);
+                        return [`${numeric}`, "Aktivitas"];
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="var(--primary)"
+                      strokeWidth={3}
+                      dot={{
+                        r: 3,
+                        strokeWidth: 2,
+                        fill: "var(--bg-card)",
+                        stroke: "var(--primary)",
+                      }}
+                      activeDot={{
+                        r: 5,
+                        fill: "var(--primary)",
+                        stroke: "var(--bg-card)",
+                        strokeWidth: 2,
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </Card>
 
