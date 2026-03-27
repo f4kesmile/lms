@@ -14,8 +14,9 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { PUBLIC_NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { SITE_CONFIG, PUBLIC_NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/shared/Logo";
 
 type UserData = { name: string; role: string } | null;
 
@@ -106,17 +107,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <div className="h-3 w-3 rounded-sm bg-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-foreground">
-              {SITE_CONFIG.shortName}
-              <span className="font-light text-muted-foreground">
-                {SITE_CONFIG.accentName}
-              </span>
-            </span>
-          </Link>
+          <Logo />
 
           <nav className="hidden items-center gap-1 md:flex">
             {PUBLIC_NAV_LINKS.map((item: { href: string; label: string }) => (
@@ -157,14 +148,15 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   variant="ghost"
                   size="sm"
                   asChild
-                  className="rounded-lg"
+                  className="rounded-lg text-primary hover:bg-primary/5"
                 >
                   <Link href="/login">Masuk</Link>
                 </Button>
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => router.push("/register")}
-                  className="rounded-lg shadow-sm"
+                  className="rounded-lg border-primary/20 text-primary hover:bg-primary/5 shadow-none"
                 >
                   Daftar
                 </Button>
@@ -236,16 +228,8 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
               className="w-72 p-0"
             >
               <div className="flex h-full flex-col">
-                <div className="flex items-center gap-2.5 border-b border-border px-5 py-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                    <div className="h-3 w-3 rounded-sm bg-primary-foreground" />
-                  </div>
-                  <span className="text-base font-bold tracking-tight">
-                    {SITE_CONFIG.shortName}
-                    <span className="font-light text-muted-foreground">
-                      {SITE_CONFIG.accentName}
-                    </span>
-                  </span>
+                <div className="flex items-center gap-3 border-b border-border px-5 py-4">
+                  <Logo size="sm" />
                 </div>
 
                 <nav className="flex flex-col gap-1 p-3">
@@ -273,18 +257,19 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   {!user ? (
                     <>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         asChild
-                        className="w-full rounded-lg"
+                        className="w-full rounded-lg text-primary hover:bg-primary/5"
                       >
                         <Link href="/login">Masuk</Link>
                       </Button>
                       <Button
+                        variant="outline"
                         onClick={() => {
                           setSheetOpen(false);
                           router.push("/register");
                         }}
-                        className="w-full rounded-lg"
+                        className="w-full rounded-lg border-primary/20 text-primary hover:bg-primary/5"
                       >
                         Daftar
                       </Button>
