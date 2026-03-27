@@ -19,6 +19,8 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
       role: true,
       isActive: true,
       studentClassId: true,
+      nip: true,
+      specialization: true,
       createdAt: true,
       updatedAt: true,
     },

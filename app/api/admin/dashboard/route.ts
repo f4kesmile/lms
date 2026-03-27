@@ -18,6 +18,26 @@ type GrowthPoint = {
   value: number;
 };
 
+type RecentUser = {
+  id: string;
+  name: string;
+  createdAt: Date;
+};
+
+type RecentMeeting = {
+  id: string;
+  title: string;
+  createdAt: Date;
+};
+
+type RecentTurn = {
+  id: string;
+  question: string;
+  createdAt: Date;
+  rating: number | null;
+  user: { name: string };
+};
+
 const DAY_LABELS: GrowthPoint["day"][] = [
   "Sen",
   "Sel",
@@ -29,7 +49,6 @@ const DAY_LABELS: GrowthPoint["day"][] = [
 ];
 
 function mapJsDayToLabel(day: number): GrowthPoint["day"] {
-  // JS Date#getDay(): 0=Sun .. 6=Sat
   const map: GrowthPoint["day"][] = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
   return map[day] ?? "Sen";
 }
@@ -49,7 +68,7 @@ export async function GET() {
       totalModules,
       totalTurns,
       recentUsers,
-      recentMaterials,
+      recentMeetings,
       recentTurns,
     ] = await Promise.all([
       prisma.user.count(),
@@ -61,7 +80,7 @@ export async function GET() {
         take: 4,
         select: { id: true, name: true, createdAt: true },
       }),
-      prisma.courseMaterial.findMany({
+      prisma.subjectMeeting.findMany({
         orderBy: { createdAt: "desc" },
         take: 4,
         select: { id: true, title: true, createdAt: true },
@@ -80,21 +99,21 @@ export async function GET() {
     ]);
 
     const activities: ActivityItem[] = [
-      ...recentUsers.map((item: any) => ({
+      ...recentUsers.map((item: RecentUser) => ({
         id: `user-${item.id}`,
         user: item.name,
         activity: "Akun baru terdaftar",
         status: "Completed" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentMaterials.map((item: any) => ({
-        id: `material-${item.id}`,
+      ...recentMeetings.map((item: RecentMeeting) => ({
+        id: `meeting-${item.id}`,
         user: "Admin",
         activity: `Upload materi: ${item.title}`,
         status: "Active" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentTurns.map((item: any) => ({
+      ...recentTurns.map((item: RecentTurn) => ({
         id: `turn-${item.id}`,
         user: item.user.name,
         activity: `Mengirim pertanyaan: ${item.question.slice(0, 44)}${item.question.length > 44 ? "..." : ""}`,

@@ -38,61 +38,12 @@ function shuffle<T>(items: T[]): T[] {
   return cloned;
 }
 
-async function resolveTeacherFilterIds(input: {
-  userId: string;
-  role: UserRole;
-  classId?: string;
-}) {
-  const { userId, role, classId } = input;
-
-  if (role === "dosen") {
-    return [userId];
-  }
-
-  if (role !== "mahasiswa" && !classId) {
-    return null;
-  }
-
-  let classIds: string[] = [];
-
-  if (role === "mahasiswa") {
-    if (classId) {
-      const membership = await prisma.classStudent.findFirst({
-        where: { classId, userId },
-        select: { classId: true },
-      });
-      if (!membership) return [];
-      classIds = [classId];
-    } else {
-      const memberships = await prisma.classStudent.findMany({
-        where: { userId },
-        select: { classId: true },
-        take: 20,
-      });
-      classIds = memberships.map((item: any) => item.classId);
-    }
-  } else if (classId) {
-    classIds = [classId];
-  }
-
-  if (classIds.length === 0) return [];
-
-  const classes = await prisma.class.findMany({
-    where: { id: { in: classIds } },
-    select: { classTeacherId: true },
-    take: 20,
-  });
-
-  const teacherIds = Array.from(
-    new Set(
-      classes
-        .map((item: any) => item.classTeacherId)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  );
-
-  return teacherIds;
-}
+type MeetingSuggestionItem = {
+  id: string;
+  title: string;
+  meetingNo: number;
+  subjectName: string;
+};
 
 export async function GET(request: Request) {
   try {
@@ -104,57 +55,47 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Number(searchParams.get("limit") || 8), 12);
-    const classId = searchParams.get("classId")?.trim() || undefined;
-    const courseId = searchParams.get("courseId")?.trim() || undefined;
+    const subjectId = searchParams.get("subjectId")?.trim() || undefined;
 
     const templates = user.role === "mahasiswa" ? studentTemplates : mentorTemplates;
 
-    const teacherIds = await resolveTeacherFilterIds({
-      userId: user.id,
-      role: user.role,
-      classId,
-    });
+    const whereConditions: Prisma.SubjectMeetingWhereInput = subjectId
+      ? { subjectId }
+      : {};
 
-    if (teacherIds && teacherIds.length === 0) {
-      return NextResponse.json({ suggestions: [], materials: [] });
-    }
-
-    const andConditions: Prisma.CourseMaterialWhereInput[] = [];
-    if (courseId) {
-      andConditions.push({ courseId });
-    }
-    if (teacherIds && teacherIds.length > 0) {
-      andConditions.push({ createdById: { in: teacherIds } });
-    }
-
-    const where: Prisma.CourseMaterialWhereInput =
-      andConditions.length > 0 ? { AND: andConditions } : {};
-
-    const materials = await prisma.courseMaterial.findMany({
-      where,
+    const rawMeetings = await prisma.subjectMeeting.findMany({
+      where: whereConditions,
       orderBy: { updatedAt: "desc" },
       take: 40,
       select: {
         id: true,
         title: true,
-        module: true,
+        meetingNo: true,
+        subject: { select: { name: true } },
       },
     });
 
-    const groupedByModule = new Map<string, typeof materials>();
-    for (const material of materials) {
-      const key = material.module || "Tanpa Modul";
-      const bucket = groupedByModule.get(key) || [];
-      bucket.push(material);
-      groupedByModule.set(key, bucket);
+    const meetings: MeetingSuggestionItem[] = rawMeetings.map((m) => ({
+      id: m.id,
+      title: m.title,
+      meetingNo: m.meetingNo,
+      subjectName: m.subject.name,
+    }));
+
+    const groupedBySubject = new Map<string, MeetingSuggestionItem[]>();
+    for (const meeting of meetings) {
+      const key = meeting.subjectName || "Tanpa Mata Kuliah";
+      const bucket = groupedBySubject.get(key) || [];
+      bucket.push(meeting);
+      groupedBySubject.set(key, bucket);
     }
 
-    const moduleKeys = shuffle(Array.from(groupedByModule.keys()));
-    const moduleQueues = moduleKeys.map((key) => ({
+    const subjectKeys = shuffle(Array.from(groupedBySubject.keys()));
+    const subjectQueues = subjectKeys.map((key) => ({
       key,
-      materials: shuffle(groupedByModule.get(key) || []),
+      meetings: shuffle(groupedBySubject.get(key) || []),
       templateOrder: shuffle(templates),
-      nextMaterial: 0,
+      nextMeeting: 0,
       nextTemplate: 0,
     }));
 
@@ -164,17 +105,17 @@ export async function GET(request: Request) {
     while (suggestions.length < limit) {
       let addedInRound = false;
 
-      for (const queue of moduleQueues) {
+      for (const queue of subjectQueues) {
         if (suggestions.length >= limit) break;
-        if (queue.materials.length === 0) continue;
+        if (queue.meetings.length === 0) continue;
 
-        const material = queue.materials[queue.nextMaterial % queue.materials.length];
+        const meeting = queue.meetings[queue.nextMeeting % queue.meetings.length];
         const template = queue.templateOrder[queue.nextTemplate % queue.templateOrder.length];
-        const suggestion = template.replace("{title}", truncateTitle(material.title));
+        const suggestion = template.replace("{title}", truncateTitle(meeting.title));
 
         queue.nextTemplate += 1;
         if (queue.nextTemplate % queue.templateOrder.length === 0) {
-          queue.nextMaterial += 1;
+          queue.nextMeeting += 1;
         }
 
         if (seen.has(suggestion)) continue;
@@ -189,7 +130,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       suggestions,
-      materials: materials.map((m: any) => ({ id: m.id, title: m.title, module: m.module })),
+      meetings: meetings.map((m) => ({
+        id: m.id,
+        title: m.title,
+        meetingNo: m.meetingNo,
+        subjectName: m.subjectName,
+      })),
     });
   } catch (error) {
     return serverError(error);

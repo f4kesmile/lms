@@ -28,6 +28,8 @@ model User {
     email           String           @unique
     password        String
     role            UserRole         @default(mahasiswa)
+    nip             String?          @unique
+    specialization  String?
     isActive        Boolean          @default(true)
     studentClassId  String?
     createdAt       DateTime         @default(now())
@@ -86,14 +88,20 @@ model Class {
 }
 
 model Subject {
-    id        String           @id @default(uuid())
-    name      String
-    code      String           @unique
-    isActive  Boolean          @default(true)
-    createdAt DateTime         @default(now())
-    updatedAt DateTime         @updatedAt
-    teachers  SubjectTeacher[]
-    classes   ClassSubject[]
+    id               String           @id @default(uuid())
+    code             String           @unique
+    name             String
+    description      String?
+    learningOutcomes String?
+    credits          Int              @default(2)
+    bannerImage      String?
+    status           CourseStatus     @default(published)
+    isActive         Boolean          @default(true)
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+    teachers         SubjectTeacher[]
+    classes          ClassSubject[]
+    meetings         SubjectMeeting[]
 }
 
 model SubjectTeacher {
@@ -122,6 +130,33 @@ model ClassStudent {
     user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@id([classId, userId])
+}
+
+model SubjectMeeting {
+    id        String         @id @default(uuid())
+    subjectId String
+    meetingNo Int
+    title     String
+    content   String
+    assets    Json?
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
+    subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+    chunks    MeetingChunk[]
+
+    @@unique([subjectId, meetingNo])
+    @@index([subjectId])
+}
+
+model MeetingChunk {
+    id         String         @id @default(uuid())
+    meetingId  String
+    chunkIndex Int
+    content    String
+    createdAt  DateTime       @default(now())
+    meeting    SubjectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, chunkIndex])
 }
 
 model CourseMaterial {

@@ -11,22 +11,25 @@ export async function GET() {
     if (!user) return unauthorized();
 
     if (!hasRole(user.role, [UserRole.admin, UserRole.dosen])) {
-      return forbidden("Only admin or dosen can view course options");
+      return forbidden("Only admin or dosen can view subject options");
     }
 
-    const courses = await prisma.course.findMany({
-      where: user.role === UserRole.dosen ? { createdById: user.id } : undefined,
+    const subjects = await prisma.subject.findMany({
+      where: user.role === UserRole.dosen
+        ? { teachers: { some: { userId: user.id } } }
+        : { isActive: true },
       select: {
         id: true,
         code: true,
-        title: true,
+        name: true,
         description: true,
         learningOutcomes: true,
+        credits: true,
         status: true,
         updatedAt: true,
         _count: {
           select: {
-            materials: true,
+            meetings: true,
           },
         },
       },
@@ -34,7 +37,7 @@ export async function GET() {
       take: 200,
     });
 
-    return NextResponse.json({ courses });
+    return NextResponse.json({ subjects });
   } catch (error) {
     return serverError(error);
   }

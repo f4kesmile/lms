@@ -5,6 +5,14 @@ import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 
+type RatedTurn = {
+  rating: number | null;
+};
+
+type CitationTurn = {
+  citations: unknown;
+};
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -13,9 +21,9 @@ export async function GET() {
       return forbidden("Only admin or dosen can access chatbot stats");
     }
 
-    const [totalMaterials, totalSessions, totalTurns, ratedTurns, fastTurns, citationTurns] =
+    const [totalMeetings, totalSessions, totalTurns, ratedTurns, fastTurns, citationTurns] =
       await Promise.all([
-        prisma.courseMaterial.count(),
+        prisma.subjectMeeting.count(),
         prisma.chatSession.count(),
         prisma.chatTurn.count(),
         prisma.chatTurn.findMany({ where: { rating: { not: null } }, select: { rating: true } }),
@@ -25,10 +33,10 @@ export async function GET() {
 
     const avgRating =
       ratedTurns.length > 0
-        ? ratedTurns.reduce((sum: number, item: any) => sum + (item.rating ?? 0), 0) / ratedTurns.length
+        ? ratedTurns.reduce((sum: number, item: RatedTurn) => sum + (item.rating ?? 0), 0) / ratedTurns.length
         : null;
 
-    const citedAnswers = citationTurns.filter((item: any) => {
+    const citedAnswers = citationTurns.filter((item: CitationTurn) => {
       if (!Array.isArray(item.citations)) return false;
       return item.citations.length > 0;
     }).length;
@@ -42,7 +50,7 @@ export async function GET() {
       totalTurns > 0 ? Number(((fastTurns / totalTurns) * 100).toFixed(2)) : 0;
 
     return NextResponse.json({
-      totalMaterials,
+      totalMeetings,
       totalSessions,
       totalTurns,
       avgRating: avgRating ? Number(avgRating.toFixed(2)) : null,

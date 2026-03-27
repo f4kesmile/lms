@@ -11,12 +11,14 @@ type Context = {
   params: Promise<{ id: string }>;
 };
 
-const updateMaterialSchema = z.object({
-  courseId: z.string().uuid().nullable().optional(),
+const updateMeetingSchema = z.object({
+  meetingNo: z.number().int().min(1).optional(),
   title: z.string().min(3).optional(),
-  module: z.string().min(2).optional(),
-  page: z.string().nullable().optional(),
   content: z.string().min(50).optional(),
+  assets: z.array(z.object({
+    name: z.string(),
+    data: z.string(),
+  })).nullable().optional(),
 });
 
 export async function GET(_request: Request, context: Context) {
@@ -25,17 +27,16 @@ export async function GET(_request: Request, context: Context) {
     if (!user) return unauthorized();
 
     const { id } = await context.params;
-    const material = await prisma.courseMaterial.findUnique({
+    const meeting = await prisma.subjectMeeting.findUnique({
       where: { id },
       include: {
         _count: { select: { chunks: true } },
-        course: { select: { id: true, code: true, title: true } },
-        createdBy: { select: { id: true, name: true, email: true } },
+        subject: { select: { id: true, code: true, name: true } },
       },
     });
 
-    if (!material) return notFound("Material not found");
-    return NextResponse.json(material);
+    if (!meeting) return notFound("Meeting not found");
+    return NextResponse.json(meeting);
   } catch (error) {
     return serverError(error);
   }
@@ -46,42 +47,29 @@ export async function PATCH(request: Request, context: Context) {
     const user = await getCurrentUser();
     if (!user) return unauthorized();
     if (!hasRole(user.role, [UserRole.admin, UserRole.dosen])) {
-      return forbidden("Only admin or dosen can update materials");
+      return forbidden("Only admin or dosen can update meetings");
     }
 
     const { id } = await context.params;
     const body = await request.json();
-    const parsed = updateMaterialSchema.safeParse(body);
+    const parsed = updateMeetingSchema.safeParse(body);
 
-    if (!parsed.success) return badRequest("Invalid material payload");
+    if (!parsed.success) return badRequest("Invalid meeting payload");
 
-    const existing = await prisma.courseMaterial.findUnique({ where: { id } });
-    if (!existing) return notFound("Material not found");
-
-    if (parsed.data.courseId !== undefined && parsed.data.courseId !== null) {
-      const exists = await prisma.course.findUnique({
-        where: { id: parsed.data.courseId },
-        select: { id: true },
-      });
-      if (!exists) {
-        return badRequest("Course tidak ditemukan");
-      }
-    }
+    const existing = await prisma.subjectMeeting.findUnique({ where: { id } });
+    if (!existing) return notFound("Meeting not found");
 
     const nextContent = parsed.data.content ?? existing.content;
     const chunks = splitIntoChunks(nextContent);
-    if (chunks.length === 0) {
-      return badRequest("Material content is empty");
-    }
+    if (chunks.length === 0) return badRequest("Konten materi kosong");
 
-    const material = await prisma.courseMaterial.update({
+    const meeting = await prisma.subjectMeeting.update({
       where: { id },
       data: {
-        courseId: parsed.data.courseId,
+        meetingNo: parsed.data.meetingNo,
         title: parsed.data.title,
-        module: parsed.data.module,
-        page: parsed.data.page,
         content: nextContent,
+        assets: parsed.data.assets !== undefined ? (parsed.data.assets ?? []) : undefined,
         chunks: {
           deleteMany: {},
           create: chunks.map((chunk, index) => ({
@@ -92,12 +80,11 @@ export async function PATCH(request: Request, context: Context) {
       },
       include: {
         _count: { select: { chunks: true } },
-        course: { select: { id: true, code: true, title: true } },
-        createdBy: { select: { id: true, name: true, email: true } },
+        subject: { select: { id: true, code: true, name: true } },
       },
     });
 
-    return NextResponse.json(material);
+    return NextResponse.json(meeting);
   } catch (error) {
     return serverError(error);
   }
@@ -108,16 +95,16 @@ export async function DELETE(_request: Request, context: Context) {
     const user = await getCurrentUser();
     if (!user) return unauthorized();
     if (!hasRole(user.role, [UserRole.admin, UserRole.dosen])) {
-      return forbidden("Only admin or dosen can delete materials");
+      return forbidden("Only admin or dosen can delete meetings");
     }
 
     const { id } = await context.params;
-    const existing = await prisma.courseMaterial.findUnique({ where: { id } });
+    const existing = await prisma.subjectMeeting.findUnique({ where: { id } });
 
-    if (!existing) return notFound("Material not found");
+    if (!existing) return notFound("Meeting not found");
 
-    await prisma.courseMaterial.delete({ where: { id } });
-    return NextResponse.json({ message: "Material deleted" });
+    await prisma.subjectMeeting.delete({ where: { id } });
+    return NextResponse.json({ message: "Meeting deleted" });
   } catch (error) {
     return serverError(error);
   }
