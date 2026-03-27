@@ -1,87 +1,67 @@
-import type { Route } from "next";
 import Link from "next/link";
+import { Icon } from "@/components/ui/icon";
 
 export default function NotFound() {
   return (
-    <main
-      className="app-shell"
-      style={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}
-    >
-      <section
-        className="neo-card"
-        style={{
-          width: "min(760px, 100%)",
-          padding: "2rem",
-          display: "grid",
-          gap: "1.5rem",
-          textAlign: "center",
-          background:
-            "linear-gradient(180deg, var(--bg-card), color-mix(in srgb, var(--bg-card) 76%, var(--surface-secondary-soft)))",
-        }}
-      >
-        <div
-          style={{
-            width: 92,
-            height: 92,
-            margin: "0 auto",
-            borderRadius: "28px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "var(--surface-secondary-soft)",
-            color: "var(--secondary-brand)",
-            border:
-              "2px solid color-mix(in srgb, var(--secondary-brand) 38%, transparent)",
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 44 }}>
-            search_off
-          </span>
-        </div>
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6">
+      <div className="absolute inset-0 z-0">
+        <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] animate-pulse rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute -right-[10%] -bottom-[10%] h-[50%] w-[50%] animate-pulse rounded-full bg-primary/5 blur-[120px] [animation-delay:2s]" />
+      </div>
 
-        <div style={{ display: "grid", gap: "0.5rem" }}>
-          <span
-            className="eyebrow"
-            style={{ margin: "0 auto", color: "var(--secondary-brand)" }}
-          >
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 select-none text-center">
+        <h1 className="text-[20rem] font-black leading-none tracking-tighter text-foreground/[0.03] md:text-[30rem] lg:text-[40rem]">
+          404
+        </h1>
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <span className="text-xs font-black uppercase tracking-[0.4em] text-primary">
             Halaman Tidak Ditemukan
           </span>
-          <h1
-            className="title-xl"
-            style={{ fontSize: "clamp(2rem, 6vw, 3.4rem)" }}
-          >
-            404
-          </h1>
-          <p className="title-lg">Alamat yang kamu buka tidak tersedia.</p>
-          <p
-            className="text-muted"
-            style={{ maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}
-          >
-            Bisa jadi halaman sudah dipindahkan, dihapus, atau alamat URL yang
-            dimasukkan belum benar. Gunakan tombol di bawah untuk kembali ke
-            area yang tersedia.
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        </div>
+
+        <div className="max-w-2xl space-y-4">
+          <h2 className="text-4xl font-black tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            Tersesat di <br />
+            <span className="bg-gradient-to-br from-primary to-primary-dark bg-clip-text text-transparent">
+              Ruang Hampa
+            </span>
+          </h2>
+          <p className="mx-auto max-w-md text-lg font-medium leading-relaxed text-muted-foreground">
+            Alamat yang kamu tuju tidak tersedia atau telah berpindah. Mari kembali ke jalur pembelajaran yang benar.
           </p>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Link href={"/" as Route} className="btn">
-            Ke Beranda
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+          <Link
+            href="/"
+            className="group flex h-14 min-w-[220px] items-center justify-center gap-3 rounded-full bg-primary px-8 font-black text-primary-foreground transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
+          >
+            <Icon name="west" size={20} className="transition-transform group-hover:-translate-x-1" />
+            Kembali Beranda
           </Link>
-          <Link href={"/courses" as Route} className="btn-ghost">
-            Jelajahi Kelas
-          </Link>
-          <Link href="/help" className="btn-ghost">
-            Pusat Bantuan
+          <Link
+            href="/courses"
+            className="flex h-14 min-w-[220px] items-center justify-center gap-3 rounded-full border border-border bg-background/50 px-8 font-black text-foreground backdrop-blur-xl transition-all hover:bg-muted active:scale-95"
+          >
+            Pelajari Kursus
+            <Icon name="east" size={20} />
           </Link>
         </div>
-      </section>
+      </div>
+
+      <footer className="absolute bottom-12 z-10">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-6 w-px bg-gradient-to-b from-primary/50 to-transparent" />
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40">
+            Nusa Belajar &copy; {new Date().getFullYear()}
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }
