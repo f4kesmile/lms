@@ -4,15 +4,10 @@ import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
 type PageWrapperProps = {
   children: React.ReactNode;
-  initialUser?: { name: string; role: string } | null;
   footer?: boolean;
 };
 
-export const PageWrapper = ({
-  children,
-  initialUser,
-  footer = true,
-}: PageWrapperProps) => {
+export const PageWrapper = ({ children, footer = true }: PageWrapperProps) => {
   return (
     <>
       <Navbar />

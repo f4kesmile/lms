@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateChatAnswer, type Source } from "@/lib/ai/chatbot";
+import { generateChatAnswer } from "@/lib/ai/chatbot";
 import { readChatbotSettings } from "@/lib/ai/settings";
 import { getCurrentUser } from "@/lib/auth/user";
 import { badRequest, serverError, unauthorized } from "@/lib/core/http";

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
+import type { Route } from "next";
 import Image from "next/image";
 import { prisma } from "@/lib/core/db";
 import { StatBox } from "@/components/ui/statbox";
@@ -18,7 +19,6 @@ export default async function HomePage() {
     take: 4,
     orderBy: { createdAt: "desc" },
     include: {
-      classTeacher: { select: { name: true } },
       subjects: { select: { subject: { select: { name: true } } } },
       students: { select: { userId: true } },
     },
@@ -129,7 +129,7 @@ export default async function HomePage() {
                       <h3 className="catalog-card-title">{cls.name}</h3>
                       <div className="mt-auto pt-3">
                         <Link
-                          href={`/courses/${cls.id}`}
+                          href={`/courses/${cls.id}` as Route}
                           className="btn w-full text-center block py-2"
                         >
                           Lihat Detail

@@ -68,10 +68,6 @@ export async function GET(request: Request) {
       prisma.chatTurn.count({ where }),
     ]);
 
-    const ratedTurnsCount = await prisma.chatTurn.count({
-      where: { rating: { not: null } }
-    });
-    
     // Summary metrics based on ALL data for accurate dashboarding
     // But for performance, we might want to aggregate this differently if data grows huge
     const summaryData = await prisma.chatTurn.aggregate({
@@ -92,7 +88,7 @@ export async function GET(request: Request) {
 
     const accuracyScore = totalTurns > 0 ? Number(((successTurnsCount / totalTurns) * 100).toFixed(1)) : 0;
 
-    const interactions: InteractionItem[] = turns.map((item: any) => ({
+    const interactions: InteractionItem[] = turns.map((item) => ({
       id: item.id,
       user: { name: item.user.name },
       query: item.question,

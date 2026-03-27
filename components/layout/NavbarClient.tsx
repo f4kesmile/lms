@@ -9,12 +9,8 @@ import type { Route } from "next";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { SITE_CONFIG, PUBLIC_NAV_LINKS } from "@/lib/constants";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { PUBLIC_NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/Logo";
 

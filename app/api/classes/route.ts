@@ -9,7 +9,6 @@ import { prisma } from "@/lib/core/db";
 const createClassSchema = z.object({
   name: z.string().min(2),
   academicYearId: z.string().min(1),
-  classTeacherId: z.string().nullable().optional(),
   capacity: z.number().int().positive().optional(),
   subjectIds: z.array(z.string()).optional(),
   studentIds: z.array(z.string()).optional(),
@@ -45,7 +44,6 @@ export async function GET(request: Request) {
         take: safeLimit,
         include: {
           academicYear: { select: { id: true, name: true } },
-          classTeacher: { select: { id: true, name: true, email: true } },
           subjects: {
             include: {
               subject: { select: { id: true, name: true, code: true } },
@@ -89,7 +87,6 @@ export async function POST(request: Request) {
     const {
       name,
       academicYearId,
-      classTeacherId,
       capacity,
       subjectIds = [],
       studentIds = [],
@@ -114,22 +111,20 @@ export async function POST(request: Request) {
       data: {
         name,
         academicYearId,
-        classTeacherId: classTeacherId ?? null,
         capacity: capacity ?? 40,
         subjects: {
-          create: subjectIds.map((subjectId) => ({
+          create: subjectIds.map((subjectId: string) => ({
             subject: { connect: { id: subjectId } },
           })),
         },
         students: {
-          create: studentIds.map((userId) => ({
+          create: studentIds.map((userId: string) => ({
             user: { connect: { id: userId } },
           })),
         },
       },
       include: {
         academicYear: { select: { id: true, name: true } },
-        classTeacher: { select: { id: true, name: true, email: true } },
         subjects: { include: { subject: true } },
         students: { include: { user: true } },
       },

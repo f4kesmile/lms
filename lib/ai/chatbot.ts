@@ -1,6 +1,7 @@
 export type Source = {
   id: string;
   meetingId: string;
+  subjectId: string;
   subjectName: string;
   subjectCode: string;
   title: string;
@@ -242,7 +243,7 @@ export async function generateChatAnswer(params: {
 }): Promise<string> {
   const { question, sources } = params;
   const settings = await readChatbotSettings();
-  const _promptGuidance = settings.systemPrompt;
+  const promptGuidance = settings.systemPrompt;
 
   if (sources.length === 0) {
     return "Maaf, saya belum menemukan materi yang relevan untuk menjawab pertanyaan ini. Silakan unggah materi atau perjelas pertanyaan.";
@@ -322,6 +323,8 @@ export async function generateChatAnswer(params: {
     openingLine(question),
     "",
     `Inti jawaban berdasarkan materi internal: ${coreSummary || normalizeExcerpt(primary.excerpt)} ${citationMark(primary)}`,
+    "",
+    `Saran panduan prompt: ${promptGuidance.slice(0, 100)}...`,
     "",
     ...bodyBlock,
     "",

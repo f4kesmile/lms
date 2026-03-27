@@ -124,7 +124,7 @@ async function main() {
   ];
 
   const dosenUsers = await Promise.all(
-    dosenSeed.map((item: any) =>
+    dosenSeed.map((item: { name: string; email: string }) =>
       prisma.user.create({
         data: {
           name: item.name,
@@ -477,7 +477,6 @@ async function main() {
       data: {
         name: "AI - Kelas A",
         academicYearId: currentYear.id,
-        classTeacherId: dosenByEmail.get("rahmat@lms.com")?.id,
         capacity: 45,
       },
     }),
@@ -485,7 +484,6 @@ async function main() {
       data: {
         name: "AI - Kelas B",
         academicYearId: currentYear.id,
-        classTeacherId: dosenByEmail.get("sinta@lms.com")?.id,
         capacity: 45,
         enrollmentKey: "AI-B-2026",
       },
@@ -494,7 +492,6 @@ async function main() {
       data: {
         name: "RPL - Reguler",
         academicYearId: currentYear.id,
-        classTeacherId: dosenByEmail.get("dian@lms.com")?.id,
         capacity: 42,
       },
     }),
@@ -502,7 +499,6 @@ async function main() {
       data: {
         name: "Data Science - Intensif",
         academicYearId: currentYear.id,
-        classTeacherId: dosenByEmail.get("mita@lms.com")?.id,
         capacity: 35,
         enrollmentKey: "DS-INTENSIF",
       },
@@ -511,7 +507,6 @@ async function main() {
       data: {
         name: "Jaringan - Reguler",
         academicYearId: years[1].id,
-        classTeacherId: dosenByEmail.get("farhan@lms.com")?.id,
         capacity: 40,
       },
     }),
@@ -519,13 +514,12 @@ async function main() {
       data: {
         name: "AI - Kelas Malam",
         academicYearId: years[1].id,
-        classTeacherId: dosenByEmail.get("rahmat@lms.com")?.id,
         capacity: 30,
       },
     }),
   ]);
 
-  const classByName = new Map(classes.map((item: any) => [item.name, item]));
+  const classByName = new Map(classes.map((item) => [item.name, item]));
 
   const classSubjectPlan: Record<string, string[]> = {
     "AI - Kelas A": ["AI-101", "DB-201", "SE-301"],
@@ -775,7 +769,7 @@ async function main() {
   ];
 
   await prisma.faq.createMany({
-    data: faqItems.map((item: any) => ({
+    data: faqItems.map((item) => ({
       ...item,
       isActive: true,
     })),

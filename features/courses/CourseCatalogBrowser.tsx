@@ -113,22 +113,13 @@ export default function CourseCatalogBrowser({
     });
   }, [activeCategory, courses, deferredQuery]);
 
-  useEffect(() => {
-    setVisibleCount(initialCount);
-  }, [activeCategory, deferredQuery, initialCount]);
-
-  useEffect(() => {
-    if (!categories.includes(activeCategory)) {
-      setActiveCategory("Semua");
-    }
-  }, [activeCategory, categories]);
-
   const visibleCourses = filteredCourses.slice(0, visibleCount);
   const hasMore = filteredCourses.length > visibleCount;
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAppliedQuery(draftQuery);
+    setVisibleCount(initialCount);
   }
 
   return (
@@ -171,7 +162,10 @@ export default function CourseCatalogBrowser({
                 key={category}
                 className={`filter-pill ${activeCategory === category ? "active" : ""}`}
                 type="button"
-                onClick={() => setActiveCategory(category)}
+                onClick={() => {
+                  setActiveCategory(category);
+                  setVisibleCount(initialCount);
+                }}
               >
                 {category}
               </button>

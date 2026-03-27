@@ -20,6 +20,8 @@ interface UserItem {
   name: string;
   email: string;
   role: UserRole;
+  nip: string | null;
+  specialization: string | null;
   createdAt: string;
 }
 
@@ -32,6 +34,7 @@ interface ListProps {
     { bg: string; text: string; label: string; icon: string }
   >;
   handleRoleChange: (userId: string, newRole: UserRole) => void;
+  onEdit: (user: UserItem) => void;
 }
 
 export function List({
@@ -40,6 +43,7 @@ export function List({
   error,
   roleConfig,
   handleRoleChange,
+  onEdit,
 }: ListProps) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:hidden min-h-[50dvh]">
@@ -63,6 +67,8 @@ export function List({
       ) : (
         users.map((user) => {
           const rc = roleConfig[user.role] || roleConfig.mahasiswa;
+          const identifierLabel =
+            user.role === "mahasiswa" ? "NPM" : "NIP/NIPY";
 
           return (
             <Card
@@ -84,23 +90,48 @@ export function List({
                     <p className="truncate text-base font-black tracking-tight text-foreground">
                       {user.name}
                     </p>
+                    <button
+                      onClick={() => onEdit(user)}
+                      className="p-1.5 hover:bg-muted rounded-sm transition-colors text-muted-foreground hover:text-primary"
+                    >
+                      <Icon name="edit" size={16} />
+                    </button>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground font-bold">
                     {user.email}
                   </p>
-                  <p className="mt-3 text-[10px] font-mono font-bold text-muted-foreground flex items-center gap-1.5">
-                    <Icon name="calendar_month" size={14} className="opacity-80" />
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                    <p className="text-[10px] font-bold text-foreground flex items-center gap-1">
+                      <Icon
+                        name="badge"
+                        size={12}
+                        className="text-muted-foreground"
+                      />
+                      {identifierLabel}: {user.nip || "-"}
+                    </p>
+                    <p className="text-[10px] font-medium text-muted-foreground">
+                      {user.specialization || "Umum"}
+                    </p>
+                  </div>
+                  <p className="mt-2 text-[10px] font-mono font-bold text-muted-foreground flex items-center gap-1.5">
+                    <Icon
+                      name="calendar_month"
+                      size={14}
+                      className="opacity-80"
+                    />
                     {formatDate(user.createdAt)}
                   </p>
                 </div>
               </div>
 
               <div className="mt-5 flex items-center justify-between gap-4 border-t border-border pt-4">
-                <div className={cn(
-                  "inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-sm",
-                  rc.bg,
-                  rc.text
-                )}>
+                <div
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-sm",
+                    rc.bg,
+                    rc.text,
+                  )}
+                >
                   <Icon name={rc.icon} size={14} />
                   {rc.label}
                 </div>
@@ -117,9 +148,24 @@ export function List({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="border border-border rounded-md shadow-sm">
-                      <SelectItem value="mahasiswa" className="font-bold cursor-pointer hover:bg-muted">Mahasiswa</SelectItem>
-                      <SelectItem value="dosen" className="font-bold cursor-pointer hover:bg-muted">Dosen</SelectItem>
-                      <SelectItem value="admin" className="font-bold cursor-pointer hover:bg-muted">Admin</SelectItem>
+                      <SelectItem
+                        value="mahasiswa"
+                        className="font-bold cursor-pointer hover:bg-muted"
+                      >
+                        Mahasiswa
+                      </SelectItem>
+                      <SelectItem
+                        value="dosen"
+                        className="font-bold cursor-pointer hover:bg-muted"
+                      >
+                        Dosen
+                      </SelectItem>
+                      <SelectItem
+                        value="admin"
+                        className="font-bold cursor-pointer hover:bg-muted"
+                      >
+                        Admin
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

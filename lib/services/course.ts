@@ -7,9 +7,6 @@ export async function getClasses() {
     const classes = await prisma.class.findMany({
       include: {
         academicYear: true,
-        classTeacher: {
-          select: { id: true, name: true }
-        },
         students: true,
       },
       orderBy: { createdAt: "desc" }

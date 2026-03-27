@@ -5,15 +5,7 @@ import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { SITE_CONFIG } from "@/lib/constants";
-
-type Source = {
-  id: string;
-  materialId: string;
-  title: string;
-  module: string;
-  page: string | null;
-  excerpt: string;
-};
+import type { Source } from "@/lib/ai/chatbot";
 
 type Message = {
   id: string;
@@ -114,16 +106,14 @@ export const FloatingChatbot = () => {
   const courseId = courseIdFromQuery || courseIdFromPath;
   const suggestionContextKey = `${pathname}|class:${classId}|course:${courseId}`;
 
-  if (pathname === "/chatbot") return null;
+  const isChatbotPage = pathname === "/chatbot";
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen, isMinimized]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!isOpen) return;
 
@@ -152,7 +142,6 @@ export const FloatingChatbot = () => {
       .catch(() => {});
   }, [isOpen, classId, courseId, suggestionContextKey, suggestions.length]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const el = suggestionsRef.current;
     if (!el) return;
@@ -235,7 +224,6 @@ export const FloatingChatbot = () => {
     stopSuggestionsDrag();
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     function forceStopSuggestionsDrag() {
       if (!suggestionsDragRef.current.active) return;
@@ -293,21 +281,31 @@ export const FloatingChatbot = () => {
     };
   }, []);
 
+  if (isChatbotPage) return null;
+
   async function loadSession(id: string) {
     const res = await fetch(`/api/chat/sessions/${id}`);
     const data = await res.json();
     if (!res.ok) return;
-    const msgs: Message[] = (data.turns || []).flatMap((t: any) => [
-      { id: `${t.id}-q`, role: "user" as const, content: t.question },
-      {
-        id: `${t.id}-a`,
-        turnId: t.id,
-        role: "assistant" as const,
-        content: t.answer,
-        sources: Array.isArray(t.citations) ? t.citations : [],
-        rating: typeof t.rating === "number" ? t.rating : null,
-      },
-    ]);
+    const msgs: Message[] = (data.turns || []).flatMap(
+      (t: {
+        id: string;
+        question: string;
+        answer: string;
+        citations?: Source[];
+        rating?: number | null;
+      }) => [
+        { id: `${t.id}-q`, role: "user" as const, content: t.question },
+        {
+          id: `${t.id}-a`,
+          turnId: t.id,
+          role: "assistant" as const,
+          content: t.answer,
+          sources: Array.isArray(t.citations) ? t.citations : [],
+          rating: typeof t.rating === "number" ? t.rating : null,
+        },
+      ],
+    );
     setSessionId(data.id);
     setMessages(msgs);
     setIsMinimized(false);
@@ -747,7 +745,9 @@ export const FloatingChatbot = () => {
                           {msg.sources.slice(0, 4).map((src) => (
                             <Link
                               key={`${msg.id}-${src.id}`}
-                              href={`/materials/${src.materialId}` as Route}
+                              href={
+                                `/courses/${classId}/subjects/${src.subjectId}/meetings/${src.meetingNo}` as Route
+                              }
                               style={{
                                 fontSize: "0.62rem",
                                 padding: "0.15rem 0.5rem",
@@ -760,7 +760,7 @@ export const FloatingChatbot = () => {
                                 whiteSpace: "nowrap",
                               }}
                             >
-                              📄 {src.module || src.title}
+                              📄 {src.subjectCode} • {src.title}
                             </Link>
                           ))}
                         </div>

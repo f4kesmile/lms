@@ -14,6 +14,8 @@ const createUserSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
   studentClassId: z.string().optional(),
+  nip: z.string().optional(),
+  specialization: z.string().optional(),
 });
 
 const allowedRoles = [UserRole.admin, UserRole.dosen];
@@ -63,6 +65,8 @@ export async function GET(request: Request) {
           role: true,
           isActive: true,
           studentClassId: true,
+          nip: true,
+          specialization: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -99,7 +103,11 @@ export async function POST(request: Request) {
       return badRequest("Invalid user payload");
     }
 
-    const { name, email, password, role, isActive, studentClassId } = parsed.data;
+    const { name, email, password, role, isActive, studentClassId, nip, specialization } = parsed.data;
+    const finalRole = role ?? UserRole.mahasiswa;
+    const normalizedIdentifier = nip?.trim() || null;
+    const normalizedSpecialization =
+      finalRole === UserRole.dosen ? specialization?.trim() || null : null;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
@@ -114,9 +122,11 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        role: role ?? UserRole.mahasiswa,
+        role: finalRole,
         isActive: isActive ?? true,
         studentClassId,
+        nip: normalizedIdentifier,
+        specialization: normalizedSpecialization,
       },
       select: {
         id: true,
@@ -125,6 +135,8 @@ export async function POST(request: Request) {
         role: true,
         isActive: true,
         studentClassId: true,
+        nip: true,
+        specialization: true,
       },
     });
 

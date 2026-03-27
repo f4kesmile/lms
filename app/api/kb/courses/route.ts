@@ -25,8 +25,21 @@ export async function GET() {
         description: true,
         learningOutcomes: true,
         credits: true,
+        bannerImage: true,
         status: true,
         updatedAt: true,
+        teachers: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                nip: true,
+                specialization: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             meetings: true,
@@ -37,7 +50,7 @@ export async function GET() {
       take: 200,
     });
 
-    return NextResponse.json({ subjects });
+    return NextResponse.json({ courses: subjects });
   } catch (error) {
     return serverError(error);
   }

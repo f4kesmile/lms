@@ -8,6 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
+import type { Route } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,17 +52,17 @@ export function Table({
             <TableRow className="border-b border-border hover:bg-transparent">
               {activeTab === "mataKuliah" ? (
                 <>
-                  <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest min-w-[300px]">
+                  <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest min-w-[320px]">
                     Mata Kuliah
+                  </TableHead>
+                  <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                    Dosen Pengampu
                   </TableHead>
                   <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
                     Status
                   </TableHead>
                   <TableHead className="h-12 text-center text-[10px] font-black uppercase tracking-widest">
-                    Materi
-                  </TableHead>
-                  <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                    Diperbarui
+                    Sesi
                   </TableHead>
                 </>
               ) : activeTab === "kelas" ? (
@@ -71,11 +73,8 @@ export function Table({
                   <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
                     Tahun
                   </TableHead>
-                  <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                    Dosen
-                  </TableHead>
                   <TableHead className="h-12 text-center text-[10px] font-black uppercase tracking-widest">
-                    Kuota
+                    Kapasitas
                   </TableHead>
                 </>
               ) : (
@@ -159,9 +158,15 @@ export function Table({
                           <>
                             <TableCell className="px-6 py-4">
                               <div className="flex items-center gap-4">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary shadow-sm">
-                                  <Icon name="auto_stories" size={20} />
-                                </div>
+                                {subject.bannerImage ? (
+                                  <div className="size-11 shrink-0 rounded-lg overflow-hidden border border-border bg-muted shadow-sm">
+                                    <img src={subject.bannerImage} alt={subject.title} className="size-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary shadow-sm">
+                                    <Icon name="auto_stories" size={20} />
+                                  </div>
+                                )}
                                 <div className="min-w-0">
                                   <p className="text-sm font-black tracking-tight underline decoration-primary/30 decoration-2 underline-offset-4 text-foreground">
                                     {subject.code} - {subject.title}
@@ -171,6 +176,23 @@ export function Table({
                                       "Belum ada deskripsi"}
                                   </p>
                                 </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex -space-x-2 overflow-hidden">
+                                {subject.teachers.length > 0 ? (
+                                  subject.teachers.map((t) => (
+                                    <div 
+                                      key={t.user.id} 
+                                      className="size-8 rounded-full border-2 border-background bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-1 ring-border/20"
+                                      title={t.user.name}
+                                    >
+                                      {t.user.name.charAt(0)}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">N/A</span>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -193,19 +215,7 @@ export function Table({
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center font-mono font-black text-foreground transition-colors group-hover:text-primary">
-                              {subject._count?.materials ?? 0}
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-[11px] text-muted-foreground font-black uppercase tracking-widest opacity-80">
-                                {new Date(subject.updatedAt).toLocaleDateString(
-                                  "id-ID",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  },
-                                )}
-                              </span>
+                              {subject._count?.meetings ?? 0}
                             </TableCell>
                           </>
                         );
@@ -231,18 +241,6 @@ export function Table({
                                 >
                                   {classItem.academicYear.name}
                                 </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  <div className="size-8 rounded-md border border-border bg-muted flex items-center justify-center text-[12px] font-black text-foreground shadow-sm">
-                                    {classItem.classTeacher?.name?.charAt(0) ||
-                                      "?"}
-                                  </div>
-                                  <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                                    {classItem.classTeacher?.name ||
-                                      "Belum ada dosen"}
-                                  </span>
-                                </div>
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex flex-col items-center">
@@ -305,15 +303,28 @@ export function Table({
                           );
                         })()}
                   <TableCell className="sticky right-0 z-10 bg-card px-6 py-4 text-right transition-colors group-hover:bg-muted/50">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                        onClick={() => onEdit(item)}
-                      >
-                        <Icon name="edit" size={16} />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        {activeTab === "mataKuliah" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            asChild
+                            title="Kelola Sesi Pertemuan"
+                          >
+                            <Link href={`/admin/courses/${item.id}/meetings` as Route}>
+                              <Icon name="history_edu" size={16} />
+                            </Link>
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                          onClick={() => onEdit(item)}
+                        >
+                          <Icon name="edit" size={16} />
+                        </Button>
                       <Button
                         variant="ghost"
                         size="icon"

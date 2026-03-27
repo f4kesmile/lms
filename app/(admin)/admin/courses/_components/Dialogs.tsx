@@ -1,5 +1,7 @@
 "use client";
 
+import { Dispatch, SetStateAction } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -31,15 +33,13 @@ interface CourseDialogsProps {
   classForm: {
     name: string;
     academicYearId: string;
-    classTeacherId: string;
     capacity: number;
   };
-  setClassForm: (form: {
+  setClassForm: Dispatch<SetStateAction<{
     name: string;
     academicYearId: string;
-    classTeacherId: string;
     capacity: number;
-  }) => void;
+  }>>;
   teachers: Teacher[];
   years: AcademicYear[];
   onClassSubmit: (e: React.FormEvent) => Promise<void>;
@@ -53,14 +53,18 @@ interface CourseDialogsProps {
     description: string;
     learningOutcomes: string;
     status: CourseStatus;
+    bannerImage: string | null;
+    teacherIds: string[];
   };
-  setSubjectForm: (form: {
+  setSubjectForm: Dispatch<SetStateAction<{
     code: string;
     title: string;
     description: string;
     learningOutcomes: string;
     status: CourseStatus;
-  }) => void;
+    bannerImage: string | null;
+    teacherIds: string[];
+  }>>;
   onSubjectSubmit: (e: React.FormEvent) => Promise<void>;
 
   showYearModal: boolean;
@@ -72,12 +76,12 @@ interface CourseDialogsProps {
     toYear: string;
     isCurrent: boolean;
   };
-  setYearForm: (form: {
+  setYearForm: Dispatch<SetStateAction<{
     name: string;
     fromYear: string;
     toYear: string;
     isCurrent: boolean;
-  }) => void;
+  }>>;
   onYearSubmit: (e: React.FormEvent) => Promise<void>;
 
   loading: boolean;
@@ -106,6 +110,18 @@ export function CourseDialogs({
   onYearSubmit,
   loading,
 }: CourseDialogsProps) {
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setSubjectForm({ ...subjectForm, bannerImage: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <>
       <Dialog open={showClassModal} onOpenChange={setShowClassModal}>
@@ -115,7 +131,7 @@ export function CourseDialogs({
               {editingClass ? "Edit Data Kelas" : "Tambah Kelas Baru"}
             </DialogTitle>
             <DialogDescription className="font-medium">
-              Kelompokkan mahasiswa ke dalam unit kelas dan tentukan dosen wali.
+              Kelompokkan mahasiswa ke dalam unit kelas dan tentukan kapasitasnya.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onClassSubmit} className="space-y-4 pt-2">
@@ -157,22 +173,6 @@ export function CourseDialogs({
                </div>
              </div>
 
-             <div className="space-y-1.5">
-               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Dosen Wali (Opsional)</label>
-               <Select 
-                 value={classForm.classTeacherId || "none"} 
-                 onValueChange={(val) => setClassForm({ ...classForm, classTeacherId: val === "none" ? "" : val })}
-               >
-                 <SelectTrigger className="h-11 rounded-xl bg-card border-border/50 font-bold">
-                   <SelectValue placeholder="Pilih dosen" />
-                 </SelectTrigger>
-                 <SelectContent className="rounded-xl border-border/50">
-                    <SelectItem value="none" className="rounded-lg">Belum ditentukan</SelectItem>
-                    {teachers.map(t => <SelectItem key={t.id} value={t.id} className="rounded-lg">{t.name}</SelectItem>)}
-                 </SelectContent>
-               </Select>
-             </div>
-
              <div className="flex justify-end gap-3 pt-4 border-t border-border/30">
                <Button type="button" variant="ghost" className="font-black text-[11px] uppercase tracking-widest hover:bg-muted/50 rounded-xl" onClick={() => setShowClassModal(false)}>Batal</Button>
                <Button type="submit" disabled={loading} className="font-black text-[11px] uppercase tracking-widest min-w-[140px] shadow-lg shadow-primary/20 rounded-xl">
@@ -190,10 +190,29 @@ export function CourseDialogs({
               {editingSubject ? "Edit Mata Kuliah" : "Tambah Mata Kuliah Baru"}
             </DialogTitle>
             <DialogDescription className="font-medium">
-              Definisikan kurikulum inti yang akan diajarkan dan dilatihkan ke chatbot.
+              Definisikan kurikulum, unggah banner, dan tentukan dosen pengampu.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubjectSubmit} className="space-y-4 pt-2">
+             <div className="space-y-1.5">
+               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Banner Mata Kuliah</label>
+               <div className="flex items-center gap-4">
+                 {subjectForm.bannerImage && (
+                   <div className="size-20 rounded-xl overflow-hidden border border-border shadow-sm">
+                     <img src={subjectForm.bannerImage} alt="Banner Preview" className="size-full object-cover" />
+                   </div>
+                 )}
+                 <div className="flex-1">
+                   <Input 
+                     type="file" 
+                     accept="image/*" 
+                     onChange={handleBannerUpload}
+                     className="h-11 rounded-xl bg-card border-border/50 text-[10px] font-bold uppercase"
+                   />
+                 </div>
+               </div>
+             </div>
+
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                <div className="space-y-1.5 sm:col-span-1">
                  <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Kode MK</label>
@@ -217,21 +236,45 @@ export function CourseDialogs({
                </div>
              </div>
 
-             <div className="space-y-1.5">
-               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Status Publikasi</label>
-               <Select 
-                 value={subjectForm.status} 
-                 onValueChange={(val) => setSubjectForm({ ...subjectForm, status: val as CourseStatus })}
-               >
-                 <SelectTrigger className="h-11 rounded-xl bg-card border-border/50 font-bold">
-                   <SelectValue />
-                 </SelectTrigger>
-                 <SelectContent className="rounded-xl border-border/50">
-                    <SelectItem value={CourseStatus.published} className="rounded-lg">Dipublikasikan (Tersedia untuk AI)</SelectItem>
-                    <SelectItem value={CourseStatus.draft} className="rounded-lg">Draft (Hanya Admin)</SelectItem>
-                    <SelectItem value={CourseStatus.archived} className="rounded-lg">Diarsipkan</SelectItem>
-                 </SelectContent>
-               </Select>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="space-y-1.5">
+                 <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Dosen Pengampu</label>
+                 <Select 
+                   value={subjectForm.teacherIds[0] || "none"} 
+                   onValueChange={(val) => setSubjectForm({ ...subjectForm, teacherIds: val === "none" ? [] : [val] })}
+                 >
+                   <SelectTrigger className="h-11 rounded-xl bg-card border-border/50 font-bold">
+                     <SelectValue placeholder="Pilih dosen" />
+                   </SelectTrigger>
+                   <SelectContent className="rounded-xl border-border/50">
+                      <SelectItem value="none" className="rounded-lg text-muted-foreground">Belum ditentukan</SelectItem>
+                      {teachers.map(t => (
+                        <SelectItem key={t.id} value={t.id} className="rounded-lg">
+                          <div className="flex flex-col items-start py-0.5">
+                            <span className="font-black text-sm">{t.name}</span>
+                            <span className="text-[10px] opacity-70">NIP: {t.nip || "-"}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1.5">
+                 <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Status Publikasi</label>
+                 <Select 
+                   value={subjectForm.status} 
+                   onValueChange={(val) => setSubjectForm({ ...subjectForm, status: val as CourseStatus })}
+                 >
+                   <SelectTrigger className="h-11 rounded-xl bg-card border-border/50 font-bold">
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent className="rounded-xl border-border/50">
+                      <SelectItem value={CourseStatus.published} className="rounded-lg">Dipublikasikan (Tersedia untuk AI)</SelectItem>
+                      <SelectItem value={CourseStatus.draft} className="rounded-lg">Draft (Hanya Admin)</SelectItem>
+                      <SelectItem value={CourseStatus.archived} className="rounded-lg">Diarsipkan</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
              </div>
 
              <div className="space-y-1.5">

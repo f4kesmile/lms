@@ -9,7 +9,6 @@ import { prisma } from "@/lib/core/db";
 const updateClassSchema = z.object({
   name: z.string().min(2).optional(),
   academicYearId: z.string().optional(),
-  classTeacherId: z.string().nullable().optional(),
   capacity: z.number().int().positive().optional(),
   subjectIds: z.array(z.string()).optional(),
   studentIds: z.array(z.string()).optional(),
@@ -32,7 +31,6 @@ export async function GET(_request: Request, context: Context) {
       where: { id },
       include: {
         academicYear: { select: { id: true, name: true } },
-        classTeacher: { select: { id: true, name: true, email: true } },
         subjects: {
           include: {
             subject: { select: { id: true, name: true, code: true } },
@@ -70,28 +68,29 @@ export async function PATCH(request: Request, context: Context) {
     const existing = await prisma.class.findUnique({ where: { id } });
     if (!existing) return notFound("Class not found");
 
+    const { name, academicYearId, capacity, subjectIds, studentIds } = parsed.data;
+
     const updatedClass = await prisma.class.update({
       where: { id },
       data: {
-        name: parsed.data.name,
-        academicYearId: parsed.data.academicYearId,
-        classTeacherId: parsed.data.classTeacherId,
-        capacity: parsed.data.capacity,
-        ...(parsed.data.subjectIds
+        name,
+        academicYearId,
+        capacity,
+        ...(subjectIds
           ? {
               subjects: {
                 deleteMany: {},
-                create: parsed.data.subjectIds.map((subjectId) => ({
+                create: subjectIds.map((subjectId: string) => ({
                   subject: { connect: { id: subjectId } },
                 })),
               },
             }
           : {}),
-        ...(parsed.data.studentIds
+        ...(studentIds
           ? {
               students: {
                 deleteMany: {},
-                create: parsed.data.studentIds.map((userId) => ({
+                create: studentIds.map((userId: string) => ({
                   user: { connect: { id: userId } },
                 })),
               },
@@ -100,7 +99,6 @@ export async function PATCH(request: Request, context: Context) {
       },
       include: {
         academicYear: { select: { id: true, name: true } },
-        classTeacher: { select: { id: true, name: true, email: true } },
         subjects: { include: { subject: true } },
         students: { include: { user: true } },
       },

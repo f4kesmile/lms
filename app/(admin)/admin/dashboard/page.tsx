@@ -27,8 +27,29 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  type TooltipProps,
 } from "recharts";
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+};
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (active && payload && payload.length) {
+    const dataPoint = payload[0];
+    const numeric = dataPoint.value;
+    return (
+      <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
+        <p className="font-bold text-muted-foreground">{label}</p>
+        <p className="text-sm font-black text-primary">
+          {numeric} <span className="font-bold text-foreground">Aktivitas</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
 
 type DashboardResponse = {
   metrics: {
@@ -99,22 +120,18 @@ export default function AdminDashboardPage() {
     );
   }, [data]);
 
-  const growthData = useMemo(() => {
-    if (data?.growthSeries && data.growthSeries.length > 0) {
-      return DAY_LABELS.map((day) => {
+  const growthData = data?.growthSeries?.length
+    ? DAY_LABELS.map((day) => {
         const point = data.growthSeries?.find((item) => item.day === day);
         return {
           day,
           value: Math.round(point?.value ?? 0),
         };
-      });
-    }
-
-    return DAY_LABELS.map((day, index) => ({
-      day,
-      value: Math.round(bars[index] ?? 0),
-    }));
-  }, [bars, data?.growthSeries]);
+      })
+    : DAY_LABELS.map((day, index) => ({
+        day,
+        value: Math.round(bars[index] ?? 0),
+      }));
 
   const metricValues = data
     ? [
@@ -124,29 +141,6 @@ export default function AdminDashboardPage() {
         `${data.metrics.aiUsage}%`,
       ]
     : ["0", "0", "0", "0%"];
-
-  interface CustomTooltipProps {
-    active?: boolean;
-    payload?: Array<{ value: number; payload: { day: string } }>;
-    label?: string;
-  }
-
-  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-    if (active && payload && payload.length) {
-      const dataPoint = payload[0];
-      const numeric = dataPoint.value;
-      return (
-        <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
-          <p className="font-bold text-muted-foreground">{label}</p>
-          <p className="text-sm font-black text-primary">
-            {numeric}{" "}
-            <span className="font-bold text-foreground">Aktivitas</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <AdminLayout title="Ringkasan Eksekutif">
@@ -169,7 +163,11 @@ export default function AdminDashboardPage() {
                     {label}
                   </CardTitle>
                   <div className="rounded-md border border-border bg-background p-2 shadow-sm">
-                    <Icon name={statIcons[i]} size={18} className="text-foreground" />
+                    <Icon
+                      name={statIcons[i]}
+                      size={18}
+                      className="text-foreground"
+                    />
                   </div>
                 </CardHeader>
                 <CardContent className="relative">
@@ -278,7 +276,8 @@ export default function AdminDashboardPage() {
                           key={item.id}
                           className={cn(
                             "group transition-colors hover:bg-muted/30",
-                            idx !== data.activities.length - 1 && "border-b border-border/30"
+                            idx !== data.activities.length - 1 &&
+                              "border-b border-border/30",
                           )}
                         >
                           <TableCell className="px-6 py-4">
@@ -317,19 +316,27 @@ export default function AdminDashboardPage() {
 
             <div className="lg:hidden divide-y divide-border">
               {loading ? (
-                Array(4).fill(0).map((_, i) => (
-                  <div key={`mobile-activity-skeleton-${i}`} className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-32 rounded-lg" />
-                    <Skeleton className="h-3 w-full rounded-lg" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-5 w-16 rounded-lg" />
-                      <Skeleton className="h-3 w-20 rounded-lg" />
+                Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={`mobile-activity-skeleton-${i}`}
+                      className="p-4 space-y-2"
+                    >
+                      <Skeleton className="h-4 w-32 rounded-lg" />
+                      <Skeleton className="h-3 w-full rounded-lg" />
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-5 w-16 rounded-lg" />
+                        <Skeleton className="h-3 w-20 rounded-lg" />
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))
               ) : error ? (
                 <div className="p-4">
-                  <EmptyState title="Gagal memuat aktivitas" description={error} />
+                  <EmptyState
+                    title="Gagal memuat aktivitas"
+                    description={error}
+                  />
                 </div>
               ) : data?.activities.length === 0 ? (
                 <div className="p-4">
@@ -354,10 +361,17 @@ export default function AdminDashboardPage() {
                         {getInitials(item.user)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold truncate">{item.user}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{item.activity}</p>
+                        <p className="text-sm font-semibold truncate">
+                          {item.user}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {item.activity}
+                        </p>
                         <div className="flex items-center justify-between mt-2">
-                          <Badge variant={variant as BadgeProps["variant"]} className="text-[10px]">
+                          <Badge
+                            variant={variant as BadgeProps["variant"]}
+                            className="text-[10px]"
+                          >
                             {item.status}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground">
@@ -411,7 +425,11 @@ export default function AdminDashboardPage() {
                     />
                     <YAxis
                       allowDecimals={false}
-                      tick={{ fill: "var(--text-dim)", fontSize: 10, fontWeight: 700 }}
+                      tick={{
+                        fill: "var(--text-dim)",
+                        fontSize: 10,
+                        fontWeight: 700,
+                      }}
                       axisLine={false}
                       tickLine={false}
                       width={28}
@@ -446,7 +464,11 @@ export default function AdminDashboardPage() {
 
               <div className="relative">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md border border-border bg-primary/10 shadow-sm">
-                  <Icon name="lightbulb" size={24} className="text-primary group-hover:animate-pulse" />
+                  <Icon
+                    name="lightbulb"
+                    size={24}
+                    className="text-primary group-hover:animate-pulse"
+                  />
                 </div>
                 <h3 className="mb-3 text-lg font-black uppercase tracking-tight text-foreground">
                   AI Platform Insight
@@ -473,7 +495,7 @@ export default function AdminDashboardPage() {
                   asChild
                 >
                   <Link
-                    href="/admin/stats"
+                    href={"/admin/stats" as Route}
                     className="flex items-center justify-center gap-2"
                   >
                     Buka Manajemen Chatbot
