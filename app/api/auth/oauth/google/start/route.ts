@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { getAllowedEmailDomains } from "@/lib/auth-domain";
-import { tooManyRequests } from "@/lib/http";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { writeSystemLog } from "@/lib/system-log";
+import { getAllowedEmailDomains } from "@/lib/auth/domain";
+import { tooManyRequests } from "@/lib/core/http";
+import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
+import { writeSystemLog } from "@/lib/core/logs";
 
 const OAUTH_STATE_COOKIE = "oauth_google_state";
 

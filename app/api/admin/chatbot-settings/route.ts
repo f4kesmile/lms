@@ -2,9 +2,9 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { readChatbotSettings, writeChatbotSettings } from "@/lib/chatbot-settings";
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { badRequest, forbidden, serverError, unauthorized } from "@/lib/http";
+import { readChatbotSettings, writeChatbotSettings } from "@/lib/ai/settings";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/http";
 
 const chatbotSettingsSchema = z.object({
   topK: z.number().int().min(1).max(8),

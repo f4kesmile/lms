@@ -1,46 +1,19 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SITE_CONFIG } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-type LoginResponse = {
-  user: {
-    id: string;
-    role: "admin" | "dosen" | "mahasiswa";
-  };
-};
+import { Icon } from "@/components/ui/icon";
 
 export default function LoginClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const oauthError = searchParams.get("error");
-  const allowedDomains = searchParams.get("allowed");
-
-  const oauthErrorMessage =
-    oauthError === "oauth_domain_not_allowed"
-      ? `Domain email tidak diizinkan. Gunakan email kampus: ${allowedDomains || "kampus.ac.id"}`
-      : oauthError === "oauth_not_configured"
-        ? "OAuth belum dikonfigurasi di server."
-        : oauthError === "oauth_email_unverified"
-          ? "Email Google harus terverifikasi untuk login."
-          : oauthError
-            ? "Login Google gagal. Silakan coba lagi."
-            : null;
-
-  useEffect(() => {
-    if (!oauthErrorMessage) return;
-    toast.error(oauthErrorMessage);
-  }, [oauthErrorMessage]);
-
-  async function submit(event: FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
 
@@ -51,29 +24,21 @@ export default function LoginClient() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as LoginResponse & {
-        message?: string;
-      };
-      if (!response.ok) throw new Error(data.message || "Login gagal");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Login gagal");
+      }
 
-      toast.success("Login berhasil");
-
-      // Refresh server components (navbar) dulu sebelum navigasi
+      toast.success("Login berhasil. Sedang mengarahkan...");
       router.refresh();
-
-      // Delay minimal agar navbar terupdate
       setTimeout(() => {
-        if (data.user.role === "mahasiswa") {
-          router.push("/courses");
-        } else {
-          router.push("/admin/dashboard");
-        }
-      }, 100);
+        router.push("/courses");
+      }, 150);
     } catch (e) {
       toast.error(
         e instanceof Error
           ? e.message
-          : "Terjadi kesalahan sistem. Cek log dan hubungi admin.",
+          : "Terjadi kesalahan sistem. Cek log dan hubungi admin."
       );
     } finally {
       setLoading(false);
@@ -82,296 +47,147 @@ export default function LoginClient() {
 
   return (
     <>
-      <main
-        style={{
-          width: "100%",
-          minHeight: "calc(100dvh - 80px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem 2.5rem",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1200px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "2.5rem",
-            alignItems: "center",
-          }}
-        >
-          {/* Left Column */}
-          <div style={{ display: "grid", gap: "2rem" }}>
-            <div style={{ display: "grid", gap: "1rem" }}>
-              <h2 className="title-xl">
-                Selamat Datang <span className="accent">Kembali</span>
+      <main className="flex min-h-[calc(100dvh-80px)] w-full items-center justify-center p-8 md:p-10">
+        <div className="grid w-full max-w-[1200px] grid-cols-1 items-center gap-10 lg:grid-cols-2">
+          
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
+              <h2 className="title-xl text-4xl font-black md:text-5xl">
+                Selamat Datang <span className="text-primary">Kembali</span>
               </h2>
-              <p className="text-muted" style={{ fontSize: "1.1rem" }}>
-                Gunakan akun kampus Anda untuk mulai belajar, mengajar, atau
-                mengelola sistem terintegrasi.
+              <p className="text-lg text-muted-foreground">
+                Lanjutkan perjalanan belajar Anda dan capai target akademik bersama ribuan pelajar lainnya.
               </p>
             </div>
 
-            <div style={{ display: "grid", gap: "1rem" }}>
-              <div
-                className="row"
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--bg-card-hover)",
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "0.75rem",
-                    borderRadius: "var(--radius-sm)",
-                    background: "var(--border-primary)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <span className="material-symbols-outlined">smart_toy</span>
+            <div className="flex flex-col gap-4">
+              <div className="row flex items-center gap-4 rounded-lg border border-border bg-surface-primary-muted p-4">
+                <div className="flex items-center justify-center rounded-md bg-surface-primary-soft p-3 text-primary">
+                  <Icon name="history_edu" size={24} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
-                    Asisten AI Pintar
-                  </h3>
-                  <p className="text-dim" style={{ fontSize: "0.85rem" }}>
-                    Dukungan 24/7 di semua tahapan komprehensif
+                  <h3 className="font-bold">Lanjutkan Belajar</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Akses materi terakhir Anda
                   </p>
                 </div>
               </div>
-              <div
-                className="row"
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--bg-card-hover)",
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "0.75rem",
-                    borderRadius: "var(--radius-sm)",
-                    background: "var(--border-primary)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <span className="material-symbols-outlined">speed</span>
+              <div className="row flex items-center gap-4 rounded-lg border border-border bg-surface-primary-muted p-4">
+                <div className="flex items-center justify-center rounded-md bg-surface-primary-soft p-3 text-primary">
+                  <Icon name="forum" size={24} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
-                    Akses Super Cepat
-                  </h3>
-                  <p className="text-dim" style={{ fontSize: "0.85rem" }}>
-                    Terdistribusi global bebas hambatan
+                  <h3 className="font-bold">Diskusi Aktif</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Terhubung dengan pengajar dan rekan
                   </p>
                 </div>
               </div>
             </div>
 
-            <div
-              className="neo-card"
-              style={{
-                padding: "2rem",
-                position: "relative",
-                overflow: "hidden",
-                background:
-                  "linear-gradient(135deg, var(--primary), var(--primary-dark))",
-              }}
-            >
-              <p
-                style={{
-                  color: "var(--on-inverse)",
-                  fontSize: "1.05rem",
-                  fontStyle: "italic",
-                  fontWeight: 500,
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              >
-                &quot;Platform ini mempermudah saya mengawasi kemajuan belajar
-                mahasiswa dalam hitungan detik.&quot;
-              </p>
-              <p
-                style={{
-                  marginTop: "1rem",
-                  color: "var(--primary-light)",
-                  fontWeight: 700,
-                }}
-              >
-                — Dosen Senior Ilmu Komputer
+            <div className="neo-card relative overflow-hidden bg-gradient-to-br from-primary to-brand-heavy p-8">
+              <p className="relative z-10 font-medium italic text-primary-foreground">
+                &quot;Konsistensi adalah kunci. Setiap modul yang diselesaikan membawa Anda selangkah lebih dekat ke tujuan.&quot;
               </p>
             </div>
           </div>
 
-          {/* Right Column — Form */}
-          <div style={{ display: "grid", gap: "0.75rem" }}>
-            <div
-              className="neo-card"
-              style={{
-                padding: "3rem 2.5rem",
-                borderRadius: "var(--radius-xl)",
-              }}
-            >
-              <div style={{ marginBottom: "2rem" }}>
-                <h2
-                  style={{
-                    fontSize: "1.8rem",
-                    fontWeight: 800,
-                    marginBottom: "0.4rem",
-                  }}
-                >
-                  Masuk
-                </h2>
-                <p className="text-muted">
-                  Masukkan kredensial Anda untuk melanjutkan.
+          <div className="flex flex-col gap-3">
+            <div className="neo-card rounded-2xl p-8 md:p-10">
+              <div className="mb-8">
+                <h2 className="mb-2 text-3xl font-black">Masuk ke Akun</h2>
+                <p className="text-muted-foreground">
+                  Masukkan email dan kata sandi Anda.
                 </p>
               </div>
 
-              <form
-                style={{ display: "grid", gap: "1.25rem" }}
-                onSubmit={submit}
-              >
-                <div>
-                  <label className="input-label">Email</label>
-                  <div className="input-group">
-                    <span className="input-icon material-symbols-outlined">
-                      mail
-                    </span>
+              <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="flex flex-col gap-2">
+                  <label className="input-label text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Email
+                  </label>
+                  <div className="input-group relative flex items-center">
+                    <Icon
+                      name="mail"
+                      size={20}
+                      className="input-icon absolute left-4 text-muted-foreground"
+                    />
                     <input
-                      className="input input-with-icon"
+                      className="input input-with-icon w-full rounded-md border border-border bg-card py-3 pl-12 pr-4 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       type="email"
-                      placeholder="email@kampus.ac.id"
+                      placeholder="contoh@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="input-label">Kata Sandi</label>
-                  <div className="input-group">
-                    <span className="input-icon material-symbols-outlined">
-                      lock
-                    </span>
+                <div className="flex flex-col gap-2">
+                  <label className="input-label text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Kata Sandi
+                  </label>
+                  <div className="input-group relative flex items-center">
+                    <Icon
+                      name="lock"
+                      size={20}
+                      className="input-icon absolute left-4 text-muted-foreground"
+                    />
                     <input
-                      className="input input-with-icon"
+                      className="input input-with-icon w-full rounded-md border border-border bg-card py-3 pl-12 pr-12 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       type={showPw ? "text" : "password"}
-                      placeholder="Kata sandi"
+                      placeholder="Masukkan kata sandi"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      style={{ paddingRight: "3rem" }}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPw(!showPw)}
-                      style={{
-                        position: "absolute",
-                        right: "1rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        color: "var(--text-dim)",
-                        cursor: "pointer",
-                      }}
+                      className="absolute right-4 text-muted-foreground hover:text-foreground"
                     >
-                      <span className="material-symbols-outlined">
-                        {showPw ? "visibility_off" : "visibility"}
-                      </span>
+                      <Icon name={showPw ? "visibility_off" : "visibility"} size={20} />
                     </button>
                   </div>
                 </div>
 
-                <button
-                  className="btn"
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    width: "100%",
-                    padding: "1rem",
-                    fontSize: "1.05rem",
-                  }}
-                >
-                  {loading ? "Memproses..." : "Masuk"}
-                </button>
-
-                <div
-                  className="row"
-                  style={{ justifyContent: "center", gap: "1rem" }}
-                >
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 1,
-                      background: "var(--border-primary)",
-                    }}
-                  />
-                  <span
-                    className="text-dim"
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    Atau masuk dengan
-                  </span>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 1,
-                      background: "var(--border-primary)",
-                    }}
-                  />
+                <div className="flex items-center justify-between">
+                  <label className="row flex cursor-pointer items-center gap-3">
+                    <input
+                      type="checkbox"
+                      className="accent-primary"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      Ingat Saya
+                    </span>
+                  </label>
+                  <a href="#" className="text-sm font-bold text-primary hover:underline">
+                    Lupa Sandi?
+                  </a>
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1rem",
-                  }}
+                <button
+                  className="btn mt-2 w-full py-4 text-lg font-bold"
+                  type="submit"
+                  disabled={loading}
                 >
-                  {/* Google Button */}
+                  {loading ? "Memproses..." : "Masuk Sekarang"}
+                </button>
+
+                <div className="row flex items-center justify-center gap-4 py-2">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">
+                    Atau masuk dengan
+                  </span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <button
-                    className="btn-ghost"
+                    className="btn-ghost flex items-center justify-center gap-2 rounded-md border border-border py-3 font-medium transition-colors hover:border-[#db5433] hover:bg-[#db5433]/10"
                     type="button"
                     onClick={() =>
                       window.location.assign("/api/auth/oauth/google/start")
                     }
-                    style={{
-                      justifyContent: "center",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      border: "1px solid var(--border-primary)",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "0.375rem",
-                      fontWeight: 500,
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "rgba(219, 84, 51, 0.08)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "#db5433";
-                    }}
-                    onMouseLeave={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--border-primary)";
-                    }}
                   >
-                    {/* Google Logo SVG */}
                     <svg
                       width="18"
                       height="18"
@@ -400,40 +216,15 @@ export default function LoginClient() {
                     Google
                   </button>
 
-                  {/* Microsoft Button */}
                   <button
-                    className="btn-ghost"
+                    className="btn-ghost flex items-center justify-center gap-2 rounded-md border border-border py-3 font-medium transition-colors hover:border-[#005a9e] hover:bg-[#005a9e]/10"
                     type="button"
                     onClick={() =>
-                      window.location.assign("/api/auth/oauth/microsoft/start")
+                      window.location.assign(
+                        "/api/auth/oauth/microsoft/start"
+                      )
                     }
-                    style={{
-                      justifyContent: "center",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      border: "1px solid var(--border-primary)",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "0.375rem",
-                      fontWeight: 500,
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "rgba(0, 90, 158, 0.08)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "#005a9e";
-                    }}
-                    onMouseLeave={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--border-primary)";
-                    }}
                   >
-                    {/* Microsoft Logo SVG */}
                     <svg
                       width="18"
                       height="18"
@@ -453,20 +244,10 @@ export default function LoginClient() {
               </form>
             </div>
 
-            <p
-              className="text-muted"
-              style={{
-                textAlign: "center",
-                fontSize: "0.9rem",
-              }}
-            >
+            <p className="text-center text-sm text-muted-foreground">
               Belum punya akun?{" "}
-              <Link
-                href="/register"
-                className="accent"
-                style={{ fontWeight: 700 }}
-              >
-                Daftar
+              <Link href="/register" className="font-bold text-primary hover:underline">
+                Daftar sekarang
               </Link>
             </p>
           </div>

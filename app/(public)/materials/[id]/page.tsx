@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import type { Route } from "next";
-
+import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/core/db";
 import {
   renderMaterialHtml,
   splitMaterialContent,
 } from "@/lib/utils/material-content";
+import { Icon } from "@/components/ui/icon";
 
 type MaterialDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -46,6 +46,7 @@ export default async function MaterialDetailPage({
   const currentIndex = siblingMaterials.findIndex(
     (item) => item.id === material.id,
   );
+  
   const previousMaterial =
     currentIndex > 0 ? siblingMaterials[currentIndex - 1] : null;
   const nextMaterial =
@@ -58,151 +59,85 @@ export default async function MaterialDetailPage({
   return (
     <>
       <Navbar />
-      <main
-        className="app-shell"
-        style={{ display: "grid", gap: "1.5rem", paddingBottom: "4rem" }}
-      >
-        <section
-          style={{
-            display: "grid",
-            gap: "1rem",
-            gridTemplateColumns: "minmax(0, 1.6fr) minmax(260px, 0.8fr)",
-            alignItems: "start",
-          }}
-        >
-          <div
-            className="neo-card"
-            style={{
-              display: "grid",
-              gap: "0.9rem",
-              padding: "1.2rem 1.1rem",
-              background:
-                "linear-gradient(135deg, color-mix(in srgb, var(--primary) 9%, white), var(--bg-card))",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "1rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <span className="eyebrow">Referensi Materi</span>
+      <main className="app-shell flex flex-col gap-6 pb-16">
+        <section className="grid grid-cols-1 lg:grid-cols-[1.6fr_0.8fr] gap-4 items-start">
+          <div className="neo-card flex flex-col gap-4 p-5 bg-gradient-to-br from-primary/10 to-card">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <span className="eyebrow inline-block">Referensi Materi</span>
               <Link
                 href="/courses"
-                className="btn-ghost"
-                style={{ padding: "0.45rem 0.8rem", fontSize: "0.8rem" }}
+                className="btn-ghost px-4 py-2 border border-border text-xs rounded hover:bg-muted"
               >
                 Kembali ke Katalog Kelas
               </Link>
             </div>
-            <div style={{ display: "grid", gap: "0.6rem" }}>
-              <h1 className="title-lg" style={{ margin: 0 }}>
-                {material.title}
-              </h1>
-              <p
-                style={{
-                  margin: 0,
-                  color: "var(--text-soft)",
-                  lineHeight: 1.65,
-                  maxWidth: 760,
-                }}
-              >
+            
+            <div className="flex flex-col gap-2">
+              <h1 className="title-lg m-0">{material.title}</h1>
+              <p className="text-muted-foreground leading-relaxed max-w-3xl text-sm">
                 Materi ini dipakai sebagai referensi jawaban chatbot dan sumber
                 belajar internal. Bacaan di bawah ditampilkan dalam format yang
                 lebih nyaman agar sitasi chatbot bisa langsung kamu telusuri ke
                 sumber aslinya.
               </p>
             </div>
-            <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
+            
+            <div className="flex flex-wrap gap-2 mt-2">
               {material.course && (
-                <span className="pill">
+                <span className="pill text-xs">
                   Mata Kuliah: {material.course.code}
                 </span>
               )}
-              <span className="pill">Modul: {material.module}</span>
+              <span className="pill text-xs">Modul: {material.module}</span>
               {material.page && (
-                <span className="pill">Halaman: {material.page}</span>
+                <span className="pill text-xs">Halaman: {material.page}</span>
               )}
-              <span className="pill">Chunk: {material._count.chunks}</span>
-              <span className="pill">
+              <span className="pill text-xs">Chunk: {material._count.chunks}</span>
+              <span className="pill text-xs">
                 Penyusun: {material.createdBy?.name || "Admin"}
               </span>
             </div>
           </div>
 
-          <aside
-            className="neo-card"
-            style={{ padding: "1rem", display: "grid", gap: "0.8rem" }}
-          >
-            <span className="eyebrow">Ringkasan Referensi</span>
-            <div style={{ display: "grid", gap: "0.55rem" }}>
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    color: "var(--text-dim)",
-                    fontWeight: 800,
-                  }}
-                >
+          <aside className="neo-card flex flex-col gap-4 p-5">
+            <span className="eyebrow inline-block">Ringkasan Referensi</span>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                   Judul
-                </div>
-                <div style={{ fontWeight: 700 }}>{material.title}</div>
+                </span>
+                <span className="font-bold text-sm">{material.title}</span>
               </div>
+              
               {material.course && (
-                <div>
-                  <div
-                    style={{
-                      fontSize: "0.72rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: "var(--text-dim)",
-                      fontWeight: 800,
-                    }}
-                  >
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                     Mata Kuliah
-                  </div>
-                  <div style={{ fontWeight: 700 }}>
+                  </span>
+                  <span className="font-bold text-sm">
                     {material.course.code} - {material.course.title}
-                  </div>
+                  </span>
                 </div>
               )}
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    color: "var(--text-dim)",
-                    fontWeight: 800,
-                  }}
-                >
+              
+              <div className="flex flex-col gap-1">
+                <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                   Cakupan
-                </div>
-                <div style={{ fontWeight: 700 }}>
+                </span>
+                <span className="font-bold text-sm">
                   {contentBlocks.length} blok bacaan
-                </div>
+                </span>
               </div>
+              
               {siblingMaterials.length > 1 && (
-                <div>
-                  <div
-                    style={{
-                      fontSize: "0.72rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      color: "var(--text-dim)",
-                      fontWeight: 800,
-                    }}
-                  >
+                <div className="flex flex-col gap-1">
+                  <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                     Posisi Materi
-                  </div>
-                  <div style={{ fontWeight: 700 }}>
+                  </span>
+                  <span className="font-bold text-sm">
                     {currentIndex + 1} dari {siblingMaterials.length} materi
                     dalam mata kuliah ini
-                  </div>
+                  </span>
                 </div>
               )}
             </div>
@@ -210,86 +145,34 @@ export default async function MaterialDetailPage({
         </section>
 
         {(previousMaterial || nextMaterial) && (
-          <section
-            className="neo-card"
-            style={{ padding: "1rem", display: "grid", gap: "0.9rem" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "1rem",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    color: "var(--text-dim)",
-                    fontWeight: 800,
-                  }}
-                >
+          <section className="neo-card flex flex-col gap-4 p-5">
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                   Navigasi Materi
-                </div>
-                <div style={{ fontWeight: 700 }}>
+                </span>
+                <span className="font-bold text-sm">
                   Lanjutkan membaca materi terkait dalam mata kuliah yang sama
-                </div>
+                </span>
               </div>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: "0.8rem",
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {previousMaterial ? (
                 <Link
                   href={`/materials/${previousMaterial.id}` as Route}
-                  className="btn-ghost"
-                  style={{
-                    justifyContent: "space-between",
-                    padding: "0.9rem",
-                    display: "grid",
-                    gap: "0.3rem",
-                    textAlign: "left",
-                  }}
+                  className="btn-ghost flex flex-col items-start gap-1 p-4 border border-border rounded-xl hover:bg-muted text-left"
                 >
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: 800,
-                      color: "var(--text-dim)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                    }}
-                  >
+                  <span className="text-[0.7rem] uppercase tracking-widest text-muted-foreground font-black">
                     Materi Sebelumnya
                   </span>
-                  <span style={{ fontWeight: 700 }}>
-                    {previousMaterial.title}
-                  </span>
-                  <span
-                    style={{ fontSize: "0.8rem", color: "var(--text-soft)" }}
-                  >
+                  <span className="font-bold text-sm">{previousMaterial.title}</span>
+                  <span className="text-xs text-muted-foreground">
                     {previousMaterial.module}
                   </span>
                 </Link>
               ) : (
-                <div
-                  style={{
-                    border: "1px dashed var(--border-primary)",
-                    borderRadius: 12,
-                    padding: "0.9rem",
-                    color: "var(--text-dim)",
-                    fontSize: "0.85rem",
-                  }}
-                >
+                <div className="flex items-center justify-center p-4 border border-dashed border-border rounded-xl text-muted-foreground text-sm">
                   Tidak ada materi sebelumnya.
                 </div>
               )}
@@ -297,43 +180,18 @@ export default async function MaterialDetailPage({
               {nextMaterial ? (
                 <Link
                   href={`/materials/${nextMaterial.id}` as Route}
-                  className="btn-ghost"
-                  style={{
-                    justifyContent: "space-between",
-                    padding: "0.9rem",
-                    display: "grid",
-                    gap: "0.3rem",
-                    textAlign: "left",
-                  }}
+                  className="btn-ghost flex flex-col items-start gap-1 p-4 border border-border rounded-xl hover:bg-muted text-left"
                 >
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: 800,
-                      color: "var(--text-dim)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                    }}
-                  >
+                  <span className="text-[0.7rem] uppercase tracking-widest text-muted-foreground font-black">
                     Materi Berikutnya
                   </span>
-                  <span style={{ fontWeight: 700 }}>{nextMaterial.title}</span>
-                  <span
-                    style={{ fontSize: "0.8rem", color: "var(--text-soft)" }}
-                  >
+                  <span className="font-bold text-sm">{nextMaterial.title}</span>
+                  <span className="text-xs text-muted-foreground">
                     {nextMaterial.module}
                   </span>
                 </Link>
               ) : (
-                <div
-                  style={{
-                    border: "1px dashed var(--border-primary)",
-                    borderRadius: 12,
-                    padding: "0.9rem",
-                    color: "var(--text-dim)",
-                    fontSize: "0.85rem",
-                  }}
-                >
+                <div className="flex items-center justify-center p-4 border border-dashed border-border rounded-xl text-muted-foreground text-sm">
                   Tidak ada materi berikutnya.
                 </div>
               )}
@@ -341,83 +199,38 @@ export default async function MaterialDetailPage({
           </section>
         )}
 
-        <section
-          className="neo-card"
-          style={{ display: "grid", gap: "1rem", padding: "1rem" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "1rem",
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: "0.72rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "var(--text-dim)",
-                  fontWeight: 800,
-                }}
-              >
+        <section className="neo-card flex flex-col gap-4 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                 Konten Materi
-              </div>
-              <div style={{ fontWeight: 700, color: "var(--text-main)" }}>
+              </span>
+              <span className="font-bold text-sm text-foreground">
                 Dibagi menjadi blok bacaan yang lebih nyaman dibaca
-              </div>
+              </span>
             </div>
             <span className="pill">{contentBlocks.length} blok</span>
           </div>
 
-          <div style={{ display: "grid", gap: "0.9rem" }}>
+          <div className="flex flex-col gap-4">
             {contentBlocks.map((block, index) => (
               <article
                 key={`${material.id}-block-${index}`}
-                style={{
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: 12,
-                  padding: "0.95rem 1rem",
-                  background:
-                    index % 2 === 0
-                      ? "var(--bg-card)"
-                      : "color-mix(in srgb, var(--primary) 4%, white)",
-                  display: "grid",
-                  gap: "0.55rem",
-                }}
+                className={`flex flex-col gap-2 p-4 border border-border rounded-xl ${
+                  index % 2 === 0 ? "bg-card" : "bg-primary/5"
+                }`}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span className="eyebrow" style={{ fontSize: "0.68rem" }}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <span className="eyebrow text-[0.68rem] m-0">
                     Blok {index + 1}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "0.76rem",
-                      color: "var(--text-dim)",
-                      fontWeight: 700,
-                    }}
-                  >
+                  <span className="text-[0.76rem] font-bold text-muted-foreground">
                     Referensi chatbot
                   </span>
                 </div>
+                
                 <div
-                  className="material-rich-content"
-                  style={{
-                    lineHeight: 1.8,
-                    color: "var(--text-main)",
-                    fontSize: "0.98rem",
-                  }}
+                  className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 w-full text-foreground/90 leading-relaxed"
                   dangerouslySetInnerHTML={{
                     __html: renderMaterialHtml(block),
                   }}
@@ -426,22 +239,6 @@ export default async function MaterialDetailPage({
             ))}
           </div>
         </section>
-
-        <style>{`
-          .material-rich-content p {
-            margin: 0 0 1rem;
-          }
-
-          .material-rich-content ul,
-          .material-rich-content ol {
-            margin: 0 0 1rem 1.35rem;
-            padding: 0;
-          }
-
-          .material-rich-content li {
-            margin: 0.25rem 0;
-          }
-        `}</style>
       </main>
     </>
   );

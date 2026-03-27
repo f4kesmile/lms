@@ -3,16 +3,16 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { setAuthCookie } from "@/lib/auth";
+import { setAuthCookie } from "@/lib/auth/index";
 import {
   getAllowedEmailDomainsText,
   isAllowedEmail,
   isDomainRestrictionEnabled,
-} from "@/lib/auth-domain";
-import { badRequest, serverError, tooManyRequests } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { writeSystemLog } from "@/lib/system-log";
+} from "@/lib/auth/domain";
+import { badRequest, serverError, tooManyRequests } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
+import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
+import { writeSystemLog } from "@/lib/core/logs";
 
 const registerSchema = z.object({
   name: z.string().min(2),

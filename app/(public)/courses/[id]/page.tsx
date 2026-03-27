@@ -1,9 +1,11 @@
 import { Navbar } from "@/components/layout/Navbar";
 import Link from "next/link";
 import type { Route } from "next";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/core/db";
 import { getCurrentUserIdFromCookie } from "@/lib/auth";
 import EnrollButton from "@/features/courses/EnrollButton";
+import { Icon } from "@/components/ui/icon";
+import { cn } from "@/lib/utils";
 
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -132,300 +134,158 @@ export default async function CourseDetailPage({
   return (
     <>
       <Navbar />
-      <main className="app-shell" style={{ display: "grid", gap: "2rem" }}>
-        {/* Breadcrumb */}
-        <nav
-          className="row"
-          style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}
-        >
-          <Link href="/" style={{ color: "var(--primary)" }}>
+      <main className="app-shell flex flex-col gap-8 pb-16">
+        <nav className="flex items-center gap-2 text-[0.85rem] text-muted-foreground">
+          <Link href="/" className="text-primary hover:underline">
             Beranda
           </Link>
-          <span>›</span>
-          <Link href="/courses">Kelas Saya</Link>
-          <span>›</span>
-          <span style={{ color: "var(--text-main)" }}>{title}</span>
+          <Icon name="chevron_right" size={16} />
+          <Link href="/courses" className="hover:underline">Kelas Saya</Link>
+          <Icon name="chevron_right" size={16} />
+          <span className="text-foreground font-semibold">{title}</span>
         </nav>
 
-        <div className="grid-2" style={{ alignItems: "start" }}>
-          {/* Left: Class Info */}
-          <div style={{ display: "grid", gap: "2rem" }}>
-            {/* Hero */}
-            <article className="neo-card" style={{ overflow: "hidden" }}>
-              <div
-                style={{
-                  height: 200,
-                  background:
-                    "linear-gradient(135deg, var(--surface-primary-soft), var(--brand-heavy))",
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  padding: "1.5rem",
-                }}
-              >
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <span className="eyebrow" style={{ marginBottom: "0.75rem" }}>
-                    Kelas Aktif
-                  </span>
-                  <h1
-                    className="title-xl"
-                    style={{ fontSize: "1.6rem", marginTop: "0.5rem" }}
-                  >
+        <div className="grid-2 items-start lg:grid-cols-[2fr_1fr]">
+          <div className="flex flex-col gap-8">
+            <article className="neo-card overflow-hidden">
+              <div className="relative flex h-[200px] items-end bg-gradient-to-br from-surface-primary-soft to-brand-heavy p-6">
+                <div className="relative z-10 flex flex-col gap-2">
+                  <span className="eyebrow inline-block">Kelas Aktif</span>
+                  <h1 className="title-xl text-2xl md:text-3xl">
                     {title}
                   </h1>
-                  <p
-                    className="text-dim"
-                    style={{ marginTop: "0.35rem", fontSize: "0.85rem" }}
-                  >
-                    {subjectList.length > 0 ? subjectList[0].code : "Umum"} ·{" "}
-                    {year}
+                  <p className="text-muted-foreground text-[0.85rem] font-medium">
+                    {subjectList.length > 0 ? subjectList[0].code : "Umum"} · {year}
                   </p>
                 </div>
               </div>
-              <div
-                style={{ padding: "1.25rem", display: "grid", gap: "0.75rem" }}
-              >
-                <div
-                  className="row"
-                  style={{ flexWrap: "wrap", fontSize: "0.85rem" }}
-                >
-                  <span className="pill">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 14 }}
-                    >
-                      person
-                    </span>
-                    {teacherNames.length > 0
-                      ? `${teacherNames.length} Dosen Pengampu`
-                      : "Belum ada Dosen Pengampu"}
-                  </span>
-                  <span className="pill">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 14 }}
-                    >
-                      group
-                    </span>
-                    {studentCount} Mahasiswa Terdaftar
-                  </span>
-                  <span className="pill">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 14 }}
-                    >
-                      library_books
-                    </span>
-                    {subjectList.length} Mata Pelajaran
-                  </span>
-                </div>
+              <div className="flex flex-wrap gap-3 p-5">
+                <span className="pill flex items-center gap-2">
+                  <Icon name="person" size={16} />
+                  {teacherNames.length > 0
+                    ? `${teacherNames.length} Dosen Pengampu`
+                    : "Belum ada Dosen Pengampu"}
+                </span>
+                <span className="pill flex items-center gap-2">
+                  <Icon name="group" size={16} />
+                  {studentCount} Mahasiswa Terdaftar
+                </span>
+                <span className="pill flex items-center gap-2">
+                  <Icon name="library_books" size={16} />
+                  {subjectList.length} Mata Pelajaran
+                </span>
               </div>
             </article>
 
-            {/* About */}
-            <section style={{ display: "grid", gap: "1.25rem" }}>
+            <section className="flex flex-col gap-4">
               <h2 className="title-lg">Informasi Kelas</h2>
-              <p className="text-muted" style={{ lineHeight: 1.7 }}>
+              <p className="text-muted-foreground leading-relaxed text-[0.95rem]">
                 Kelas <strong>{title}</strong> merupakan bagian dari tahun
                 ajaran {year}. Mata kuliah pada kelas ini diampu oleh {teacher}
                 dan dapat menampung hingga {capacity} mahasiswa.
               </p>
             </section>
 
-            {/* Curriculum */}
-            <section style={{ display: "grid", gap: "1rem" }}>
+            <section className="flex flex-col gap-4">
               <h2 className="title-lg">Daftar Mata Pelajaran</h2>
-              <div style={{ display: "grid", gap: "0.5rem" }}>
+              <div className="flex flex-col gap-3">
                 {subjectList.length > 0 ? (
-                  subjectList.map((subject, idx: number) => {
+                  subjectList.map((subject, idx) => {
                     const material =
                       materialByCode.get(subject.code) ||
                       materialByTitle.get(subject.name.toLowerCase()) ||
                       null;
 
-                    if (material) {
-                      return (
-                        <Link
-                          key={subject.code}
-                          href={`/materials/${material.id}` as Route}
-                          className="row"
-                          style={{
-                            padding: "1rem",
-                            border: "1px solid var(--border-primary)",
-                            borderRadius: "var(--radius-sm)",
-                            background: "var(--bg-card)",
-                            textDecoration: "none",
-                            color: "inherit",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: "50%",
-                              background: "var(--surface-primary-soft)",
-                              color: "var(--primary)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.75rem",
-                              fontWeight: 700,
-                              flexShrink: 0,
-                            }}
-                          >
+                    const ContentWrapper = material ? Link : "div";
+                    const wrapperProps = material
+                      ? { href: `/materials/${material.id}` as Route }
+                      : {};
+
+                    return material ? (
+                      <Link
+                        href={`/materials/${material.id}` as Route}
+                        key={subject.code}
+                        className={cn(
+                          "row p-4 border border-border rounded-md bg-card flex items-center justify-between gap-4 transition-colors",
+                          "hover:border-primary hover:bg-muted cursor-pointer"
+                        )}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-primary-soft text-[0.75rem] font-bold text-primary">
                             {idx + 1}
                           </div>
-                          <div
-                            style={{
-                              flex: 1,
-                              display: "flex",
-                              flexDirection: "column",
-                            }}
-                          >
-                            <span
-                              style={{ fontWeight: 500, fontSize: "0.9rem" }}
-                            >
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-[0.9rem] text-foreground">
                               {subject.name}
                             </span>
-                            <span
-                              style={{
-                                fontSize: "0.75rem",
-                                color: "var(--text-dim)",
-                              }}
-                            >
-                              Kode: {subject.code} · Buka materi
+                            <span className="text-[0.75rem] text-muted-foreground">
+                              Kode: {subject.code} · {material ? "Buka materi" : "Materi belum tersedia"}
                             </span>
                           </div>
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ color: "var(--text-dim)", fontSize: 18 }}
-                          >
-                            chevron_right
-                          </span>
-                        </Link>
-                      );
-                    }
-
-                    return (
+                        </div>
+                        <Icon name="chevron_right" size={20} className="text-muted-foreground" />
+                      </Link>
+                    ) : (
                       <div
                         key={subject.code}
-                        className="row"
-                        style={{
-                          padding: "1rem",
-                          border: "1px solid var(--border-primary)",
-                          borderRadius: "var(--radius-sm)",
-                          background: "var(--bg-card)",
-                        }}
+                        className={cn(
+                          "row p-4 border border-border rounded-md bg-card flex items-center justify-between gap-4 transition-colors"
+                        )}
                       >
-                        <div
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "50%",
-                            background: "var(--surface-primary-soft)",
-                            color: "var(--primary)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "0.75rem",
-                            fontWeight: 700,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {idx + 1}
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-primary-soft text-[0.75rem] font-bold text-primary">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground">
+                              {subject.name}
+                            </div>
+                            <div className="text-sm text-foreground-soft">
+                              {subject.code}
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          style={{
-                            flex: 1,
-                            display: "flex",
-                            flexDirection: "column",
-                          }}
-                        >
-                          <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>
-                            {subject.name}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              color: "var(--text-dim)",
-                            }}
-                          >
-                            Kode: {subject.code} · Materi belum tersedia
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-medium text-muted">
+                            {/* Assuming subject.credits is a number or string, adjust as needed */}
+                            {/* {subject.credits} SKS */}
                           </span>
                         </div>
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ color: "var(--text-dim)", fontSize: 18 }}
-                        >
-                          chevron_right
-                        </span>
                       </div>
                     );
                   })
                 ) : (
-                  <div
-                    className="row"
-                    style={{
-                      padding: "1.5rem",
-                      border: "1px dashed var(--border-primary)",
-                      borderRadius: "var(--radius-sm)",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <span className="text-dim">Belum ada mata pelajaran.</span>
+                  <div className="row flex items-center justify-center rounded-md border border-dashed border-border p-6">
+                    <span className="text-muted-foreground">Belum ada mata pelajaran.</span>
                   </div>
                 )}
               </div>
             </section>
           </div>
 
-          {/* Right sidebar */}
-          <aside style={{ display: "grid", gap: "1.5rem" }}>
-            <div
-              className="neo-card"
-              style={{ padding: "1.5rem", display: "grid", gap: "1rem" }}
-            >
-              <h3
-                style={{
-                  fontSize: "0.85rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "var(--text-dim)",
-                }}
-              >
+          <aside className="flex flex-col gap-6">
+            <div className="neo-card flex flex-col gap-4 p-6">
+              <h3 className="text-[0.85rem] font-bold uppercase tracking-widest text-muted-foreground">
                 Status Pendaftaran
               </h3>
-              <div>
-                <p className="text-dim" style={{ fontSize: "0.8rem" }}>
-                  Ketersediaan Kelas
-                </p>
-                <p
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.1rem",
-                    color: isOpen ? "var(--primary)" : "var(--danger)",
-                    marginTop: "0.25rem",
-                  }}
-                >
+              
+              <div className="flex flex-col gap-1">
+                <p className="text-[0.8rem] text-muted-foreground">Ketersediaan Kelas</p>
+                <p className={cn("text-lg font-bold", isOpen ? "text-primary" : "text-destructive")}>
                   {isOpen ? "Pendaftaran Terbuka" : "Kelas Penuh"}
                 </p>
               </div>
-              <div
-                style={{ display: "grid", gap: "0.5rem", fontSize: "0.85rem" }}
-              >
-                <div className="row" style={{ gap: "0.5rem" }}>
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "var(--text-dim)" }}
-                  >
-                    people
-                  </span>
-                  <span className="text-muted">
+              
+              <div className="flex flex-col gap-2 text-[0.85rem]">
+                <div className="row flex items-center gap-2">
+                  <Icon name="people" size={18} className="text-muted-foreground" />
+                  <span className="text-muted-foreground font-medium">
                     Kapasitas: {studentCount} / {capacity} Terisi
                   </span>
                 </div>
               </div>
-              <div style={{ display: "grid", gap: "0.5rem" }}>
+              
+              <div className="flex flex-col gap-3 mt-2">
                 <EnrollButton
                   classId={id}
                   isLoggedIn={isLoggedIn}
@@ -435,16 +295,7 @@ export default async function CourseDetailPage({
                 {featuredMaterial && (
                   <Link
                     href={`/materials/${featuredMaterial.id}` as Route}
-                    className="btn-ghost"
-                    style={{
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      padding: "0.5rem",
-                      borderColor: "var(--border-primary-strong)",
-                      color: "var(--text-main)",
-                      fontWeight: 700,
-                      textAlign: "center",
-                    }}
+                    className="btn-ghost flex w-full items-center justify-center rounded-md border border-border px-4 py-2 text-[0.85rem] font-bold transition-colors hover:bg-muted"
                   >
                     Buka Materi Kelas
                   </Link>
@@ -452,29 +303,25 @@ export default async function CourseDetailPage({
               </div>
             </div>
 
-            <div
-              className="neo-card"
-              style={{ padding: "1.5rem", display: "grid", gap: "0.75rem" }}
-            >
-              <h3 style={{ fontWeight: 700 }}>Materi Pendukung</h3>
+            <div className="neo-card flex flex-col gap-4 p-6">
+              <h3 className="font-bold">Materi Pendukung</h3>
               {subjectMaterialLinks.length > 0 ? (
                 subjectMaterialLinks.map((subject) => (
                   <Link
                     key={`${subject.code}-${subject.material?.id}`}
                     href={`/materials/${subject.material!.id}` as Route}
-                    className="doc-card"
-                    style={{ textDecoration: "none", color: "inherit" }}
+                    className="doc-card block"
                   >
-                    <strong style={{ fontSize: "0.9rem" }}>
+                    <strong className="block text-[0.9rem] mb-1">
                       {subject.name}
                     </strong>
-                    <p className="text-dim" style={{ fontSize: "0.8rem" }}>
+                    <p className="text-[0.8rem] text-muted-foreground">
                       Kode: {subject.code} · {subject.material!.module}
                     </p>
                   </Link>
                 ))
               ) : (
-                <p className="text-dim" style={{ fontSize: "0.85rem" }}>
+                <p className="text-[0.85rem] text-muted-foreground">
                   Belum ada materi yang terhubung untuk kelas ini.
                 </p>
               )}

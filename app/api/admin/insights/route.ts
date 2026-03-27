@@ -1,9 +1,9 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 type InteractionItem = {
   id: string;
@@ -92,7 +92,7 @@ export async function GET(request: Request) {
 
     const accuracyScore = totalTurns > 0 ? Number(((successTurnsCount / totalTurns) * 100).toFixed(1)) : 0;
 
-    const interactions: InteractionItem[] = turns.map((item) => ({
+    const interactions: InteractionItem[] = turns.map((item: any) => ({
       id: item.id,
       user: { name: item.user.name },
       query: item.question,

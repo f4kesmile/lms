@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -70,10 +71,10 @@ export default function NotFound() {
             flexWrap: "wrap",
           }}
         >
-          <Link href="/" className="btn">
+          <Link href={"/" as Route} className="btn">
             Ke Beranda
           </Link>
-          <Link href="/courses" className="btn-ghost">
+          <Link href={"/courses" as Route} className="btn-ghost">
             Jelajahi Kelas
           </Link>
           <Link href="/help" className="btn-ghost">

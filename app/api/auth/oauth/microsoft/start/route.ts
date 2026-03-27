@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { tooManyRequests } from "@/lib/http";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { writeSystemLog } from "@/lib/system-log";
+import { tooManyRequests } from "@/lib/core/http";
+import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
+import { writeSystemLog } from "@/lib/core/logs";
 
 const OAUTH_STATE_COOKIE = "oauth_microsoft_state";
 

@@ -1,9 +1,9 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 export async function GET() {
   try {

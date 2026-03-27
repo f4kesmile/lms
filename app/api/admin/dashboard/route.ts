@@ -1,9 +1,9 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 type ActivityItem = {
   id: string;
@@ -80,21 +80,21 @@ export async function GET() {
     ]);
 
     const activities: ActivityItem[] = [
-      ...recentUsers.map((item) => ({
+      ...recentUsers.map((item: any) => ({
         id: `user-${item.id}`,
         user: item.name,
         activity: "Akun baru terdaftar",
         status: "Completed" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentMaterials.map((item) => ({
+      ...recentMaterials.map((item: any) => ({
         id: `material-${item.id}`,
         user: "Admin",
         activity: `Upload materi: ${item.title}`,
         status: "Active" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentTurns.map((item) => ({
+      ...recentTurns.map((item: any) => ({
         id: `turn-${item.id}`,
         user: item.user.name,
         activity: `Mengirim pertanyaan: ${item.question.slice(0, 44)}${item.question.length > 44 ? "..." : ""}`,

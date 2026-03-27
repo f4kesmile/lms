@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateChatAnswer } from "@/lib/chatbot";
-import { readChatbotSettings } from "@/lib/chatbot-settings";
-import { getCurrentUser } from "@/lib/current-user";
-import { badRequest, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
-import { buildSources, rankChunks } from "@/lib/rag";
+import { generateChatAnswer } from "@/lib/ai/chatbot";
+import { readChatbotSettings } from "@/lib/ai/settings";
+import { getCurrentUser } from "@/lib/auth/user";
+import { badRequest, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
+import { buildSources, rankChunks } from "@/lib/ai/rag";
 
 function dedupeByMaterial<T extends { chunk: { materialId: string } }>(items: T[]) {
   const seen = new Set<string>();

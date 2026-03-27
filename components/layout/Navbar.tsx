@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/current-user";
+import { getCurrentUser } from "@/lib/auth/user";
 import { NavbarClient } from "@/components/layout/NavbarClient";
 
 type UserData = { name: string; role: string } | null;

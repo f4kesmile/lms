@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/current-user";
-import { badRequest, notFound, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/user";
+import { badRequest, notFound, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 const ratingSchema = z.object({
   rating: z.number().int().min(1).max(5),

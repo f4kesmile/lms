@@ -3,9 +3,9 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, notFound, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, notFound, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 const updateUserSchema = z.object({
   name: z.string().min(2).optional(),
