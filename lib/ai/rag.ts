@@ -1,14 +1,21 @@
-import type { MaterialChunk } from "@prisma/client";
+import { MeetingChunk } from "@prisma/client";
+import { Source } from "@/lib/ai/chatbot";
 
-export type RankedChunk = {
-  chunk: MaterialChunk & {
-    material: {
+export type ChunkWithMeeting = MeetingChunk & {
+  meeting: {
+    id: string;
+    title: string;
+    meetingNo: number;
+    subject: {
       id: string;
-      title: string;
-      module: string;
-      page: string | null;
+      name: string;
+      code: string;
     };
   };
+};
+
+export type RankedChunk = {
+  chunk: ChunkWithMeeting;
   score: number;
 };
 
@@ -56,7 +63,7 @@ export function tokenize(text: string): string[] {
 
 export function splitIntoChunks(content: string, maxChars = 800): string[] {
   const paragraphs = content
-    .split(/\n{2,}|\r\n{2,}/)
+    .split(/\n{2binary}|\r\n{2,}/)
     .map((line) => line.trim())
     .filter(Boolean);
 
@@ -88,9 +95,7 @@ export function splitIntoChunks(content: string, maxChars = 800): string[] {
 
 export function rankChunks(
   question: string,
-  chunks: (MaterialChunk & {
-    material: { id: string; title: string; module: string; page: string | null };
-  })[],
+  chunks: ChunkWithMeeting[],
   topK = 4,
   minScore = 0
 ): RankedChunk[] {
@@ -122,13 +127,14 @@ export function rankChunks(
   return ranked;
 }
 
-export function buildSources(ranked: RankedChunk[]) {
+export function buildSources(ranked: RankedChunk[]): Source[] {
   return ranked.map((item, index) => ({
     id: `S${index + 1}`,
-    materialId: item.chunk.material.id,
-    title: item.chunk.material.title,
-    module: item.chunk.material.module,
-    page: item.chunk.material.page,
+    meetingId: item.chunk.meeting.id,
+    subjectName: item.chunk.meeting.subject.name,
+    subjectCode: item.chunk.meeting.subject.code,
+    title: item.chunk.meeting.title,
+    meetingNo: item.chunk.meeting.meetingNo,
     excerpt: smartExcerpt(item.chunk.content, 220),
     score: Number(item.score.toFixed(4)),
   }));

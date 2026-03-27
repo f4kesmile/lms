@@ -1,9 +1,12 @@
-type Source = {
+export type Source = {
   id: string;
+  meetingId: string;
+  subjectName: string;
+  subjectCode: string;
   title: string;
-  module: string;
-  page: string | null;
+  meetingNo: number;
   excerpt: string;
+  score: number;
 };
 
 type ComplexityLevel = "low" | "medium" | "high";
@@ -204,13 +207,13 @@ function buildExerciseBlock(primary: Source, references: Source[]) {
 
   return [
     "Latihan singkat (berdasarkan materi internal):",
-    `- Tujuan: memahami konsep utama pada ${primary.title.toLowerCase()} (${primary.module}). ${citePrimary}`,
+    `- Tujuan: memahami konsep utama pada ${primary.title.toLowerCase()} (Mata Kuliah: ${primary.subjectName}). ${citePrimary}`,
     "- Instruksi:",
     `  1) Tulis ulang konsep inti berikut dengan bahasamu sendiri: "${concept}". ${citePrimary}`,
     "  2) Buat 2 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
     `  3) Sebutkan 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat. ${citeSecondary}`,
     "- Output: jawaban terstruktur (maks. 1 halaman) + 3 bullet insight utama.",
-    `- Kriteria cek: konsep tepat, contoh relevan, dan istilah kunci konsisten dengan materi. ${citePrimary}`,
+    `- Kriteria cek: konsep tepat, contoh relevan, dan istilah kunci konsisten dengan materi pertemuan ${primary.meetingNo}. ${citePrimary}`,
   ];
 }
 
@@ -253,8 +256,7 @@ export async function generateChatAnswer(params: {
   const coreSummary = firstSentence(primary.excerpt, cfg.summaryMax);
 
   const referenceLines = references.map((source) => {
-    const pageInfo = source.page ? `, hal. ${source.page}` : "";
-    return `- [${source.id}] ${source.module} - ${source.title}${pageInfo}`;
+    return `- [${source.id}] ${source.subjectCode} - ${source.subjectName} (Pertemuan ${source.meetingNo}): ${source.title}`;
   });
 
   const pointSources = references.length > 1 ? references.slice(1) : references;
@@ -284,7 +286,7 @@ export async function generateChatAnswer(params: {
 
   const practicalPoints = references
     .slice(0, 2)
-    .map((source) => `- Penerapan praktis dapat dimulai dari topik ${source.title} pada ${source.module}. ${citationMark(source)}`);
+    .map((source) => `- Penerapan praktis dapat dimulai dari topik ${source.title} pada mata kuliah ${source.subjectName}. ${citationMark(source)}`);
 
   const bodyBlock = isExerciseRequest(question)
     ? buildExerciseBlock(primary, references)

@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateChatAnswer } from "@/lib/ai/chatbot";
+import { generateChatAnswer, type Source } from "@/lib/ai/chatbot";
 import { readChatbotSettings } from "@/lib/ai/settings";
 import { getCurrentUser } from "@/lib/auth/user";
 import { badRequest, serverError, unauthorized } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
+import type { ChunkWithMeeting } from "@/lib/ai/rag";
 import { buildSources, rankChunks } from "@/lib/ai/rag";
 
-function dedupeByMaterial<T extends { chunk: { materialId: string } }>(items: T[]) {
+function dedupeByMeeting<T extends { chunk: { meetingId: string } }>(items: T[]) {
   const seen = new Set<string>();
   return items.filter((item) => {
-    if (seen.has(item.chunk.materialId)) return false;
-    seen.add(item.chunk.materialId);
+    if (seen.has(item.chunk.meetingId)) return false;
+    seen.add(item.chunk.meetingId);
     return true;
   });
 }
@@ -38,19 +39,25 @@ export async function POST(request: Request) {
     const { question, topK = settings.topK } = parsed.data;
     const candidatePool = Math.min(40, Math.max(topK * 4, 12));
 
-    const chunks = await prisma.materialChunk.findMany({
+    const chunks: ChunkWithMeeting[] = await prisma.meetingChunk.findMany({
       select: {
         id: true,
-        materialId: true,
+        meetingId: true,
         chunkIndex: true,
         content: true,
         createdAt: true,
-        material: {
+        meeting: {
           select: {
             id: true,
             title: true,
-            module: true,
-            page: true,
+            meetingNo: true,
+            subject: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
           },
         },
       },
@@ -59,12 +66,11 @@ export async function POST(request: Request) {
     });
 
     const ranked = rankChunks(question, chunks, candidatePool, 0);
-    const strictRanked = dedupeByMaterial(
+    const strictRanked = dedupeByMeeting(
       ranked.filter((item) => item.score >= settings.minScore),
-    )
-      .slice(0, topK);
+    ).slice(0, topK);
 
-    const nearestRanked = dedupeByMaterial(ranked).slice(0, 5);
+    const nearestRanked = dedupeByMeeting(ranked).slice(0, 5);
 
     const sources = buildSources(strictRanked);
     const nearestSources =
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
               "",
               "Materi terdekat yang masih relevan:",
               ...nearestSources.slice(0, 5).map((item) =>
-                `- [${item.id}] ${item.title} (${item.module})${item.page ? ` hal. ${item.page}` : ""}`,
+                `- [${item.id}] ${item.title} (${item.subjectName} - Pertemuan ${item.meetingNo})`,
               ),
               "",
               "Silakan pilih salah satu materi di atas atau tulis ulang pertanyaan dengan kata kunci yang lebih spesifik.",
@@ -105,7 +111,6 @@ export async function POST(request: Request) {
     }
 
     const responseTimeMs = Date.now() - startedAt;
-
     const citationsToSave = sources.length > 0 ? sources : nearestSources;
 
     const turn = await prisma.chatTurn.create({
