@@ -10,3 +10,4 @@ prisma/dev.db
 .vscode
 stitch_export
 TEST-ACCOUNTS.md
+implementation_plan.md
