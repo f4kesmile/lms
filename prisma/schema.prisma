@@ -34,7 +34,6 @@ model User {
     studentClassId  String?
     createdAt       DateTime         @default(now())
     updatedAt       DateTime         @updatedAt
-    teachingClasses Class[]          @relation("TeacherClasses")
     subjectLinks    SubjectTeacher[]
     classLinks      ClassStudent[]
     chatSessions    ChatSession[]
@@ -74,13 +73,11 @@ model Class {
     id             String         @id @default(uuid())
     name           String
     academicYearId String
-    classTeacherId String?
     capacity       Int            @default(40)
     enrollmentKey  String?
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
     academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
-    classTeacher   User?          @relation("TeacherClasses", fields: [classTeacherId], references: [id], onDelete: SetNull)
     subjects       ClassSubject[]
     students       ClassStudent[]
 

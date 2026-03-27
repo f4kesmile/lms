@@ -63,7 +63,7 @@ export function tokenize(text: string): string[] {
 
 export function splitIntoChunks(content: string, maxChars = 800): string[] {
   const paragraphs = content
-    .split(/\n{2binary}|\r\n{2,}/)
+    .split(/\r?\n{2,}/)
     .map((line) => line.trim())
     .filter(Boolean);
 
@@ -131,6 +131,7 @@ export function buildSources(ranked: RankedChunk[]): Source[] {
   return ranked.map((item, index) => ({
     id: `S${index + 1}`,
     meetingId: item.chunk.meeting.id,
+    subjectId: item.chunk.meeting.subject.id,
     subjectName: item.chunk.meeting.subject.name,
     subjectCode: item.chunk.meeting.subject.code,
     title: item.chunk.meeting.title,

@@ -7,11 +7,15 @@ import { Table } from "./_components/Table";
 import { List } from "./_components/List";
 import { DataViewportControls } from "../_components/Controls";
 
+import { EditUserModal } from "./_components/EditUserModal";
+
 type UserItem = {
   id: string;
   name: string;
   email: string;
   role: "admin" | "dosen" | "mahasiswa";
+  nip: string | null;
+  specialization: string | null;
   createdAt: string;
 };
 
@@ -61,6 +65,9 @@ export default function AdminUsersPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const startItem = total === 0 ? 0 : (page - 1) * limit + 1;
   const endItem = total === 0 ? 0 : Math.min(page * limit, total);
@@ -142,6 +149,36 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleUpdateUser(userId: string, data: Partial<UserItem>) {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.message || "Gagal memperbarui data user");
+      }
+
+      const updated = await res.json();
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, ...updated } : u)),
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memperbarui data user");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleEditClick = (user: UserItem) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
   return (
     <AdminLayout title="Manajemen Sivitas Akademika">
       <Suspense
@@ -166,6 +203,7 @@ export default function AdminUsersPage() {
             error={error}
             roleConfig={roleConfig}
             handleRoleChange={handleRoleChange}
+            onEdit={handleEditClick}
           />
 
           <List
@@ -174,6 +212,7 @@ export default function AdminUsersPage() {
             error={error}
             roleConfig={roleConfig}
             handleRoleChange={handleRoleChange}
+            onEdit={handleEditClick}
           />
 
           <DataViewportControls
@@ -186,6 +225,14 @@ export default function AdminUsersPage() {
             currentPage={page}
             totalPages={totalPages}
             onPageChange={setPage}
+            loading={loading}
+          />
+
+          <EditUserModal
+            user={selectedUser}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSave={handleUpdateUser}
             loading={loading}
           />
         </div>

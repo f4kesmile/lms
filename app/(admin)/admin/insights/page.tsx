@@ -38,8 +38,24 @@ export default function AdminInsightsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
+  const handleSearchChange = (value: string) => {
     setLoading(true);
+    setPage(1);
+    setSearch(value);
+  };
+
+  const handleLimitChange = (value: number) => {
+    setLoading(true);
+    setPage(1);
+    setLimit(value);
+  };
+
+  const handlePageChange = (value: number) => {
+    setLoading(true);
+    setPage(value);
+  };
+
+  useEffect(() => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
@@ -66,10 +82,6 @@ export default function AdminInsightsPage() {
       .finally(() => setLoading(false));
   }, [page, limit, search]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [limit, search]);
-
   return (
     <AdminLayout title="AI & Wawasan">
       <Suspense
@@ -80,7 +92,11 @@ export default function AdminInsightsPage() {
         }
       >
         <div className="flex flex-col gap-6">
-          <Filters summary={summary} search={search} setSearch={setSearch} />
+          <Filters
+            summary={summary}
+            search={search}
+            setSearch={handleSearchChange}
+          />
 
           <Table
             loading={loading}
@@ -101,11 +117,11 @@ export default function AdminInsightsPage() {
             endItem={totalItems === 0 ? 0 : Math.min(page * limit, totalItems)}
             totalItems={totalItems}
             rowsPerPage={limit}
-            onRowsPerPageChange={setLimit}
+            onRowsPerPageChange={handleLimitChange}
             entityLabel="interaksi"
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={setPage}
+            onPageChange={handlePageChange}
             loading={loading}
           />
         </div>

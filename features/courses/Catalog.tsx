@@ -3,7 +3,6 @@
 import {
   FormEvent,
   useDeferredValue,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -11,7 +10,6 @@ import {
   Search, 
   Users, 
   Clock, 
-  ChevronRight, 
   Filter, 
   ArrowUpDown,
   Zap,
@@ -75,10 +73,6 @@ export default function CourseCatalogBrowser({
     });
   }, [activeCategory, courses, deferredQuery]);
 
-  useEffect(() => {
-    setVisibleCount(9);
-  }, [activeCategory, deferredQuery]);
-
   const visibleCourses = filteredCourses.slice(0, visibleCount);
   const hasMore = filteredCourses.length > visibleCount;
 
@@ -103,8 +97,9 @@ export default function CourseCatalogBrowser({
             className="w-full h-16 pl-14 pr-32 bg-card border border-border rounded-2xl text-lg font-medium placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
           />
           <Button 
-            type="submit"                      variant="outline" 
+            type="submit" variant="outline" 
             className="absolute right-2 top-2 bottom-2 px-6 rounded-xl"
+            onClick={() => setVisibleCount(9)}
           >
             Cari
           </Button>
@@ -120,7 +115,10 @@ export default function CourseCatalogBrowser({
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setActiveCategory(category)}
+                onClick={() => {
+                  setActiveCategory(category);
+                  setVisibleCount(9);
+                }}
                 className={cn(
                   "whitespace-nowrap px-5 py-2 rounded-xl text-sm font-bold border transition-all",
                   activeCategory === category

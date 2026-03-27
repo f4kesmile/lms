@@ -19,7 +19,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { getInitials, formatDate, cn } from "@/lib/utils/index";
+import { getInitials, cn } from "@/lib/utils/index";
 
 type UserRole = "admin" | "dosen" | "mahasiswa";
 
@@ -28,6 +28,8 @@ interface UserItem {
   name: string;
   email: string;
   role: UserRole;
+  nip: string | null;
+  specialization: string | null;
   createdAt: string;
 }
 
@@ -40,6 +42,7 @@ interface TableProps {
     { bg: string; text: string; label: string; icon: string }
   >;
   handleRoleChange: (userId: string, newRole: UserRole) => void;
+  onEdit: (user: UserItem) => void;
 }
 
 export function Table({
@@ -48,6 +51,7 @@ export function Table({
   error,
   roleConfig,
   handleRoleChange,
+  onEdit,
 }: TableProps) {
   return (
     <Card className="hidden overflow-hidden border border-border bg-card shadow-sm animate-in fade-in duration-700 lg:block rounded-md">
@@ -55,8 +59,11 @@ export function Table({
         <UITable>
           <TableHeader className="sticky top-0 z-10 bg-muted/90 backdrop-blur-md">
             <TableRow className="hover:bg-transparent border-b border-border/50">
-              <TableHead className="w-[35%] text-[10px] font-black uppercase tracking-widest px-6 h-12">
-                Informasi Profil
+              <TableHead className="w-[25%] text-[10px] font-black uppercase tracking-widest px-6 h-12">
+                Sivitas Akademika
+              </TableHead>
+              <TableHead className="text-[10px] font-black uppercase tracking-widest h-12">
+                Nomor Induk / Keahlian
               </TableHead>
               <TableHead className="text-[10px] font-black uppercase tracking-widest h-12">
                 Kontak Email
@@ -65,10 +72,10 @@ export function Table({
                 Peran Akun
               </TableHead>
               <TableHead className="text-[10px] font-black uppercase tracking-widest h-12">
-                Tanggal Bergabung
+                Ganti Role
               </TableHead>
               <TableHead className="text-right text-[10px] font-black uppercase tracking-widest px-6 h-12 text-center">
-                Ganti Role
+                Aksi
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -79,7 +86,7 @@ export function Table({
                 .map((_, i) => (
                   <TableRow key={i}>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-16 border-b border-border/30"
                     >
                       <Skeleton className="h-10 w-full" />
@@ -89,7 +96,7 @@ export function Table({
             ) : error ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="py-20 text-center text-sm font-bold text-destructive"
                 >
                   {error}
@@ -97,7 +104,7 @@ export function Table({
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="p-6">
+                <TableCell colSpan={6} className="p-6">
                   <EmptyState
                     icon={() => <Icon name="group" size={32} />}
                     title="Data pengguna tidak ditemukan"
@@ -108,6 +115,8 @@ export function Table({
             ) : (
               users.map((user) => {
                 const rc = roleConfig[user.role] || roleConfig.mahasiswa;
+                const identifierLabel =
+                  user.role === "mahasiswa" ? "NPM" : "NIP/NIPY";
                 return (
                   <TableRow
                     key={user.id}
@@ -129,15 +138,30 @@ export function Table({
                             {user.name}
                           </span>
                           <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-black opacity-80">
-                            Sivitas #{user.id.split("-")[0]}
+                            #{user.id.split("-")[0]}
                           </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground font-bold group-hover:text-foreground transition-colors">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5 text-foreground font-bold text-[11px]">
+                          <Icon
+                            name="badge"
+                            size={14}
+                            className="text-muted-foreground"
+                          />
+                          {identifierLabel}: {user.nip || "-"}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-medium truncate max-w-[120px]">
+                          {user.specialization || "Umum"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-muted-foreground font-bold group-hover:text-foreground transition-colors overflow-hidden">
                         <Icon name="email" size={16} />
-                        <span className="text-[13px]">
+                        <span className="text-[12px] truncate max-w-[160px]">
                           {user.email}
                         </span>
                       </div>
@@ -154,31 +178,47 @@ export function Table({
                         {rc.label}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground font-mono text-[11px] font-bold">
-                        <Icon name="calendar_month" size={16} />
-                        {formatDate(user.createdAt)}
-                      </div>
+                    <TableCell className="w-[120px]">
+                      <Select
+                        value={user.role}
+                        onValueChange={(value) =>
+                          handleRoleChange(user.id, value as UserRole)
+                        }
+                        disabled={loading}
+                      >
+                        <SelectTrigger className="h-8 w-full border border-border bg-card shadow-sm px-2 text-[10px] font-black uppercase tracking-wider rounded-sm focus:ring-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="border border-border rounded-md shadow-sm">
+                          <SelectItem
+                            value="mahasiswa"
+                            className="font-bold cursor-pointer transition-colors text-xs"
+                          >
+                            Mahasiswa
+                          </SelectItem>
+                          <SelectItem
+                            value="dosen"
+                            className="font-bold cursor-pointer transition-colors text-xs"
+                          >
+                            Dosen
+                          </SelectItem>
+                          <SelectItem
+                            value="admin"
+                            className="font-bold cursor-pointer transition-colors text-xs"
+                          >
+                            Admin
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
-                    <TableCell className="px-6">
-                      <div className="flex justify-center flex-1 w-full max-w-[140px] mx-auto">
-                        <Select
-                          value={user.role}
-                          onValueChange={(value) =>
-                            handleRoleChange(user.id, value as UserRole)
-                          }
-                          disabled={loading}
-                        >
-                          <SelectTrigger className="h-9 w-full border border-border bg-card shadow-sm px-3 text-[10px] font-black uppercase tracking-wider rounded-md focus:ring-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="border border-border rounded-md shadow-sm">
-                            <SelectItem value="mahasiswa" className="font-bold cursor-pointer hover:bg-muted">Mahasiswa</SelectItem>
-                            <SelectItem value="dosen" className="font-bold cursor-pointer hover:bg-muted">Dosen</SelectItem>
-                            <SelectItem value="admin" className="font-bold cursor-pointer hover:bg-muted">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <TableCell className="px-6 text-center">
+                      <button
+                        onClick={() => onEdit(user)}
+                        className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary"
+                        title="Edit User Info"
+                      >
+                        <Icon name="edit" size={18} />
+                      </button>
                     </TableCell>
                   </TableRow>
                 );

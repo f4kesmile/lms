@@ -5,7 +5,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ADMIN_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
+import { DOSEN_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
 import {
   Sidebar,
   SidebarContent,
@@ -25,17 +25,17 @@ import {
 import { getInitials, cn } from "@/lib/utils/index";
 import { Icon } from "@/components/ui/icon";
 
-type AdminLayoutProps = {
+type DosenLayoutProps = {
   title: string;
   headerActions?: ReactNode;
   children: ReactNode;
 };
 
-export const AdminLayout = ({
+export const DosenLayout = ({
   title,
   headerActions,
   children,
-}: AdminLayoutProps) => {
+}: DosenLayoutProps) => {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -69,15 +69,15 @@ export const AdminLayout = ({
       <Sidebar collapsible="icon" className="border-r border-border bg-sidebar">
         <SidebarHeader className="flex h-16 items-center justify-start px-3 sm:px-4 border-b border-border">
           <div className="flex w-full items-center justify-start gap-3 overflow-hidden">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground border border-border shadow-sm">
-              <Icon name="school" size={24} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand text-secondary-brand-foreground border border-border shadow-sm">
+              <Icon name="history_edu" size={24} />
             </div>
             <div className="flex flex-col gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
               <span className="font-black tracking-widest uppercase text-sidebar-foreground">
-                {SITE_CONFIG.name} Admin
+                {SITE_CONFIG.name} Dosen
               </span>
               <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                {SITE_CONFIG.adminSubtitle}
+                Portal Pengajar
               </span>
             </div>
           </div>
@@ -85,11 +85,11 @@ export const AdminLayout = ({
         <SidebarContent className="px-2 pb-2 mt-4">
           <SidebarGroup>
             <SidebarGroupLabel className="px-2 pb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-opacity group-data-[collapsible=icon]:hidden">
-              Menu Utama
+              Panel Pengajar
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {ADMIN_NAV_LINKS.map((item) => {
+                {DOSEN_NAV_LINKS.map((item) => {
                   const isActive =
                     pathname === item.href ||
                     pathname.startsWith(`${item.href}/`);
@@ -102,7 +102,7 @@ export const AdminLayout = ({
                         className={cn(
                           "relative justify-start overflow-hidden transition-all duration-200 rounded-md border-2 border-transparent my-1",
                           isActive
-                            ? "bg-primary text-primary-foreground font-bold border-border shadow-sm hover:bg-primary/90"
+                            ? "bg-secondary-brand text-secondary-brand-foreground font-bold border-border shadow-sm hover:bg-secondary-brand/90"
                             : "hover:bg-muted hover:border-border hover:text-foreground font-semibold text-muted-foreground",
                         )}
                       >
@@ -132,15 +132,15 @@ export const AdminLayout = ({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton className="w-full justify-start gap-3 h-auto p-2 hover:bg-muted rounded-md border-2 border-transparent hover:border-border transition-colors group-data-[collapsible=icon]:justify-center">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-surface-primary-soft text-primary font-black text-xs border border-primary/20">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand/10 text-secondary-brand font-black text-xs border border-secondary-brand/20">
                     {user ? initials : <Icon name="person" size={20} />}
                   </div>
                   <div className="flex flex-col items-start gap-1 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
                     <span className="font-bold text-sm truncate max-w-[150px]">
-                      {user?.email || "Memuat..."}
+                      {user?.name || "Memuat..."}
                     </span>
-                    <span className="text-[10px] text-primary uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-primary/10">
-                      {user?.role || "Petugas"}
+                    <span className="text-[10px] text-secondary-brand uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-secondary-brand/10">
+                      {user?.role || "Dosen"}
                     </span>
                   </div>
                 </SidebarMenuButton>

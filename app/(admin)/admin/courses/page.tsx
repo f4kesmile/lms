@@ -7,13 +7,13 @@ import { CourseStatus } from "@prisma/client";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import {
   createAcademicYearAction,
-  createCourseAction,
+  createClassAction,
   createSubjectCourseAction,
   deleteAcademicYearAction,
-  deleteCourseAction,
+  deleteClassAction,
   deleteSubjectCourseAction,
   setAcademicYearActiveAction,
-  updateCourseAction,
+  updateClassAction,
   updateSubjectCourseAction,
   updateAcademicYearAction,
 } from "@/lib/actions/course";
@@ -41,8 +41,6 @@ export type ClassItem = {
   name: string;
   academicYear: { id: string; name: string };
   academicYearId: string;
-  classTeacher: { id: string; name: string } | null;
-  classTeacherId: string | null;
   capacity: number;
   students: Array<{ userId: string }>;
   createdAt: string;
@@ -54,9 +52,18 @@ export type SubjectCourseItem = {
   title: string;
   description: string | null;
   learningOutcomes: string | null;
+  bannerImage: string | null;
   status: CourseStatus;
   updatedAt: string;
-  _count?: { materials: number };
+  teachers: Array<{
+    user: {
+      id: string;
+      name: string;
+      nip: string | null;
+      specialization: string | null;
+    };
+  }>;
+  _count?: { meetings: number };
 };
 
 export type AcademicYear = {
@@ -70,12 +77,13 @@ export type AcademicYear = {
 export type Teacher = {
   id: string;
   name: string;
+  nip: string | null;
+  specialization: string | null;
 };
 
 type ClassForm = {
   name: string;
   academicYearId: string;
-  classTeacherId: string;
   capacity: number;
 };
 
@@ -85,6 +93,8 @@ type SubjectForm = {
   description: string;
   learningOutcomes: string;
   status: CourseStatus;
+  bannerImage: string | null;
+  teacherIds: string[];
 };
 
 type YearForm = {
@@ -97,7 +107,6 @@ type YearForm = {
 const EMPTY_CLASS_FORM: ClassForm = {
   name: "",
   academicYearId: "",
-  classTeacherId: "",
   capacity: 40,
 };
 
@@ -107,6 +116,8 @@ const EMPTY_SUBJECT_FORM: SubjectForm = {
   description: "",
   learningOutcomes: "",
   status: CourseStatus.published,
+  bannerImage: null,
+  teacherIds: [],
 };
 
 const EMPTY_YEAR_FORM: YearForm = {
@@ -271,12 +282,11 @@ export default function AdminCoursesPage() {
       const payload = {
         name: classForm.name,
         academicYearId: classForm.academicYearId,
-        classTeacherId: classForm.classTeacherId || null,
         capacity: classForm.capacity,
       };
       const res = editingClass
-        ? await updateCourseAction(editingClass.id, payload)
-        : await createCourseAction(payload);
+        ? await updateClassAction(editingClass.id, payload)
+        : await createClassAction(payload);
       if (!res.success) throw new Error(res.error || "Gagal menyimpan kelas");
       setShowClassModal(false);
       resetClassForm();
@@ -303,6 +313,8 @@ export default function AdminCoursesPage() {
         description: subjectForm.description.trim() || null,
         learningOutcomes: subjectForm.learningOutcomes.trim() || null,
         status: subjectForm.status,
+        bannerImage: subjectForm.bannerImage,
+        teacherIds: subjectForm.teacherIds,
       };
       const res = editingSubject
         ? await updateSubjectCourseAction(editingSubject.id, payload)
@@ -370,7 +382,7 @@ export default function AdminCoursesPage() {
       title: "Hapus Kelas",
       message: "Hapus kelas ini secara permanen?",
       onConfirm: async () => {
-        const res = await deleteCourseAction(id);
+        const res = await deleteClassAction(id);
         if (!res.success) {
           setNotice({
             open: true,
@@ -451,7 +463,7 @@ export default function AdminCoursesPage() {
     if (activeTab === "kelas") {
       return q
         ? classes.filter((i) =>
-            [i.name, i.academicYear.name, i.classTeacher?.name || ""]
+            [i.name, i.academicYear.name]
               .join(" ")
               .toLowerCase()
               .includes(q),
@@ -569,6 +581,8 @@ export default function AdminCoursesPage() {
                   description: subject.description || "",
                   learningOutcomes: subject.learningOutcomes || "",
                   status: subject.status,
+                  bannerImage: subject.bannerImage,
+                  teacherIds: subject.teachers.map((t) => t.user.id),
                 });
                 setShowSubjectModal(true);
               } else if (activeTab === "kelas") {
@@ -577,7 +591,6 @@ export default function AdminCoursesPage() {
                 setClassForm({
                   name: classItem.name,
                   academicYearId: classItem.academicYearId,
-                  classTeacherId: classItem.classTeacherId || "",
                   capacity: classItem.capacity,
                 });
                 setShowClassModal(true);
@@ -616,6 +629,8 @@ export default function AdminCoursesPage() {
                   description: subject.description || "",
                   learningOutcomes: subject.learningOutcomes || "",
                   status: subject.status,
+                  bannerImage: subject.bannerImage,
+                  teacherIds: subject.teachers.map((t) => t.user.id),
                 });
                 setShowSubjectModal(true);
               } else if (activeTab === "kelas") {
@@ -624,7 +639,6 @@ export default function AdminCoursesPage() {
                 setClassForm({
                   name: classItem.name,
                   academicYearId: classItem.academicYearId,
-                  classTeacherId: classItem.classTeacherId || "",
                   capacity: classItem.capacity,
                 });
                 setShowClassModal(true);

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/shared/Logo";
+import type { Route } from "next";
 
 export default function LoginClient() {
   const router = useRouter();
@@ -33,7 +34,10 @@ export default function LoginClient() {
       toast.success("Login berhasil. Sedang mengarahkan...");
       router.refresh();
       setTimeout(() => {
-        router.push("/courses");
+        const role = data.user.role;
+        if (role === "admin") router.push("/admin/dashboard" as Route);
+        else if (role === "dosen") router.push("/dosen/dashboard" as Route);
+        else router.push("/courses" as Route);
       }, 150);
     } catch (e) {
       toast.error(

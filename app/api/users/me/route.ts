@@ -26,7 +26,6 @@ export async function GET() {
                 subject: { select: { name: true, code: true } },
               },
             },
-            classTeacher: { select: { name: true } },
           },
         },
       },

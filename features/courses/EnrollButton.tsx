@@ -49,7 +49,7 @@ export default function EnrollButton({
 
     setLoading(true);
     try {
-      const res = await fetch("/api/courses/enroll", {
+      const res = await fetch("/api/classes/enroll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ classId, enrollmentKey: key }),

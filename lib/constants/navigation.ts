@@ -13,6 +13,11 @@ export const STUDENT_NAV_LINKS = [
   { href: "/help", label: "Pusat Bantuan", icon: "help" },
 ];
 
+export const DOSEN_NAV_LINKS = [
+  { href: "/dosen/dashboard", label: "Dashboard", icon: "space_dashboard" },
+  { href: "/dosen/courses", label: "Mata Kuliah Diampu", icon: "school" },
+];
+
 export const PUBLIC_NAV_LINKS = [
   { href: "/", label: "Beranda" },
   { href: "/courses", label: "Katalog Kelas" },

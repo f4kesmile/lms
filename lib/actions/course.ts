@@ -3,21 +3,20 @@
 import { CourseStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { getCurrentUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";
 
-export async function createCourseAction(data: { name: string; academicYearId: string; classTeacherId: string | null; capacity: number }) {
+export async function createClassAction(data: { name: string; academicYearId: string; capacity: number }) {
   try {
     await prisma.class.create({ data });
     revalidatePath("/admin/courses");
     return { success: true };
   } catch (error) {
-    console.error("Error creating course:", error);
+    console.error("Error creating class:", error);
     return { success: false, error: "Gagal menyimpan kelas" };
   }
 }
 
-export async function updateCourseAction(id: string, data: { name: string; academicYearId: string; classTeacherId: string | null; capacity: number }) {
+export async function updateClassAction(id: string, data: { name: string; academicYearId: string; capacity: number }) {
   try {
     await prisma.class.update({
       where: { id },
@@ -26,18 +25,18 @@ export async function updateCourseAction(id: string, data: { name: string; acade
     revalidatePath("/admin/courses");
     return { success: true };
   } catch (error) {
-    console.error("Error updating course:", error);
+    console.error("Error updating class:", error);
     return { success: false, error: "Gagal mengubah kelas" };
   }
 }
 
-export async function deleteCourseAction(id: string) {
+export async function deleteClassAction(id: string) {
   try {
     await prisma.class.delete({ where: { id } });
     revalidatePath("/admin/courses");
     return { success: true };
   } catch (error) {
-    console.error("Error deleting course:", error);
+    console.error("Error deleting class:", error);
     return { success: false, error: "Gagal menghapus kelas" };
   }
 }
@@ -48,14 +47,24 @@ export async function createSubjectCourseAction(data: {
   description: string | null;
   learningOutcomes: string | null;
   status: CourseStatus;
+  bannerImage?: string | null;
+  teacherIds?: string[];
 }) {
   try {
-    const currentUser = await getCurrentUser();
-
-    await prisma.course.create({
+    const { teacherIds = [], ...rest } = data;
+    await prisma.subject.create({
       data: {
-        ...data,
-        createdById: currentUser?.id,
+        code: rest.code,
+        name: rest.title,
+        description: rest.description,
+        learningOutcomes: rest.learningOutcomes,
+        status: rest.status,
+        bannerImage: rest.bannerImage,
+        teachers: {
+          create: teacherIds.map((userId) => ({
+            user: { connect: { id: userId } },
+          })),
+        },
       },
     });
 
@@ -64,7 +73,7 @@ export async function createSubjectCourseAction(data: {
     revalidatePath("/admin/materials/new");
     return { success: true };
   } catch (error) {
-    console.error("Error creating subject course:", error);
+    console.error("Error creating subject:", error);
     return { success: false, error: "Gagal menyimpan mata kuliah" };
   }
 }
@@ -77,12 +86,28 @@ export async function updateSubjectCourseAction(
     description: string | null;
     learningOutcomes: string | null;
     status: CourseStatus;
+    bannerImage?: string | null;
+    teacherIds?: string[];
   },
 ) {
   try {
-    await prisma.course.update({
+    const { teacherIds = [], ...rest } = data;
+    await prisma.subject.update({
       where: { id },
-      data,
+      data: {
+        code: rest.code,
+        name: rest.title,
+        description: rest.description,
+        learningOutcomes: rest.learningOutcomes,
+        status: rest.status,
+        bannerImage: rest.bannerImage,
+        teachers: {
+          deleteMany: {},
+          create: teacherIds.map((userId) => ({
+            user: { connect: { id: userId } },
+          })),
+        },
+      },
     });
 
     revalidatePath("/admin/courses");
@@ -90,21 +115,21 @@ export async function updateSubjectCourseAction(
     revalidatePath("/admin/materials/new");
     return { success: true };
   } catch (error) {
-    console.error("Error updating subject course:", error);
+    console.error("Error updating subject:", error);
     return { success: false, error: "Gagal mengubah mata kuliah" };
   }
 }
 
 export async function deleteSubjectCourseAction(id: string) {
   try {
-    await prisma.course.delete({ where: { id } });
+    await prisma.subject.delete({ where: { id } });
 
     revalidatePath("/admin/courses");
     revalidatePath("/admin/knowledge");
     revalidatePath("/admin/materials/new");
     return { success: true };
   } catch (error) {
-    console.error("Error deleting subject course:", error);
+    console.error("Error deleting subject:", error);
     return { success: false, error: "Gagal menghapus mata kuliah" };
   }
 }

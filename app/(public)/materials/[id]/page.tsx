@@ -7,7 +7,6 @@ import {
   renderMaterialHtml,
   splitMaterialContent,
 } from "@/lib/utils/material-content";
-import { Icon } from "@/components/ui/icon";
 
 type MaterialDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -46,7 +45,7 @@ export default async function MaterialDetailPage({
   const currentIndex = siblingMaterials.findIndex(
     (item) => item.id === material.id,
   );
-  
+
   const previousMaterial =
     currentIndex > 0 ? siblingMaterials[currentIndex - 1] : null;
   const nextMaterial =
@@ -71,7 +70,7 @@ export default async function MaterialDetailPage({
                 Kembali ke Katalog Kelas
               </Link>
             </div>
-            
+
             <div className="flex flex-col gap-2">
               <h1 className="title-lg m-0">{material.title}</h1>
               <p className="text-muted-foreground leading-relaxed max-w-3xl text-sm">
@@ -81,7 +80,7 @@ export default async function MaterialDetailPage({
                 sumber aslinya.
               </p>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mt-2">
               {material.course && (
                 <span className="pill text-xs">
@@ -92,7 +91,9 @@ export default async function MaterialDetailPage({
               {material.page && (
                 <span className="pill text-xs">Halaman: {material.page}</span>
               )}
-              <span className="pill text-xs">Chunk: {material._count.chunks}</span>
+              <span className="pill text-xs">
+                Chunk: {material._count.chunks}
+              </span>
               <span className="pill text-xs">
                 Penyusun: {material.createdBy?.name || "Admin"}
               </span>
@@ -108,7 +109,7 @@ export default async function MaterialDetailPage({
                 </span>
                 <span className="font-bold text-sm">{material.title}</span>
               </div>
-              
+
               {material.course && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
@@ -119,7 +120,7 @@ export default async function MaterialDetailPage({
                   </span>
                 </div>
               )}
-              
+
               <div className="flex flex-col gap-1">
                 <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
                   Cakupan
@@ -128,7 +129,7 @@ export default async function MaterialDetailPage({
                   {contentBlocks.length} blok bacaan
                 </span>
               </div>
-              
+
               {siblingMaterials.length > 1 && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[0.72rem] uppercase tracking-widest text-muted-foreground font-black">
@@ -166,7 +167,9 @@ export default async function MaterialDetailPage({
                   <span className="text-[0.7rem] uppercase tracking-widest text-muted-foreground font-black">
                     Materi Sebelumnya
                   </span>
-                  <span className="font-bold text-sm">{previousMaterial.title}</span>
+                  <span className="font-bold text-sm">
+                    {previousMaterial.title}
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {previousMaterial.module}
                   </span>
@@ -185,7 +188,9 @@ export default async function MaterialDetailPage({
                   <span className="text-[0.7rem] uppercase tracking-widest text-muted-foreground font-black">
                     Materi Berikutnya
                   </span>
-                  <span className="font-bold text-sm">{nextMaterial.title}</span>
+                  <span className="font-bold text-sm">
+                    {nextMaterial.title}
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {nextMaterial.module}
                   </span>
@@ -228,7 +233,7 @@ export default async function MaterialDetailPage({
                     Referensi chatbot
                   </span>
                 </div>
-                
+
                 <div
                   className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 w-full text-foreground/90 leading-relaxed"
                   dangerouslySetInnerHTML={{
