@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/current-user";
-import { serverError } from "@/lib/http";
+import { getCurrentUser } from "@/lib/auth/user";
+import { serverError } from "@/lib/core/http";
 
 export async function GET() {
   try {

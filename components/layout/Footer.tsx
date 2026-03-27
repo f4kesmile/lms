@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
@@ -88,7 +89,7 @@ export function Footer() {
             <Link href="/help">Pusat Bantuan</Link>
             <Link href="/help">FAQ</Link>
             <a href="#">Kebijakan Privasi</a>
-            <Link href="/chatbot">Hubungi Kami</Link>
+            <Link href={"/chatbot" as Route}>Hubungi Kami</Link>
           </div>
         </div>
 

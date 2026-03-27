@@ -4,18 +4,18 @@ import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
 type PageWrapperProps = {
   children: React.ReactNode;
-  user?: { name: string; role: string } | null;
+  initialUser?: { name: string; role: string } | null;
   footer?: boolean;
 };
 
 export const PageWrapper = ({
   children,
-  user,
+  initialUser,
   footer = true,
 }: PageWrapperProps) => {
   return (
     <>
-      <Navbar initialUser={user} />
+      <Navbar />
       {/* 
         This is a generic generic wrapper for standardized page margins.
         It uses 'app-shell' matching globals.css layout configuration.

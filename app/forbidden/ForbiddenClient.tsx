@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +21,7 @@ export default function ForbiddenClient() {
 
   useEffect(() => {
     if (secondsLeft === 0) {
-      router.replace(nextTarget);
+      router.replace(nextTarget as Route);
     }
   }, [nextTarget, router, secondsLeft]);
 

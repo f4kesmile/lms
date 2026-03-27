@@ -1,13 +1,21 @@
 "use client";
 
-import type { Route } from "next";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { Route } from "next";
 
 import { Button } from "@/components/ui/button";
-import { PUBLIC_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
+import { Icon } from "@/components/ui/icon";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { PUBLIC_NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 type UserData = { name: string; role: string } | null;
 
@@ -18,6 +26,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<UserData>(initialUser);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,7 +55,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
           data.user ? { name: data.user.name, role: data.user.role } : null,
         );
       } catch {
-        // Keep current navbar state when session check fails.
+        // silent
       }
     }
 
@@ -75,6 +84,11 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setSheetOpen(false);
+    setDropdownOpen(false);
+  }, [pathname]);
+
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   async function handleSignOut() {
@@ -84,248 +98,246 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
     router.refresh();
   }
 
-  return (
-    <header className="app-topbar">
-      <div className="app-topbar-inner">
-        <Link href="/" className="brand">
-          <div
-            className="brand-icon"
-            style={{
-              borderRadius: 6,
-              width: 32,
-              height: 32,
-              transform: "rotate(45deg)",
-              background: "var(--primary)",
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: 6,
-                left: 6,
-                right: 6,
-                bottom: 6,
-                background: "var(--bg-dark)",
-                transform: "rotate(-45deg)",
-              }}
-            />
-          </div>
-          <span className="brand-text" style={{ color: "var(--text-main)" }}>
-            {SITE_CONFIG.shortName}
-            <span style={{ color: "var(--text-soft)", fontWeight: 300 }}>
-              {SITE_CONFIG.accentName}
-            </span>
-          </span>
-        </Link>
+  function isActive(href: string) {
+    return pathname === href || (href !== "/" && pathname?.startsWith(href));
+  }
 
-        <nav className="nav-links" style={{ gap: "1.5rem" }}>
-          {PUBLIC_NAV_LINKS.map((item: { href: string; label: string }) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname?.startsWith(item.href));
-            return (
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <div className="h-3 w-3 rounded-sm bg-primary-foreground" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              {SITE_CONFIG.shortName}
+              <span className="font-light text-muted-foreground">
+                {SITE_CONFIG.accentName}
+              </span>
+            </span>
+          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {PUBLIC_NAV_LINKS.map((item: { href: string; label: string }) => (
               <Link
                 key={item.href}
-                className={`nav-link ${isActive ? "active" : ""}`}
                 href={item.href as Route}
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: isActive ? 700 : 600,
-                }}
+                className={cn(
+                  "rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
+                  isActive(item.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
               >
                 {item.label}
               </Link>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
+        </div>
 
-        <div className="row">
-          {!user ? (
-            <>
-              <Link
-                className="btn-ghost"
-                href="/login"
-                style={{
-                  padding: "0.45rem 1rem",
-                  fontSize: "0.85rem",
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                Masuk
-              </Link>
-              <Button
-                onClick={() => router.push("/register")}
-                size="sm"
-                style={{ boxShadow: "none" }}
-              >
-                Daftar
-              </Button>
-            </>
-          ) : (
-            <div style={{ position: "relative" }} ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                style={{
-                  background: "var(--primary)",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--on-primary)",
-                }}
-                className="avatar avatar-sm"
-                aria-label="Menu Pengguna"
-              >
-                {user.name.charAt(0).toUpperCase()}
-              </button>
-
-              {dropdownOpen && (
-                <div
-                  className="glass-panel"
-                  style={{
-                    position: "absolute",
-                    top: "120%",
-                    right: 0,
-                    width: 220,
-                    padding: "0.5rem",
-                    display: "grid",
-                    gap: "0.25rem",
-                    zIndex: 100,
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "0.5rem",
-                      borderBottom: "1px solid var(--border-primary)",
-                      marginBottom: "0.25rem",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontWeight: 700,
-                        fontSize: "0.85rem",
-                        color: "var(--text-main)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {user.name}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--text-dim)",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      Peran: {user.role}
-                    </p>
-                  </div>
-                  <Link
-                    href={
-                      (user.role === "mahasiswa"
-                        ? "/courses"
-                        : "/admin/dashboard") as Route
-                    }
-                    className="btn-ghost row"
-                    style={{
-                      width: "100%",
-                      justifyContent: "flex-start",
-                      fontSize: "0.85rem",
-                      padding: "0.5rem",
-                      border: "none",
-                      borderRadius: "0.75rem",
-                      transition:
-                        "background 0.18s ease, color 0.18s ease, transform 0.18s ease",
-                    }}
-                    onMouseEnter={(event) => {
-                      event.currentTarget.style.background =
-                        "var(--surface-primary-soft)";
-                      event.currentTarget.style.color = "var(--text-main)";
-                      event.currentTarget.style.transform = "translateX(2px)";
-                    }}
-                    onMouseLeave={(event) => {
-                      event.currentTarget.style.background = "transparent";
-                      event.currentTarget.style.color = "";
-                      event.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 18 }}
-                    >
-                      {user.role === "mahasiswa" ? "school" : "grid_view"}
-                    </span>
-                    {user.role === "mahasiswa"
-                      ? "Lihat Kursus"
-                      : "Buka Dashboard"}
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="btn-ghost row"
-                    style={{
-                      width: "100%",
-                      justifyContent: "flex-start",
-                      fontSize: "0.85rem",
-                      padding: "0.5rem",
-                      border: "1px solid #f2b8b5",
-                      borderRadius: "0.75rem",
-                      color: "#d92d20",
-                      background: "#fff1f1",
-                      fontWeight: 700,
-                      transition:
-                        "background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease",
-                    }}
-                    onMouseEnter={(event) => {
-                      event.currentTarget.style.background = "#ffe3e1";
-                      event.currentTarget.style.borderColor = "#e99a95";
-                      event.currentTarget.style.color = "#b42318";
-                      event.currentTarget.style.transform = "translateX(2px)";
-                    }}
-                    onMouseLeave={(event) => {
-                      event.currentTarget.style.background = "#fff1f1";
-                      event.currentTarget.style.borderColor = "#f2b8b5";
-                      event.currentTarget.style.color = "#d92d20";
-                      event.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 18, color: "#d92d20" }}
-                    >
-                      logout
-                    </span>
-                    Keluar
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+        <div className="flex items-center gap-2">
           {mounted && (
             <button
               onClick={toggleTheme}
-              className="btn-ghost"
-              style={{
-                width: 36,
-                height: 36,
-                padding: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "50%",
-                border: "1px solid var(--border-primary-strong)",
-                marginLeft: "0.5rem",
-              }}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Ganti Tema"
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                {theme === "dark" ? "light_mode" : "dark_mode"}
-              </span>
+              <Icon
+                name={theme === "dark" ? "light_mode" : "dark_mode"}
+                size={18}
+              />
             </button>
           )}
+
+          <div className="hidden items-center gap-2 md:flex">
+            {!user ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="rounded-lg"
+                >
+                  <Link href="/login">Masuk</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => router.push("/register")}
+                  className="rounded-lg shadow-sm"
+                >
+                  Daftar
+                </Button>
+              </>
+            ) : (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                  aria-label="Menu Pengguna"
+                >
+                  {user.name.charAt(0).toUpperCase()}
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 z-50 w-56 overflow-hidden rounded-xl border border-border bg-background p-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-3 py-2.5">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {user.name}
+                      </p>
+                      <p className="text-xs capitalize text-muted-foreground">
+                        {user.role}
+                      </p>
+                    </div>
+                    <Separator className="my-1" />
+                    <Link
+                      href={
+                        (user.role === "mahasiswa"
+                          ? "/courses"
+                          : "/admin/dashboard") as Route
+                      }
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <Icon
+                        name={
+                          user.role === "mahasiswa" ? "school" : "grid_view"
+                        }
+                        size={18}
+                      />
+                      {user.role === "mahasiswa"
+                        ? "Lihat Kursus"
+                        : "Buka Dashboard"}
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <Icon name="logout" size={18} />
+                      Keluar
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-foreground transition-colors hover:bg-muted md:hidden"
+                aria-label="Buka Menu"
+              >
+                <Icon name="menu" size={20} />
+              </button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              title="Menu Navigasi"
+              className="w-72 p-0"
+            >
+              <div className="flex h-full flex-col">
+                <div className="flex items-center gap-2.5 border-b border-border px-5 py-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                    <div className="h-3 w-3 rounded-sm bg-primary-foreground" />
+                  </div>
+                  <span className="text-base font-bold tracking-tight">
+                    {SITE_CONFIG.shortName}
+                    <span className="font-light text-muted-foreground">
+                      {SITE_CONFIG.accentName}
+                    </span>
+                  </span>
+                </div>
+
+                <nav className="flex flex-col gap-1 p-3">
+                  {PUBLIC_NAV_LINKS.map(
+                    (item: { href: string; label: string }) => (
+                      <Link
+                        key={item.href}
+                        href={item.href as Route}
+                        className={cn(
+                          "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                          isActive(item.href)
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    ),
+                  )}
+                </nav>
+
+                <Separator />
+
+                <div className="mt-auto border-t border-border p-3 flex flex-col gap-2">
+                  {!user ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="w-full rounded-lg"
+                      >
+                        <Link href="/login">Masuk</Link>
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setSheetOpen(false);
+                          router.push("/register");
+                        }}
+                        className="w-full rounded-lg"
+                      >
+                        Daftar
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {user.name}
+                          </p>
+                          <p className="text-xs capitalize text-muted-foreground">
+                            {user.role}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        href={
+                          (user.role === "mahasiswa"
+                            ? "/courses"
+                            : "/admin/dashboard") as Route
+                        }
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                      >
+                        <Icon
+                          name={
+                            user.role === "mahasiswa" ? "school" : "grid_view"
+                          }
+                          size={18}
+                        />
+                        {user.role === "mahasiswa"
+                          ? "Lihat Kursus"
+                          : "Buka Dashboard"}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setSheetOpen(false);
+                          handleSignOut();
+                        }}
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                      >
+                        <Icon name="logout" size={18} />
+                        Keluar
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

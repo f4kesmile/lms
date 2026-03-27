@@ -1,8 +1,8 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUserIdFromCookie } from "@/lib/auth";
-import CourseCatalogBrowser from "@/features/courses/CourseCatalogBrowser";
+import { prisma } from "@/lib/core/db";
+import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
+import CourseCatalogBrowser from "@/features/courses/Catalog";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -67,15 +67,10 @@ export default async function CourseCatalogPage({
   return (
     <>
       <Navbar />
-
-      <main
-        className="app-shell"
-        style={{ display: "grid", gap: "2.5rem", paddingBottom: "5rem" }}
-      >
-        {/* ===== HEADER ===== */}
-        <div className="catalog-header">
-          <h1>Eksplorasi Kelas Akademik</h1>
-          <p>
+      <main className="app-shell flex flex-col gap-10 pb-20">
+        <div className="catalog-header pb-4 border-b border-border">
+          <h1 className="text-3xl font-black mb-2">Eksplorasi Kelas Akademik</h1>
+          <p className="text-muted-foreground">
             Jelajahi kelas yang sedang dibuka, temukan pengajarnya, lalu daftar
             sesuai kebutuhan belajarmu.
           </p>
@@ -87,7 +82,6 @@ export default async function CourseCatalogPage({
           isLoggedIn={!!userId}
         />
       </main>
-
       <Footer />
     </>
   );

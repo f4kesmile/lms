@@ -3,14 +3,14 @@ import { UserRole } from "@prisma/client";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { setAuthCookie } from "@/lib/auth";
+import { setAuthCookie } from "@/lib/auth/index";
 import {
   getAllowedEmailDomainsText,
   isAllowedEmail,
   isDomainRestrictionEnabled,
-} from "@/lib/auth-domain";
-import { prisma } from "@/lib/prisma";
-import { writeSystemLog } from "@/lib/system-log";
+} from "@/lib/auth/domain";
+import { prisma } from "@/lib/core/db";
+import { writeSystemLog } from "@/lib/core/logs";
 
 const OAUTH_STATE_COOKIE = "oauth_microsoft_state";
 

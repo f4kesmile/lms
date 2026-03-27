@@ -3,8 +3,8 @@ import "dotenv/config";
 import { CourseStatus, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-import { prisma } from "@/lib/prisma";
-import { splitIntoChunks } from "@/lib/rag";
+import { prisma } from "@/lib/core/db";
+import { splitIntoChunks } from "@/lib/ai/rag";
 
 type CreatedUser = {
   id: string;
@@ -124,7 +124,7 @@ async function main() {
   ];
 
   const dosenUsers = await Promise.all(
-    dosenSeed.map((item) =>
+    dosenSeed.map((item: any) =>
       prisma.user.create({
         data: {
           name: item.name,
@@ -525,7 +525,7 @@ async function main() {
     }),
   ]);
 
-  const classByName = new Map(classes.map((item) => [item.name, item]));
+  const classByName = new Map(classes.map((item: any) => [item.name, item]));
 
   const classSubjectPlan: Record<string, string[]> = {
     "AI - Kelas A": ["AI-101", "DB-201", "SE-301"],
@@ -775,7 +775,7 @@ async function main() {
   ];
 
   await prisma.faq.createMany({
-    data: faqItems.map((item) => ({
+    data: faqItems.map((item: any) => ({
       ...item,
       isActive: true,
     })),

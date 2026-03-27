@@ -1,9 +1,9 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 export async function GET() {
   try {
@@ -25,10 +25,10 @@ export async function GET() {
 
     const avgRating =
       ratedTurns.length > 0
-        ? ratedTurns.reduce((sum, item) => sum + (item.rating ?? 0), 0) / ratedTurns.length
+        ? ratedTurns.reduce((sum: number, item: any) => sum + (item.rating ?? 0), 0) / ratedTurns.length
         : null;
 
-    const citedAnswers = citationTurns.filter((item) => {
+    const citedAnswers = citationTurns.filter((item: any) => {
       if (!Array.isArray(item.citations)) return false;
       return item.citations.length > 0;
     }).length;

@@ -3,8 +3,8 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SITE_CONFIG } from "@/lib/constants";
 import { toast } from "sonner";
+import { Icon } from "@/components/ui/icon";
 
 export default function RegisterClient() {
   const router = useRouter();
@@ -37,13 +37,9 @@ export default function RegisterClient() {
       }
 
       toast.success(
-        "Registrasi berhasil. Anda akan diarahkan ke halaman kursus.",
+        "Registrasi berhasil. Anda akan diarahkan ke halaman kursus."
       );
-
-      // Refresh server components (navbar) dulu sebelum navigasi
       router.refresh();
-
-      // Delay untuk navbar terupdate
       setTimeout(() => {
         router.push("/courses");
       }, 150);
@@ -51,7 +47,7 @@ export default function RegisterClient() {
       toast.error(
         e instanceof Error
           ? e.message
-          : "Terjadi kesalahan sistem. Cek log dan hubungi admin.",
+          : "Terjadi kesalahan sistem. Cek log dan hubungi admin."
       );
     } finally {
       setLoading(false);
@@ -60,163 +56,75 @@ export default function RegisterClient() {
 
   return (
     <>
-      <main
-        style={{
-          width: "100%",
-          minHeight: "calc(100dvh - 80px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem 2.5rem",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1200px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "2.5rem",
-            alignItems: "center",
-          }}
-        >
-          {/* Left Column */}
-          <div style={{ display: "grid", gap: "2rem" }}>
-            <div style={{ display: "grid", gap: "1rem" }}>
-              <h2 className="title-xl">
-                Bangun Masa Depan <span className="accent">Digital</span> Anda
+      <main className="flex min-h-[calc(100dvh-80px)] w-full items-center justify-center p-8 md:p-10">
+        <div className="grid w-full max-w-[1200px] grid-cols-1 items-center gap-10 lg:grid-cols-2">
+          
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
+              <h2 className="title-xl text-4xl font-black md:text-5xl">
+                Bangun Masa Depan <span className="text-primary">Digital</span> Anda
               </h2>
-              <p className="text-muted" style={{ fontSize: "1.1rem" }}>
+              <p className="text-lg text-muted-foreground">
                 Bergabunglah dengan ribuan pelajar lainnya dan akses materi
                 eksklusif dari instruktur terbaik di bidangnya.
               </p>
             </div>
 
-            <div style={{ display: "grid", gap: "1rem" }}>
-              <div
-                className="row"
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--surface-primary-muted)",
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "0.75rem",
-                    borderRadius: "var(--radius-sm)",
-                    background: "var(--surface-primary-soft)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <span className="material-symbols-outlined">
-                    auto_stories
-                  </span>
+            <div className="flex flex-col gap-4">
+              <div className="row flex items-center gap-4 rounded-lg border border-border bg-surface-primary-muted p-4">
+                <div className="flex items-center justify-center rounded-md bg-surface-primary-soft p-3 text-primary">
+                  <Icon name="auto_stories" size={24} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
-                    500+ Kursus
-                  </h3>
-                  <p className="text-dim" style={{ fontSize: "0.85rem" }}>
+                  <h3 className="font-bold">500+ Kursus</h3>
+                  <p className="text-sm text-muted-foreground">
                     Materi yang selalu diperbarui
                   </p>
                 </div>
               </div>
-              <div
-                className="row"
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--surface-primary-muted)",
-                  border: "1px solid var(--border-primary)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "0.75rem",
-                    borderRadius: "var(--radius-sm)",
-                    background: "var(--surface-primary-soft)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <span className="material-symbols-outlined">
-                    workspace_premium
-                  </span>
+              <div className="row flex items-center gap-4 rounded-lg border border-border bg-surface-primary-muted p-4">
+                <div className="flex items-center justify-center rounded-md bg-surface-primary-soft p-3 text-primary">
+                  <Icon name="workspace_premium" size={24} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700 }}>
-                    Sertifikat Resmi
-                  </h3>
-                  <p className="text-dim" style={{ fontSize: "0.85rem" }}>
+                  <h3 className="font-bold">Sertifikat Resmi</h3>
+                  <p className="text-sm text-muted-foreground">
                     Diakui oleh industri global
                   </p>
                 </div>
               </div>
             </div>
 
-            <div
-              className="neo-card"
-              style={{
-                padding: "2rem",
-                position: "relative",
-                overflow: "hidden",
-                background:
-                  "linear-gradient(135deg, var(--primary), var(--brand-heavy))",
-              }}
-            >
-              <p
-                style={{
-                  color: "var(--on-inverse)",
-                  fontSize: "1.05rem",
-                  fontStyle: "italic",
-                  fontWeight: 500,
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              >
+            <div className="neo-card relative overflow-hidden bg-gradient-to-br from-primary to-brand-heavy p-8">
+              <p className="relative z-10 font-medium italic text-primary-foreground">
                 &quot;Belajar tidak pernah semudah ini. Platform ini mengubah
                 cara saya memahami teknologi.&quot;
               </p>
             </div>
           </div>
 
-          {/* Right Column — Form */}
-          <div style={{ display: "grid", gap: "0.75rem" }}>
-            <div
-              className="neo-card"
-              style={{
-                padding: "2rem 2.5rem",
-                borderRadius: "var(--radius-xl)",
-              }}
-            >
-              <div style={{ marginBottom: "2rem" }}>
-                <h2
-                  style={{
-                    fontSize: "1.8rem",
-                    fontWeight: 800,
-                    marginBottom: "0.4rem",
-                  }}
-                >
-                  Daftar Akun Baru
-                </h2>
-                <p className="text-muted">
+          <div className="flex flex-col gap-3">
+            <div className="neo-card rounded-2xl p-8 md:p-10">
+              <div className="mb-8">
+                <h2 className="mb-2 text-3xl font-black">Daftar Akun Baru</h2>
+                <p className="text-muted-foreground">
                   Lengkapi data di bawah untuk memulai.
                 </p>
               </div>
 
-              <form
-                style={{ display: "grid", gap: "1.25rem" }}
-                onSubmit={submit}
-              >
-                <div>
-                  <label className="input-label">Nama Lengkap</label>
-                  <div className="input-group">
-                    <span className="input-icon material-symbols-outlined">
-                      person
-                    </span>
+              <form className="flex flex-col gap-5" onSubmit={submit}>
+                <div className="flex flex-col gap-2">
+                  <label className="input-label text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Nama Lengkap
+                  </label>
+                  <div className="input-group relative flex items-center">
+                    <Icon
+                      name="person"
+                      size={20}
+                      className="input-icon absolute left-4 text-muted-foreground"
+                    />
                     <input
-                      className="input input-with-icon"
+                      className="input input-with-icon w-full rounded-md border border-border bg-card py-3 pl-12 pr-4 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       placeholder="Masukkan nama lengkap Anda"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -224,14 +132,18 @@ export default function RegisterClient() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="input-label">Email</label>
-                  <div className="input-group">
-                    <span className="input-icon material-symbols-outlined">
-                      mail
-                    </span>
+                <div className="flex flex-col gap-2">
+                  <label className="input-label text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Email
+                  </label>
+                  <div className="input-group relative flex items-center">
+                    <Icon
+                      name="mail"
+                      size={20}
+                      className="input-icon absolute left-4 text-muted-foreground"
+                    />
                     <input
-                      className="input input-with-icon"
+                      className="input input-with-icon w-full rounded-md border border-border bg-card py-3 pl-12 pr-4 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       type="email"
                       placeholder="contoh@email.com"
                       value={email}
@@ -240,159 +152,76 @@ export default function RegisterClient() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="input-label">Kata Sandi</label>
-                  <div className="input-group">
-                    <span className="input-icon material-symbols-outlined">
-                      lock
-                    </span>
+                <div className="flex flex-col gap-2">
+                  <label className="input-label text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Kata Sandi
+                  </label>
+                  <div className="input-group relative flex items-center">
+                    <Icon
+                      name="lock"
+                      size={20}
+                      className="input-icon absolute left-4 text-muted-foreground"
+                    />
                     <input
-                      className="input input-with-icon"
+                      className="input input-with-icon w-full rounded-md border border-border bg-card py-3 pl-12 pr-12 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       type={showPw ? "text" : "password"}
                       placeholder="Minimal 8 karakter"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      style={{ paddingRight: "3rem" }}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPw(!showPw)}
-                      style={{
-                        position: "absolute",
-                        right: "1rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        color: "var(--text-dim)",
-                        cursor: "pointer",
-                      }}
+                      className="absolute right-4 text-muted-foreground hover:text-foreground"
                     >
-                      <span className="material-symbols-outlined">
-                        {showPw ? "visibility_off" : "visibility"}
-                      </span>
+                      <Icon name={showPw ? "visibility_off" : "visibility"} size={20} />
                     </button>
                   </div>
                 </div>
 
-                <label
-                  className="row"
-                  style={{
-                    alignItems: "flex-start",
-                    gap: "0.75rem",
-                    cursor: "pointer",
-                  }}
-                >
+                <label className="row flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
                     checked={agree}
                     onChange={(e) => setAgree(e.target.checked)}
-                    style={{
-                      marginTop: "0.25rem",
-                      accentColor: "var(--primary)",
-                    }}
+                    className="mt-1 accent-primary"
                   />
-                  <span
-                    className="text-muted"
-                    style={{ fontSize: "0.85rem", lineHeight: 1.5 }}
-                  >
+                  <span className="text-[0.85rem] leading-relaxed text-muted-foreground">
                     Saya menyetujui{" "}
-                    <a className="accent" href="#" style={{ fontWeight: 700 }}>
+                    <a className="font-bold text-primary hover:underline" href="#">
                       Syarat &amp; Ketentuan
                     </a>{" "}
                     serta{" "}
-                    <a className="accent" href="#" style={{ fontWeight: 700 }}>
+                    <a className="font-bold text-primary hover:underline" href="#">
                       Kebijakan Privasi
-                    </a>
-                    .
+                    </a>.
                   </span>
                 </label>
 
                 <button
-                  className="btn"
+                  className="btn mt-2 w-full py-4 text-lg font-bold"
                   type="submit"
                   disabled={loading}
-                  style={{
-                    width: "100%",
-                    padding: "1rem",
-                    fontSize: "1.05rem",
-                  }}
                 >
                   {loading ? "Memproses..." : "Daftar Sekarang"}
                 </button>
 
-                <div
-                  className="row"
-                  style={{ justifyContent: "center", gap: "1rem" }}
-                >
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 1,
-                      background: "var(--border-primary)",
-                    }}
-                  />
-                  <span
-                    className="text-dim"
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
+                <div className="row flex items-center justify-center gap-4 py-2">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">
                     Atau daftar dengan
                   </span>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 1,
-                      background: "var(--border-primary)",
-                    }}
-                  />
+                  <div className="h-px flex-1 bg-border" />
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1rem",
-                  }}
-                >
-                  {/* Google Button */}
+                <div className="grid grid-cols-2 gap-4">
                   <button
-                    className="btn-ghost"
+                    className="btn-ghost flex items-center justify-center gap-2 rounded-md border border-border py-3 font-medium transition-colors hover:border-[#db5433] hover:bg-[#db5433]/10"
                     type="button"
                     onClick={() =>
                       window.location.assign("/api/auth/oauth/google/start")
                     }
-                    style={{
-                      justifyContent: "center",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      border: "1px solid var(--border-primary)",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "0.375rem",
-                      fontWeight: 500,
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "rgba(219, 84, 51, 0.08)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "#db5433";
-                    }}
-                    onMouseLeave={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--border-primary)";
-                    }}
                   >
-                    {/* Google Logo SVG */}
                     <svg
                       width="18"
                       height="18"
@@ -421,40 +250,15 @@ export default function RegisterClient() {
                     Google
                   </button>
 
-                  {/* Microsoft Button */}
                   <button
-                    className="btn-ghost"
+                    className="btn-ghost flex items-center justify-center gap-2 rounded-md border border-border py-3 font-medium transition-colors hover:border-[#005a9e] hover:bg-[#005a9e]/10"
                     type="button"
                     onClick={() =>
-                      window.location.assign("/api/auth/oauth/microsoft/start")
+                      window.location.assign(
+                        "/api/auth/oauth/microsoft/start"
+                      )
                     }
-                    style={{
-                      justifyContent: "center",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      border: "1px solid var(--border-primary)",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "0.375rem",
-                      fontWeight: 500,
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "rgba(0, 90, 158, 0.08)";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "#005a9e";
-                    }}
-                    onMouseLeave={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor =
-                        "var(--border-primary)";
-                    }}
                   >
-                    {/* Microsoft Logo SVG */}
                     <svg
                       width="18"
                       height="18"
@@ -474,19 +278,9 @@ export default function RegisterClient() {
               </form>
             </div>
 
-            <p
-              className="text-muted"
-              style={{
-                textAlign: "center",
-                fontSize: "0.9rem",
-              }}
-            >
+            <p className="text-center text-sm text-muted-foreground">
               Sudah punya akun?{" "}
-              <Link
-                href="/login"
-                className="accent"
-                style={{ fontWeight: 700 }}
-              >
+              <Link href="/login" className="font-bold text-primary hover:underline">
                 Masuk
               </Link>
             </p>

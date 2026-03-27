@@ -4,7 +4,7 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AppToaster } from "@/components/shared/AppToaster";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
-import { ChatbotVisibilityGuard } from "@/features/chatbot/ChatbotVisibilityGuard";
+import { ChatbotVisibilityGuard } from "@/features/chat/ChatbotVisibilityGuard";
 import { SITE_CONFIG } from "@/lib/constants";
 
 const spaceGrotesk = Space_Grotesk({

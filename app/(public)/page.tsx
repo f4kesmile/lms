@@ -2,7 +2,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/core/db";
+import { StatBox } from "@/components/ui/statbox";
+import { SectionHeader } from "@/components/ui/header";
+import { Icon } from "@/components/ui/icon";
 
 export default async function HomePage() {
   const [userCount, classCount, materialCount] = await Promise.all([
@@ -32,38 +35,26 @@ export default async function HomePage() {
     <>
       <Navbar />
 
-      <main
-        className="app-shell"
-        style={{ display: "grid", gap: "3.5rem", paddingBottom: "5rem" }}
-      >
-        {/* ===== HERO ===== */}
+      <main className="app-shell flex flex-col gap-14 pb-20">
         <section className="public-hero">
           <div className="public-hero-text">
             <h1 className="public-hero-title">
               Masa Depan Belajar
               <br />
-              <span className="highlight">dengan Asisten AI</span>
+              <span className="highlight text-primary">dengan Asisten AI</span>
             </h1>
             <p className="public-hero-subtitle">
               Tingkatkan pengalaman belajar Anda dengan platform e-learning
               interaktif terkemuka. Akses ribuan modul dari dosen terbaik,
               didukung kecerdasan buatan.
             </p>
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-              <Link
-                href="/courses"
-                className="btn"
-                style={{ padding: "0.75rem 2rem" }}
-              >
+            <div className="flex flex-wrap gap-4 mt-2">
+              <Link href="/courses" className="btn px-8 py-3 text-base">
                 Eksplorasi Kelas
               </Link>
               <Link
                 href="/register"
-                className="btn-ghost"
-                style={{
-                  padding: "0.75rem 2rem",
-                  border: "1px solid var(--border-primary-strong)",
-                }}
+                className="btn-ghost border border-border px-8 py-3 text-base hover:bg-muted"
               >
                 Daftar Akun Gratis
               </Link>
@@ -72,153 +63,74 @@ export default async function HomePage() {
           <div className="public-hero-img">
             <Image
               src="/hero-illustration.png"
-              alt="Mahasiswa belajar bersama"
+              alt="Hero Illustration"
               width={600}
               height={450}
               priority
-              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              className="object-cover w-full h-full"
             />
           </div>
         </section>
 
-        {/* ===== STATS ===== */}
         <section className="stats-row">
-          <div className="stat-box">
-            <div className="stat-box-label">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20, color: "var(--primary)" }}
-              >
-                groups
-              </span>
-              Mahasiswa Aktif
-            </div>
-            <p className="stat-box-value">
-              {userCount.toLocaleString("id-ID")}+
-            </p>
-          </div>
-          <div className="stat-box">
-            <div className="stat-box-label">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20, color: "var(--primary)" }}
-              >
-                school
-              </span>
-              Kelas Tersedia
-            </div>
-            <p className="stat-box-value">
-              {classCount.toLocaleString("id-ID")}+
-            </p>
-          </div>
-          <div className="stat-box">
-            <div className="stat-box-label">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20, color: "var(--primary)" }}
-              >
-                library_books
-              </span>
-              Modul Belajar
-            </div>
-            <p className="stat-box-value">
-              {materialCount.toLocaleString("id-ID")}+
-            </p>
-          </div>
+          <StatBox
+            icon="groups"
+            label="Mahasiswa Aktif"
+            value={`${userCount.toLocaleString("id-ID")}+`}
+          />
+          <StatBox
+            icon="school"
+            label="Kelas Tersedia"
+            value={`${classCount.toLocaleString("id-ID")}+`}
+          />
+          <StatBox
+            icon="library_books"
+            label="Modul Belajar"
+            value={`${materialCount.toLocaleString("id-ID")}+`}
+          />
         </section>
 
-        {/* ===== FEATURED CLASSES ===== */}
-        <section style={{ display: "grid", gap: "1.5rem" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: 800,
-                borderBottom: "3px solid var(--primary)",
-                paddingBottom: "0.2rem",
-                display: "inline-block",
-              }}
-            >
-              Kelas Unggulan
-            </h2>
-            <Link
-              href="/courses"
-              style={{
-                color: "var(--primary)",
-                fontWeight: 700,
-                fontSize: "0.9rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.3rem",
-              }}
-            >
-              Lihat Semua
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                arrow_forward
-              </span>
-            </Link>
-          </div>
+        <section className="flex flex-col gap-6">
+          <SectionHeader
+            title="Kelas Unggulan"
+            actionText="Lihat Semua"
+            actionHref="/courses"
+          />
 
-          <div
-            className="course-grid"
-            style={{ gridTemplateColumns: "repeat(4, 1fr)" }}
-          >
+          <div className="course-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredClasses.length === 0 ? (
-              <p
-                className="text-muted"
-                style={{
-                  gridColumn: "1 / -1",
-                  textAlign: "center",
-                  padding: "3rem",
-                }}
-              >
+              <p className="text-muted-foreground col-span-full text-center p-12">
                 Belum ada kelas tersedia.
               </p>
             ) : (
               featuredClasses.map((cls, idx) => {
                 const subjectName = cls.subjects[0]?.subject.name || "Umum";
+                const mockIcon = [
+                  "science",
+                  "psychology",
+                  "terminal",
+                  "language",
+                ][idx % 4];
+
                 return (
                   <article key={cls.id} className="catalog-card">
                     <div
                       className="catalog-card-img"
-                      style={{ background: gradients[idx % 4], height: 160 }}
+                      style={{ background: gradients[idx % 4] }}
                     >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 56,
-                          color: "var(--icon-tint-on-gradient)",
-                        }}
-                      >
-                        {
-                          ["science", "psychology", "terminal", "language"][
-                            idx % 4
-                          ]
-                        }
-                      </span>
+                      <Icon
+                        name={mockIcon}
+                        size={56}
+                        className="text-white opacity-90"
+                      />
                     </div>
                     <div className="catalog-card-body">
                       <p className="catalog-card-category">{subjectName}</p>
                       <h3 className="catalog-card-title">{cls.name}</h3>
-                      <div style={{ marginTop: "auto", paddingTop: "0.75rem" }}>
+                      <div className="mt-auto pt-3">
                         <Link
                           href={`/courses/${cls.id}`}
-                          className="btn"
-                          style={{
-                            width: "100%",
-                            textAlign: "center",
-                            display: "block",
-                            padding: "0.6rem",
-                          }}
+                          className="btn w-full text-center block py-2"
                         >
                           Lihat Detail
                         </Link>

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { Prisma, UserRole } from "@prisma/client";
 
-import { getCurrentUser } from "@/lib/current-user";
-import { serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/user";
+import { serverError, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
 
 const studentTemplates = [
   "Jelaskan konsep inti dari {title}",
@@ -69,7 +69,7 @@ async function resolveTeacherFilterIds(input: {
         select: { classId: true },
         take: 20,
       });
-      classIds = memberships.map((item) => item.classId);
+      classIds = memberships.map((item: any) => item.classId);
     }
   } else if (classId) {
     classIds = [classId];
@@ -86,7 +86,7 @@ async function resolveTeacherFilterIds(input: {
   const teacherIds = Array.from(
     new Set(
       classes
-        .map((item) => item.classTeacherId)
+        .map((item: any) => item.classTeacherId)
         .filter((id): id is string => Boolean(id)),
     ),
   );
@@ -189,7 +189,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       suggestions,
-      materials: materials.map((m) => ({ id: m.id, title: m.title, module: m.module })),
+      materials: materials.map((m: any) => ({ id: m.id, title: m.title, module: m.module })),
     });
   } catch (error) {
     return serverError(error);

@@ -2,12 +2,12 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { setAuthCookie } from "@/lib/auth";
-import { getAllowedEmailDomainsText, isAllowedEmail } from "@/lib/auth-domain";
-import { badRequest, serverError, tooManyRequests, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { writeSystemLog } from "@/lib/system-log";
+import { setAuthCookie } from "@/lib/auth/index";
+import { getAllowedEmailDomainsText, isAllowedEmail } from "@/lib/auth/domain";
+import { badRequest, serverError, tooManyRequests, unauthorized } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
+import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
+import { writeSystemLog } from "@/lib/core/logs";
 
 const loginSchema = z.object({
   email: z.string().email(),

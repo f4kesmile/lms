@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUserIdFromCookie } from "@/lib/auth";
+import { prisma } from "@/lib/core/db";
+import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
 
 export async function POST(req: Request) {
   try {
