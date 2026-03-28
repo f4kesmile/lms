@@ -15,9 +15,57 @@ export async function GET() {
     }
 
     const subjects = await prisma.subject.findMany({
-      where: user.role === UserRole.dosen
-        ? { teachers: { some: { userId: user.id } } }
-        : { isActive: true },
+      where:
+        user.role === UserRole.dosen
+          ? {
+              isActive: true,
+              OR: [
+                {
+                  classes: {
+                    some: {
+                      class: {
+                        academicYear: {
+                          isCurrent: true,
+                        },
+                      },
+                      teacherUserId: user.id,
+                    },
+                  },
+                },
+                {
+                  classes: {
+                    some: {
+                      class: {
+                        academicYear: {
+                          isCurrent: true,
+                        },
+                      },
+                      teacherUserId: null,
+                    },
+                  },
+                  teachers: {
+                    some: {
+                      userId: user.id,
+                    },
+                  },
+                  NOT: {
+                    classes: {
+                      some: {
+                        class: {
+                          academicYear: {
+                            isCurrent: true,
+                          },
+                        },
+                        teacherUserId: {
+                          not: null,
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            }
+          : { isActive: true },
       select: {
         id: true,
         code: true,

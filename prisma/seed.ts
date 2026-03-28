@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { CourseStatus, UserRole } from "@prisma/client";
+import { CourseStatus, DayOfWeek, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/core/db";
@@ -116,21 +116,48 @@ async function main() {
   ]);
 
   const dosenSeed = [
-    { name: "Dr. Rahmat Hidayat", email: "rahmat@lms.com" },
-    { name: "Prof. Dian Lestari", email: "dian@lms.com" },
-    { name: "Dr. Sinta Wulandari", email: "sinta@lms.com" },
-    { name: "Dr. Farhan Akbar", email: "farhan@lms.com" },
-    { name: "Prof. Mita Azzahra", email: "mita@lms.com" },
+    {
+      name: "Dr. Rahmat Hidayat",
+      email: "rahmat@lms.com",
+      nip: "197905122008011001",
+      specialization: "Kecerdasan Buatan",
+    },
+    {
+      name: "Prof. Dian Lestari",
+      email: "dian@lms.com",
+      nip: "197603182005012002",
+      specialization: "Rekayasa Perangkat Lunak",
+    },
+    {
+      name: "Dr. Sinta Wulandari",
+      email: "sinta@lms.com",
+      nip: "198311082009012003",
+      specialization: "Data Sains",
+    },
+    {
+      name: "Dr. Farhan Akbar",
+      email: "farhan@lms.com",
+      nip: "198004252007011004",
+      specialization: "Basis Data dan Jaringan",
+    },
+    {
+      name: "Prof. Mita Azzahra",
+      email: "mita@lms.com",
+      nip: "197711142004012005",
+      specialization: "Arsitektur Sistem",
+    },
   ];
 
   const dosenUsers = await Promise.all(
-    dosenSeed.map((item: { name: string; email: string }) =>
+    dosenSeed.map((item) =>
       prisma.user.create({
         data: {
           name: item.name,
           email: item.email,
           password: passwordHash,
           role: UserRole.dosen,
+          nip: item.nip,
+          specialization: item.specialization,
         },
       }),
     ),
@@ -190,6 +217,7 @@ async function main() {
           email: `${baseSlug}${suffix}@student.lms.com`,
           password: passwordHash,
           role: UserRole.mahasiswa,
+          nip: `24${String(idx + 1).padStart(8, "0")}`,
           isActive: idx % 11 !== 0,
         },
       });
@@ -475,29 +503,29 @@ async function main() {
   const classes = await Promise.all([
     prisma.class.create({
       data: {
-        name: "AI - Kelas A",
+        name: "Informatika 24A",
         academicYearId: currentYear.id,
         capacity: 45,
       },
     }),
     prisma.class.create({
       data: {
-        name: "AI - Kelas B",
+        name: "Informatika 24B",
         academicYearId: currentYear.id,
         capacity: 45,
-        enrollmentKey: "AI-B-2026",
+        enrollmentKey: "IF24B-2026",
       },
     }),
     prisma.class.create({
       data: {
-        name: "RPL - Reguler",
+        name: "Sistem Informasi 24 Reguler",
         academicYearId: currentYear.id,
         capacity: 42,
       },
     }),
     prisma.class.create({
       data: {
-        name: "Data Science - Intensif",
+        name: "Data Sains 24 Intensif",
         academicYearId: currentYear.id,
         capacity: 35,
         enrollmentKey: "DS-INTENSIF",
@@ -505,14 +533,14 @@ async function main() {
     }),
     prisma.class.create({
       data: {
-        name: "Jaringan - Reguler",
+        name: "Teknik Komputer 23 Reguler",
         academicYearId: years[1].id,
         capacity: 40,
       },
     }),
     prisma.class.create({
       data: {
-        name: "AI - Kelas Malam",
+        name: "Informatika 23 Malam",
         academicYearId: years[1].id,
         capacity: 30,
       },
@@ -521,37 +549,172 @@ async function main() {
 
   const classByName = new Map(classes.map((item) => [item.name, item]));
 
-  const classSubjectPlan: Record<string, string[]> = {
-    "AI - Kelas A": ["AI-101", "DB-201", "SE-301"],
-    "AI - Kelas B": ["AI-101", "DS-220", "SE-301"],
-    "RPL - Reguler": ["SE-301", "DB-201"],
-    "Data Science - Intensif": ["AI-101", "DS-220"],
-    "Jaringan - Reguler": ["NW-210", "DB-201"],
-    "AI - Kelas Malam": ["AI-101", "NW-210"],
+  const classSubjectPlan: Record<
+    string,
+    Array<{
+      code: string;
+      teacherEmail: string;
+      dayOfWeek: DayOfWeek;
+      startTime: string;
+      endTime: string;
+      room: string;
+    }>
+  > = {
+    "Informatika 24A": [
+      {
+        code: "AI-101",
+        teacherEmail: "rahmat@lms.com",
+        dayOfWeek: DayOfWeek.senin,
+        startTime: "08:00",
+        endTime: "09:40",
+        room: "R-201",
+      },
+      {
+        code: "DB-201",
+        teacherEmail: "rahmat@lms.com",
+        dayOfWeek: DayOfWeek.rabu,
+        startTime: "10:00",
+        endTime: "11:40",
+        room: "Lab DB-1",
+      },
+      {
+        code: "SE-301",
+        teacherEmail: "dian@lms.com",
+        dayOfWeek: DayOfWeek.jumat,
+        startTime: "13:00",
+        endTime: "14:40",
+        room: "R-305",
+      },
+    ],
+    "Informatika 24B": [
+      {
+        code: "AI-101",
+        teacherEmail: "sinta@lms.com",
+        dayOfWeek: DayOfWeek.selasa,
+        startTime: "08:00",
+        endTime: "09:40",
+        room: "R-204",
+      },
+      {
+        code: "DS-220",
+        teacherEmail: "sinta@lms.com",
+        dayOfWeek: DayOfWeek.kamis,
+        startTime: "10:00",
+        endTime: "11:40",
+        room: "Lab Viz-2",
+      },
+      {
+        code: "SE-301",
+        teacherEmail: "mita@lms.com",
+        dayOfWeek: DayOfWeek.jumat,
+        startTime: "15:00",
+        endTime: "16:40",
+        room: "R-307",
+      },
+    ],
+    "Sistem Informasi 24 Reguler": [
+      {
+        code: "SE-301",
+        teacherEmail: "dian@lms.com",
+        dayOfWeek: DayOfWeek.senin,
+        startTime: "10:00",
+        endTime: "11:40",
+        room: "R-303",
+      },
+      {
+        code: "DB-201",
+        teacherEmail: "farhan@lms.com",
+        dayOfWeek: DayOfWeek.rabu,
+        startTime: "13:00",
+        endTime: "14:40",
+        room: "Lab DB-2",
+      },
+    ],
+    "Data Sains 24 Intensif": [
+      {
+        code: "AI-101",
+        teacherEmail: "sinta@lms.com",
+        dayOfWeek: DayOfWeek.senin,
+        startTime: "13:00",
+        endTime: "14:40",
+        room: "Lab AI-3",
+      },
+      {
+        code: "DS-220",
+        teacherEmail: "sinta@lms.com",
+        dayOfWeek: DayOfWeek.kamis,
+        startTime: "13:00",
+        endTime: "14:40",
+        room: "Lab Viz-1",
+      },
+    ],
+    "Teknik Komputer 23 Reguler": [
+      {
+        code: "NW-210",
+        teacherEmail: "farhan@lms.com",
+        dayOfWeek: DayOfWeek.selasa,
+        startTime: "10:00",
+        endTime: "11:40",
+        room: "Lab Net-1",
+      },
+      {
+        code: "DB-201",
+        teacherEmail: "rahmat@lms.com",
+        dayOfWeek: DayOfWeek.kamis,
+        startTime: "08:00",
+        endTime: "09:40",
+        room: "Lab DB-3",
+      },
+    ],
+    "Informatika 23 Malam": [
+      {
+        code: "AI-101",
+        teacherEmail: "rahmat@lms.com",
+        dayOfWeek: DayOfWeek.selasa,
+        startTime: "19:00",
+        endTime: "20:40",
+        room: "R-102",
+      },
+      {
+        code: "NW-210",
+        teacherEmail: "farhan@lms.com",
+        dayOfWeek: DayOfWeek.rabu,
+        startTime: "19:00",
+        endTime: "20:40",
+        room: "Lab Net-2",
+      },
+    ],
   };
 
-  for (const [className, subjectCodes] of Object.entries(classSubjectPlan)) {
+  for (const [className, subjectPlans] of Object.entries(classSubjectPlan)) {
     const cls = classByName.get(className);
     if (!cls) continue;
 
-    for (const code of subjectCodes) {
-      const subject = createdSubjects.get(code);
+    for (const plan of subjectPlans) {
+      const subject = createdSubjects.get(plan.code);
       if (!subject) continue;
+
+      const teacher = dosenByEmail.get(plan.teacherEmail);
 
       await prisma.classSubject.create({
         data: {
           classId: cls.id,
           subjectId: subject.id,
+          teacherUserId: teacher?.id,
+          dayOfWeek: plan.dayOfWeek,
+          startTime: plan.startTime,
+          endTime: plan.endTime,
+          room: plan.room,
         },
       });
     }
   }
 
   const activeClasses = [
-    classByName.get("AI - Kelas A"),
-    classByName.get("AI - Kelas B"),
-    classByName.get("RPL - Reguler"),
-    classByName.get("Data Science - Intensif"),
+    classByName.get("Informatika 24A"),
+    classByName.get("Informatika 24B"),
+    classByName.get("Sistem Informasi 24 Reguler"),
+    classByName.get("Data Sains 24 Intensif"),
   ].filter(Boolean) as Array<{ id: string }>;
 
   const studentPrimaryClass = new Map<string, string>();
@@ -658,7 +821,7 @@ async function main() {
     const course = createdCourses.get(subject.code);
     if (!course) continue;
 
-    for (const mod of subject.modules) {
+    for (const [moduleIndex, mod] of subject.modules.entries()) {
       const content = makeMaterialContent({
         subjectName: subject.name,
         module: mod.module,
@@ -694,6 +857,29 @@ async function main() {
         page: material.page,
         courseCode: subject.code,
       });
+
+      const subjectRef = createdSubjects.get(subject.code);
+      if (subjectRef) {
+        await prisma.subjectMeeting.create({
+          data: {
+            subjectId: subjectRef.id,
+            meetingNo: moduleIndex + 1,
+            title: mod.title,
+            content,
+            assets: {
+              module: mod.module,
+              page: mod.page,
+              sourceMaterialId: material.id,
+            },
+            chunks: {
+              create: splitIntoChunks(content, 320).map((chunk, chunkIndex) => ({
+                chunkIndex,
+                content: chunk,
+              })),
+            },
+          },
+        });
+      }
     }
   }
 

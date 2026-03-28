@@ -16,11 +16,23 @@ export async function POST(req: Request) {
 
     const classData = await prisma.class.findUnique({
       where: { id: classId },
-      select: { enrollmentKey: true }
+      select: {
+        enrollmentKey: true,
+        academicYear: {
+          select: { isCurrent: true },
+        },
+      }
     });
 
     if (!classData) {
       return NextResponse.json({ message: "Kelas tidak ditemukan" }, { status: 404 });
+    }
+
+    if (!classData.academicYear.isCurrent) {
+      return NextResponse.json(
+        { message: "Pendaftaran hanya dibuka untuk kelas di tahun akademik aktif" },
+        { status: 403 },
+      );
     }
 
     // Require exact match if the class has a key defined

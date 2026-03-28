@@ -5,7 +5,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { DosenLayout } from "@/components/layout/DosenLayout";
 import { getInitials, formatDate, cn } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -218,7 +217,7 @@ export default function AdminDashboardPage() {
 
   if (user?.role === "dosen") {
     return (
-      <DosenLayout title="Dashboard Pengajar">
+      <AdminLayout title="Dashboard Pengajar">
         <div className="space-y-8">
           <header className="flex flex-col gap-2">
             <h2 className="text-3xl font-black tracking-tight text-foreground">
@@ -370,7 +369,7 @@ export default function AdminDashboardPage() {
             )}
           </section>
         </div>
-      </DosenLayout>
+      </AdminLayout>
     );
   }
 

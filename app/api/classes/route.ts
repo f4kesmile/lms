@@ -31,9 +31,30 @@ export async function GET(request: Request) {
     const safeLimit = Number.isNaN(limit) || limit < 1 ? 10 : Math.min(limit, 100);
     const skip = (safePage - 1) * safeLimit;
 
-    const where = search
-      ? { name: { contains: search, mode: "insensitive" as const } }
-      : undefined;
+    const currentYear = await prisma.academicYear.findFirst({
+      where: { isCurrent: true },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    if (!currentYear) {
+      return NextResponse.json({
+        classes: [],
+        pagination: {
+          total: 0,
+          page: safePage,
+          pages: 0,
+          limit: safeLimit,
+        },
+      });
+    }
+
+    const where = {
+      academicYearId: currentYear.id,
+      ...(search
+        ? { name: { contains: search, mode: "insensitive" as const } }
+        : {}),
+    };
 
     const [total, classes] = await Promise.all([
       prisma.class.count({ where }),

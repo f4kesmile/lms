@@ -10,14 +10,36 @@ export async function getDosenSubjectsAction() {
   }
 
   try {
+    const currentYear = await prisma.academicYear.findFirst({
+      where: { isCurrent: true },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    if (!currentYear) {
+      return { success: true, subjects: [] };
+    }
+
     const subjects = await prisma.subject.findMany({
       where: {
         teachers: {
           some: { userId: user.id }
-        }
+        },
+        classes: {
+          some: {
+            class: {
+              academicYearId: currentYear.id,
+            },
+          },
+        },
       },
       include: {
         classes: {
+          where: {
+            class: {
+              academicYearId: currentYear.id,
+            },
+          },
           include: {
             class: {
               select: {

@@ -5,7 +5,13 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ADMIN_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
+import {
+  ADMIN_FEATURE_NAV_LINKS,
+  DOSEN_FEATURE_NAV_LINKS,
+  DOSEN_MASTER_DATA_NAV_LINKS,
+  MASTER_DATA_NAV_LINKS,
+  SITE_CONFIG,
+} from "@/lib/constants/index";
 import {
   Sidebar,
   SidebarContent,
@@ -63,6 +69,32 @@ export const AdminLayout = ({
   }
 
   const initials = user?.name ? getInitials(user.name) : "??";
+  const isDosen = user?.role === "dosen";
+  const sidebarTitle = isDosen
+    ? `${SITE_CONFIG.name} Dosen`
+    : `${SITE_CONFIG.name} Admin`;
+  const sidebarSubtitle = isDosen ? "Portal Pengajar" : SITE_CONFIG.adminSubtitle;
+
+  const navGroups = [
+    {
+      key: "master-data",
+      label: "Master Data",
+      items: isDosen ? DOSEN_MASTER_DATA_NAV_LINKS : MASTER_DATA_NAV_LINKS,
+      show: true,
+    },
+    {
+      key: "fitur-dosen",
+      label: "Fitur Dosen",
+      items: DOSEN_FEATURE_NAV_LINKS,
+      show: isDosen || user?.role === "admin",
+    },
+    {
+      key: "fitur-admin",
+      label: "Fitur Admin",
+      items: ADMIN_FEATURE_NAV_LINKS,
+      show: user?.role === "admin",
+    },
+  ].filter((group) => group.show);
 
   return (
     <SidebarProvider>
@@ -70,62 +102,64 @@ export const AdminLayout = ({
         <SidebarHeader className="flex h-16 items-center justify-start px-3 sm:px-4 border-b border-border">
           <div className="flex w-full items-center justify-start gap-3 overflow-hidden">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground border border-border shadow-sm">
-              <Icon name="school" size={24} />
+              <Icon name={isDosen ? "history_edu" : "school"} size={24} />
             </div>
             <div className="flex flex-col gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
               <span className="font-black tracking-widest uppercase text-sidebar-foreground">
-                {SITE_CONFIG.name} Admin
+                {sidebarTitle}
               </span>
               <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                {SITE_CONFIG.adminSubtitle}
+                {sidebarSubtitle}
               </span>
             </div>
           </div>
         </SidebarHeader>
         <SidebarContent className="px-2 pb-2 mt-4">
-          <SidebarGroup>
-            <SidebarGroupLabel className="px-2 pb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-opacity group-data-[collapsible=icon]:hidden">
-              Menu Utama
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {ADMIN_NAV_LINKS.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`);
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className={cn(
-                          "relative justify-start overflow-hidden transition-all duration-200 rounded-md border-2 border-transparent my-1",
-                          isActive
-                            ? "bg-primary text-primary-foreground font-bold border-border shadow-sm hover:bg-primary/90"
-                            : "hover:bg-muted hover:border-border hover:text-foreground font-semibold text-muted-foreground",
-                        )}
-                      >
-                        <Link
-                          href={item.href as Route}
-                          className="flex w-full items-center justify-start gap-4"
+          {navGroups.map((group) => (
+            <SidebarGroup key={group.key}>
+              <SidebarGroupLabel className="px-2 pb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-opacity group-data-[collapsible=icon]:hidden">
+                {group.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                          className={cn(
+                            "relative justify-start overflow-hidden transition-all duration-200 rounded-md border-2 border-transparent my-1",
+                            isActive
+                              ? "bg-primary text-primary-foreground font-bold border-border shadow-sm hover:bg-primary/90"
+                              : "hover:bg-muted hover:border-border hover:text-foreground font-semibold text-muted-foreground",
+                          )}
                         >
-                          <Icon
-                            name={item.icon}
-                            size={22}
-                            className="shrink-0"
-                          />
-                          <span className="truncate group-data-[collapsible=icon]:hidden">
-                            {item.label}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+                          <Link
+                            href={item.href as Route}
+                            className="flex w-full items-center justify-start gap-4"
+                          >
+                            <Icon
+                              name={item.icon}
+                              size={22}
+                              className="shrink-0"
+                            />
+                            <span className="truncate group-data-[collapsible=icon]:hidden">
+                              {item.label}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
         </SidebarContent>
         <SidebarFooter className="p-4 border-t border-border">
           <div className="flex flex-col gap-3">

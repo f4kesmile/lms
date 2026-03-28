@@ -182,7 +182,9 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                       href={
                         (user.role === "mahasiswa"
                           ? "/courses"
-                          : "/admin/dashboard") as Route
+                          : user.role === "dosen"
+                            ? "/admin/teaching-schedule"
+                            : "/admin/dashboard") as Route
                       }
                       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
@@ -289,7 +291,9 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                         href={
                           (user.role === "mahasiswa"
                             ? "/courses"
-                            : "/admin/dashboard") as Route
+                            : user.role === "dosen"
+                              ? "/admin/teaching-schedule"
+                              : "/admin/dashboard") as Route
                         }
                         className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                       >
