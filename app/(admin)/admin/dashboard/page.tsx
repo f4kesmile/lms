@@ -225,7 +225,8 @@ export default function AdminDashboardPage() {
               Halo, Selamat Datang!
             </h2>
             <p className="text-muted-foreground font-medium">
-              Berikut adalah rangkuman aktivitas akademik dan mata kuliah yang Anda ampu.
+              Berikut adalah rangkuman aktivitas akademik dan mata kuliah yang
+              Anda ampu.
             </p>
           </header>
 
@@ -235,7 +236,9 @@ export default function AdminDashboardPage() {
                 <div className="size-12 rounded-2xl bg-secondary-brand/10 text-secondary-brand flex items-center justify-center font-black">
                   <Icon name="library_books" size={24} />
                 </div>
-                <span className="text-3xl font-black text-foreground">{dosenSubjects.length}</span>
+                <span className="text-3xl font-black text-foreground">
+                  {dosenSubjects.length}
+                </span>
               </div>
               <p className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-70">
                 Mata Kuliah Aktif
@@ -262,7 +265,10 @@ export default function AdminDashboardPage() {
                   <Icon name="auto_stories" size={24} />
                 </div>
                 <span className="text-3xl font-black text-foreground">
-                  {dosenSubjects.reduce((acc, s) => acc + (s._count?.meetings || 0), 0)}
+                  {dosenSubjects.reduce(
+                    (acc, s) => acc + (s._count?.meetings || 0),
+                    0,
+                  )}
                 </span>
               </div>
               <p className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-70">
@@ -328,7 +334,9 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div className="p-6">
-                      <h4 className="text-lg font-black tracking-tight mb-2 line-clamp-1">{sub.name}</h4>
+                      <h4 className="text-lg font-black tracking-tight mb-2 line-clamp-1">
+                        {sub.name}
+                      </h4>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {sub.classes.map((cl) => (
                           <span
@@ -344,7 +352,9 @@ export default function AdminDashboardPage() {
                           <Icon name="description" size={14} />
                           {sub._count?.meetings || 0} Sesi
                         </div>
-                        <Link href={`/admin/courses/${sub.id}/meetings` as Route}>
+                        <Link
+                          href={`/admin/courses/${sub.id}/meetings` as Route}
+                        >
                           <Button
                             variant="outline"
                             className="rounded-xl font-black text-[10px] uppercase tracking-widest px-4 h-9 hover:bg-secondary-brand hover:text-white transition-all border-secondary-brand/20"
