@@ -9,7 +9,7 @@ import {
   type ActiveTab,
   type ClassItem,
   type SubjectCourseItem,
-} from "@/app/(admin)/admin/courses/page";
+} from "@/app/(admin)/admin/courses/_lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
