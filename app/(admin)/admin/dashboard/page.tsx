@@ -1,25 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { getInitials, formatDate, cn } from "@/lib/utils/index";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Icon } from "@/components/ui/icon";
+import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -29,7 +13,25 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { toast } from "sonner";
+
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getDosenSubjectsAction } from "@/lib/actions/dosen";
+import { cn, formatDate, getInitials } from "@/lib/utils/index";
 
 type CustomTooltipProps = {
   active?: boolean;
@@ -316,9 +318,12 @@ export default function AdminDashboardPage() {
                   >
                     <div className="h-40 bg-muted relative">
                       {sub.bannerImage ? (
-                        <img
+                        <Image
                           src={sub.bannerImage}
                           alt={sub.name}
+                          fill
+                          unoptimized
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                       ) : (

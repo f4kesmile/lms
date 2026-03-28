@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
-import { SITE_CONFIG } from "@/lib/constants";
 import { Icon } from "@/components/ui/icon";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export default function AboutPage() {
   return (

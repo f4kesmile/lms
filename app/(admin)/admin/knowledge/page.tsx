@@ -1,10 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import type { Route } from "next";
 import Link from "next/link";
+import { Suspense, useEffect, useMemo, useState } from "react";
+
+import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
+import { MaterialDialog } from "@/app/(admin)/admin/knowledge/_components/Dialog";
+import { Filters } from "@/app/(admin)/admin/knowledge/_components/Filters";
+import { List } from "@/app/(admin)/admin/knowledge/_components/List";
+import { Table } from "@/app/(admin)/admin/knowledge/_components/Table";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,11 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Filters } from "./_components/Filters";
-import { Table } from "./_components/Table";
-import { List } from "./_components/List";
-import { MaterialDialog } from "./_components/Dialog";
-import { DataViewportControls } from "../_components/Controls";
+import { Icon } from "@/components/ui/icon";
 
 export type Material = {
   id: string;
@@ -145,7 +145,7 @@ export default function KnowledgeAdminPage() {
   }
 
   useEffect(() => {
-    loadData("", selectedCourseId);
+    loadData();
     loadCourses();
   }, []);
 
@@ -266,7 +266,7 @@ export default function KnowledgeAdminPage() {
             variant="outline"
             size="sm"
             className="font-bold border border-border text-primary hover:bg-primary/5 shadow-sm  transition-all rounded-md bg-card"
-            onClick={() => loadData(search)}
+            onClick={() => loadData(search, selectedCourseId)}
           >
             <Icon name="sync" size={16} className="sm:mr-1" />
             <span className="hidden sm:inline">Sync Data</span>
@@ -361,8 +361,12 @@ export default function KnowledgeAdminPage() {
         >
           <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black uppercase">{notice.title}</DialogTitle>
-              <DialogDescription className="font-bold text-muted-foreground">{notice.message}</DialogDescription>
+              <DialogTitle className="text-xl font-black uppercase">
+                {notice.title}
+              </DialogTitle>
+              <DialogDescription className="font-bold text-muted-foreground">
+                {notice.message}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end pt-4">
               <Button

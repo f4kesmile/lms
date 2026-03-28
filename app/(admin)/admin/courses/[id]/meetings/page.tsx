@@ -1,19 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Prisma } from "@prisma/client";
 import type { Route } from "next";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { MeetingEditor } from "@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
+import { Icon } from "@/components/ui/icon";
 import {
-  getSubjectMeetingsAction,
   deleteSubjectMeetingAction,
+  getSubjectMeetingsAction,
 } from "@/lib/actions/meeting";
-import { MeetingEditor } from "./_components/MeetingEditor";
-import { Prisma } from "@prisma/client";
 
 export type SubjectMeetingItem = {
   id: string;
@@ -140,9 +142,12 @@ export default function SubjectMeetingsPage() {
             <div className="bg-card rounded-[22px] p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
               <div className="size-24 rounded-2xl bg-muted overflow-hidden border-2 border-primary/20 shadow-inner">
                 {subject.bannerImage ? (
-                  <img
+                  <Image
                     src={subject.bannerImage}
                     alt={subject.name}
+                    width={96}
+                    height={96}
+                    unoptimized
                     className="size-full object-cover"
                   />
                 ) : (

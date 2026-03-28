@@ -1,12 +1,13 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import Link from "next/link";
 import type { Route } from "next";
 import Image from "next/image";
-import { prisma } from "@/lib/core/db";
-import { StatBox } from "@/components/ui/statbox";
+import Link from "next/link";
+
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import { SectionHeader } from "@/components/ui/header";
 import { Icon } from "@/components/ui/icon";
+import { StatBox } from "@/components/ui/statbox";
+import { prisma } from "@/lib/core/db";
 
 export default async function HomePage() {
   const [userCount, classCount, materialCount] = await Promise.all([

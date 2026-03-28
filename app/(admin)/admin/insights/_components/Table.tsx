@@ -1,5 +1,10 @@
 "use client";
 
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table as UITable,
   TableBody,
@@ -8,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Icon } from "@/components/ui/icon";
 import { formatDateTime, getInitials } from "@/lib/utils/index";
 
 interface Interaction {

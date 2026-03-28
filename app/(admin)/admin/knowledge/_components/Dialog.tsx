@@ -1,7 +1,7 @@
 "use client";
 
-import { type Material } from "../page";
-
+import { type Material } from "@/app/(admin)/admin/knowledge/page";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -66,8 +65,8 @@ export function MaterialDialog({
             {editingMaterial ? "Edit Materi" : "Upload Materi Baru"}
           </DialogTitle>
           <DialogDescription className="text-sm font-medium">
-            Materi ini akan dipecah menjadi chunk dan dipakai sebagai sumber
-            AI RAG.
+            Materi ini akan dipecah menjadi chunk dan dipakai sebagai sumber AI
+            RAG.
           </DialogDescription>
         </DialogHeader>
 

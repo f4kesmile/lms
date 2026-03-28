@@ -1,24 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { CourseStatus } from "@prisma/client";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CourseStatus } from "@prisma/client";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+
+import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
+import { CourseDialogs } from "@/app/(admin)/admin/courses/_components/Dialogs";
+import { Filters } from "@/app/(admin)/admin/courses/_components/Filters";
+import { List } from "@/app/(admin)/admin/courses/_components/List";
+import { Table } from "@/app/(admin)/admin/courses/_components/Table";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import {
-  createAcademicYearAction,
-  createClassAction,
-  createSubjectCourseAction,
-  deleteAcademicYearAction,
-  deleteClassAction,
-  deleteSubjectCourseAction,
-  setAcademicYearActiveAction,
-  updateClassAction,
-  updateSubjectCourseAction,
-  updateAcademicYearAction,
-} from "@/lib/actions/course";
-import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,12 +20,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-import { Filters } from "./_components/Filters";
-import { Table } from "./_components/Table";
-import { List } from "./_components/List";
-import { CourseDialogs } from "./_components/Dialogs";
-import { DataViewportControls } from "../_components/Controls";
+import { Icon } from "@/components/ui/icon";
+import {
+  createAcademicYearAction,
+  createClassAction,
+  createSubjectCourseAction,
+  deleteAcademicYearAction,
+  deleteClassAction,
+  deleteSubjectCourseAction,
+  setAcademicYearActiveAction,
+  updateAcademicYearAction,
+  updateClassAction,
+  updateSubjectCourseAction,
+} from "@/lib/actions/course";
 
 export type ActiveTab = "mataKuliah" | "kelas" | "years";
 
@@ -214,46 +214,32 @@ export default function AdminCoursesPage() {
       .catch(() => setActiveYearLabel(null));
   }, []);
 
-  useEffect(() => {
-    if (!roleChecked) return;
-    void loadData();
-  }, [activeTab, roleChecked]);
-
-  useEffect(() => {
-    if (!roleChecked) return;
-    void loadMeta();
-  }, [roleChecked]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab, searchQuery, rowsPerPage]);
-
-  async function fetchClasses() {
+  const fetchClasses = useCallback(async () => {
     const res = await fetch("/api/classes?limit=100");
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message || "Gagal mengambil data kelas");
     return data.classes ?? [];
-  }
+  }, []);
 
-  async function fetchSubjectCourses() {
+  const fetchSubjectCourses = useCallback(async () => {
     const res = await fetch("/api/kb/courses");
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data?.message || "Gagal mengambil data mata kuliah");
     }
     return data.courses ?? [];
-  }
+  }, []);
 
-  async function fetchAcademicYears() {
+  const fetchAcademicYears = useCallback(async () => {
     const res = await fetch("/api/academic-years?limit=100");
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data?.message || "Gagal mengambil data tahun akademik");
     }
     return data.years ?? [];
-  }
+  }, []);
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       if (activeTab === "mataKuliah") {
@@ -273,9 +259,9 @@ export default function AdminCoursesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [activeTab, fetchAcademicYears, fetchClasses, fetchSubjectCourses]);
 
-  async function loadMeta() {
+  const loadMeta = useCallback(async () => {
     try {
       const [yData, tRes] = await Promise.all([
         fetchAcademicYears(),
@@ -286,7 +272,21 @@ export default function AdminCoursesPage() {
     } catch {
       setMeta({ years: [], teachers: [] });
     }
-  }
+  }, [fetchAcademicYears]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+    void loadData();
+  }, [loadData, roleChecked]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+    void loadMeta();
+  }, [loadMeta, roleChecked]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, searchQuery, rowsPerPage]);
 
   function resetClassForm() {
     setEditingClass(null);

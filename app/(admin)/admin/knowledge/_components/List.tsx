@@ -1,13 +1,12 @@
 "use client";
 
-import { type Material } from "../page";
-
-import { Card } from "@/components/ui/card";
+import { type Material } from "@/app/(admin)/admin/knowledge/page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
+import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/utils/index";
 
 interface ListProps {
@@ -49,7 +48,11 @@ export function List({
           }
           action={
             !search ? (
-              <Button size="sm" onClick={openCreateModal} className="border border-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all ">
+              <Button
+                size="sm"
+                onClick={openCreateModal}
+                className="border border-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all "
+              >
                 <Icon name="add" size={16} className="mr-1" /> Upload Materi
               </Button>
             ) : undefined
@@ -88,17 +91,17 @@ export function List({
                   {item._count.chunks}
                 </span>
                 <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                   Chunks
+                  Chunks
                 </span>
               </div>
             </div>
-            
+
             <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
               <p className="text-[10px] font-mono font-bold text-muted-foreground flex items-center gap-1.5 opacity-80">
                 <span className="size-2 rounded-full border-border border bg-primary shadow-sm" />
                 DIPERBARUI: {formatDate(item.updatedAt)}
               </p>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
