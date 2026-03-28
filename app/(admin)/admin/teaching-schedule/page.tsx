@@ -10,7 +10,13 @@ import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
 type DayOfWeek =
@@ -34,7 +40,9 @@ const DAY_OPTIONS: Array<{ value: DayOfWeek; label: string }> = [
 
 function dayLabel(day: DayOfWeek | null) {
   if (!day) return "Belum diatur";
-  return DAY_OPTIONS.find((item) => item.value === day)?.label || "Belum diatur";
+  return (
+    DAY_OPTIONS.find((item) => item.value === day)?.label || "Belum diatur"
+  );
 }
 
 type WeekResponse = {
@@ -147,7 +155,12 @@ export default function TeachingSchedulePage() {
 
     return items.filter((item) => {
       const teacherName = item.assignedTeacher?.name || "";
-      const haystack = [item.subject.code, item.subject.name, item.class.name, teacherName]
+      const haystack = [
+        item.subject.code,
+        item.subject.name,
+        item.class.name,
+        teacherName,
+      ]
         .join(" ")
         .toLowerCase();
 
@@ -157,7 +170,9 @@ export default function TeachingSchedulePage() {
 
   function toggleExpandCard(id: string) {
     setExpandedCardIds((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id],
     );
   }
 
@@ -209,10 +224,13 @@ export default function TeachingSchedulePage() {
         );
         setItems(data.schedules || []);
         setDraftById(
-          (data.schedules || []).reduce<Record<string, ScheduleDraft>>((acc, item) => {
-            acc[item.id] = toDraft(item);
-            return acc;
-          }, {}),
+          (data.schedules || []).reduce<Record<string, ScheduleDraft>>(
+            (acc, item) => {
+              acc[item.id] = toDraft(item);
+              return acc;
+            },
+            {},
+          ),
         );
       })
       .catch(() => {
@@ -242,7 +260,8 @@ export default function TeachingSchedulePage() {
           classId: item.class.id,
           subjectId: item.subject.id,
           dayOfWeek: draft.dayOfWeek === "none" ? null : draft.dayOfWeek,
-          teacherUserId: draft.teacherUserId === "none" ? null : draft.teacherUserId,
+          teacherUserId:
+            draft.teacherUserId === "none" ? null : draft.teacherUserId,
           allowCrossClassTeacher,
           startTime: draft.startTime || null,
           endTime: draft.endTime || null,
@@ -264,7 +283,9 @@ export default function TeachingSchedulePage() {
           .map((item) => `${item.className}: ${item.teacherName}`)
           .join("\n");
 
-        toast.warning(payload.message || "Ada pengampu berbeda pada mata kuliah ini.");
+        toast.warning(
+          payload.message || "Ada pengampu berbeda pada mata kuliah ini.",
+        );
 
         const proceed = window.confirm(
           `${payload.message || "Ada pengampu berbeda pada mata kuliah ini."}\n\n${conflictText ? `Detail konflik:\n${conflictText}\n\n` : ""}Tekan OK jika tetap ingin simpan dengan pengampu berbeda per kelas.`,
@@ -288,7 +309,8 @@ export default function TeachingSchedulePage() {
             ? {
                 ...row,
                 schedule: {
-                  dayOfWeek: draft.dayOfWeek === "none" ? null : draft.dayOfWeek,
+                  dayOfWeek:
+                    draft.dayOfWeek === "none" ? null : draft.dayOfWeek,
                   startTime: draft.startTime || null,
                   endTime: draft.endTime || null,
                   room: draft.room || null,
@@ -296,8 +318,9 @@ export default function TeachingSchedulePage() {
                 assignedTeacher:
                   draft.teacherUserId === "none"
                     ? null
-                    : teachers.find((teacher) => teacher.id === draft.teacherUserId) ||
-                      row.assignedTeacher,
+                    : teachers.find(
+                        (teacher) => teacher.id === draft.teacherUserId,
+                      ) || row.assignedTeacher,
               }
             : row,
         ),
@@ -305,7 +328,9 @@ export default function TeachingSchedulePage() {
 
       toast.success("Jadwal berhasil disimpan");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Gagal menyimpan jadwal");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menyimpan jadwal",
+      );
     } finally {
       setSavingId(null);
     }
@@ -315,17 +340,26 @@ export default function TeachingSchedulePage() {
     <AdminLayout title="Jadwal Mengajar">
       <div className="space-y-6">
         <header className="space-y-1">
-          <h2 className="text-2xl font-black tracking-tight">Jadwal Pengampu</h2>
+          <h2 className="text-2xl font-black tracking-tight">
+            Jadwal Pengampu
+          </h2>
           <p className="text-sm font-medium text-muted-foreground">
-            Ringkasan jadwal minggu berjalan, dosen pengampu, dan daftar mahasiswa per mata kuliah.
+            Ringkasan jadwal minggu berjalan, dosen pengampu, dan daftar
+            mahasiswa per mata kuliah.
           </p>
           {activeYearLabel && (
-            <Badge variant="outline" className="mt-2 font-black tracking-widest">
+            <Badge
+              variant="outline"
+              className="mt-2 font-black tracking-widest"
+            >
               Tahun Aktif: {activeYearLabel}
             </Badge>
           )}
           {weekLabel && (
-            <Badge variant="outline" className="mt-2 font-black tracking-widest">
+            <Badge
+              variant="outline"
+              className="mt-2 font-black tracking-widest"
+            >
               Minggu Aktif: {weekLabel}
             </Badge>
           )}
@@ -394,7 +428,8 @@ export default function TeachingSchedulePage() {
             />
           </div>
           <p className="mt-2 text-xs font-medium text-muted-foreground">
-            Menampilkan {filteredItems.length} dari {items.length} kartu mata kuliah.
+            Menampilkan {filteredItems.length} dari {items.length} kartu mata
+            kuliah.
           </p>
         </section>
 
@@ -411,12 +446,15 @@ export default function TeachingSchedulePage() {
               size={44}
               className="mx-auto mb-3 text-muted-foreground/40"
             />
-            <p className="text-sm font-bold text-muted-foreground">Tidak ada hasil yang cocok.</p>
+            <p className="text-sm font-bold text-muted-foreground">
+              Tidak ada hasil yang cocok.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredItems.map((item) => {
-              const showDetails = viewMode === "detail" || expandedCardIds.includes(item.id);
+              const showDetails =
+                viewMode === "detail" || expandedCardIds.includes(item.id);
 
               return (
                 <Card
@@ -424,7 +462,10 @@ export default function TeachingSchedulePage() {
                   className="rounded-2xl border-border/60 bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-md space-y-4"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <Badge variant="outline" className="font-black tracking-wider">
+                    <Badge
+                      variant="outline"
+                      className="font-black tracking-wider"
+                    >
                       {item.subject.code}
                     </Badge>
                     <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -567,7 +608,9 @@ export default function TeachingSchedulePage() {
                         disabled={savingId === item.id}
                         onClick={() => void saveSchedule(item)}
                       >
-                        {savingId === item.id ? "Menyimpan..." : "Simpan Jadwal"}
+                        {savingId === item.id
+                          ? "Menyimpan..."
+                          : "Simpan Jadwal"}
                       </Button>
                     </div>
                   )}
@@ -591,7 +634,9 @@ export default function TeachingSchedulePage() {
 
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-xs font-bold text-muted-foreground flex items-center justify-between">
                     <span>Update minggu ini</span>
-                    <span className="text-foreground">{item.subject.meetingsUpdatedThisWeek} sesi</span>
+                    <span className="text-foreground">
+                      {item.subject.meetingsUpdatedThisWeek} sesi
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -603,7 +648,12 @@ export default function TeachingSchedulePage() {
                     >
                       {showDetails ? "Sembunyikan Detail" : "Lihat Detail"}
                     </Button>
-                    <Link href={`/admin/courses/${item.subject.id}/meetings` as Route} className="flex-1">
+                    <Link
+                      href={
+                        `/admin/courses/${item.subject.id}/meetings` as Route
+                      }
+                      className="flex-1"
+                    >
                       <Button
                         variant="outline"
                         className="w-full rounded-xl font-black text-[11px] uppercase tracking-widest"
@@ -620,13 +670,17 @@ export default function TeachingSchedulePage() {
                           <p className="text-[11px] font-black uppercase tracking-widest text-foreground">
                             Preview Materi
                           </p>
-                          <Badge variant="outline" className="font-black text-[10px]">
+                          <Badge
+                            variant="outline"
+                            className="font-black text-[10px]"
+                          >
                             {item.subject.latestMeetings.length} terbaru
                           </Badge>
                         </div>
                         {item.subject.latestMeetings.length === 0 ? (
                           <p className="mt-2 text-xs font-medium text-muted-foreground">
-                            Belum ada materi sesi. Tambahkan sesi agar mahasiswa menerima konten.
+                            Belum ada materi sesi. Tambahkan sesi agar mahasiswa
+                            menerima konten.
                           </p>
                         ) : (
                           <div className="mt-2 space-y-2">
@@ -650,7 +704,10 @@ export default function TeachingSchedulePage() {
                         )}
                       </div>
 
-                      <details className="rounded-xl border border-border/60 bg-background/60 p-3" open={viewMode === "detail"}>
+                      <details
+                        className="rounded-xl border border-border/60 bg-background/60 p-3"
+                        open={viewMode === "detail"}
+                      >
                         <summary className="cursor-pointer list-none flex items-center justify-between gap-3">
                           <span className="text-xs font-black uppercase tracking-widest text-foreground">
                             Mahasiswa di Mata Kuliah Ini
@@ -677,7 +734,9 @@ export default function TeachingSchedulePage() {
                                   {student.email}
                                 </p>
                                 <div className="mt-1 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                  <span>{student.identifier || "NPM belum diisi"}</span>
+                                  <span>
+                                    {student.identifier || "NPM belum diisi"}
+                                  </span>
                                   <span>{student.progress}% progres</span>
                                 </div>
                               </div>
