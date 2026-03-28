@@ -6,10 +6,13 @@ import { Dispatch, SetStateAction } from "react";
 
 import {
   type AcademicYear,
+  type ClassForm,
   type ClassItem,
   type SubjectCourseItem,
+  type SubjectForm,
   type Teacher,
-} from "@/app/(admin)/admin/courses/page";
+  type YearForm,
+} from "@/app/(admin)/admin/courses/_lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,18 +34,8 @@ interface CourseDialogsProps {
   showClassModal: boolean;
   setShowClassModal: (open: boolean) => void;
   editingClass: ClassItem | null;
-  classForm: {
-    name: string;
-    academicYearId: string;
-    capacity: number;
-  };
-  setClassForm: Dispatch<
-    SetStateAction<{
-      name: string;
-      academicYearId: string;
-      capacity: number;
-    }>
-  >;
+  classForm: ClassForm;
+  setClassForm: Dispatch<SetStateAction<ClassForm>>;
   teachers: Teacher[];
   years: AcademicYear[];
   onClassSubmit: (e: React.FormEvent) => Promise<void>;
@@ -50,45 +43,15 @@ interface CourseDialogsProps {
   showSubjectModal: boolean;
   setShowSubjectModal: (open: boolean) => void;
   editingSubject: SubjectCourseItem | null;
-  subjectForm: {
-    code: string;
-    title: string;
-    description: string;
-    learningOutcomes: string;
-    status: CourseStatus;
-    bannerImage: string | null;
-    teacherIds: string[];
-  };
-  setSubjectForm: Dispatch<
-    SetStateAction<{
-      code: string;
-      title: string;
-      description: string;
-      learningOutcomes: string;
-      status: CourseStatus;
-      bannerImage: string | null;
-      teacherIds: string[];
-    }>
-  >;
+  subjectForm: SubjectForm;
+  setSubjectForm: Dispatch<SetStateAction<SubjectForm>>;
   onSubjectSubmit: (e: React.FormEvent) => Promise<void>;
 
   showYearModal: boolean;
   setShowYearModal: (open: boolean) => void;
   editingYear: AcademicYear | null;
-  yearForm: {
-    name: string;
-    fromYear: string;
-    toYear: string;
-    isCurrent: boolean;
-  };
-  setYearForm: Dispatch<
-    SetStateAction<{
-      name: string;
-      fromYear: string;
-      toYear: string;
-      isCurrent: boolean;
-    }>
-  >;
+  yearForm: YearForm;
+  setYearForm: Dispatch<SetStateAction<YearForm>>;
   onYearSubmit: (e: React.FormEvent) => Promise<void>;
 
   loading: boolean;

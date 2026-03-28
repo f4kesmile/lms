@@ -1,6 +1,6 @@
 "use client";
 
-import { type ActiveTab } from "@/app/(admin)/admin/courses/page";
+import { type ActiveTab } from "@/app/(admin)/admin/courses/_lib/types";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";

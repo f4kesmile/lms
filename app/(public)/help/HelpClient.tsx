@@ -1,92 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
+import { useHelpFaqs } from "@/app/(public)/help/_hooks/useHelpFaqs";
+import { HELP_CATEGORIES } from "@/app/(public)/help/_lib/constants";
 import { Icon } from "@/components/ui/icon";
 import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-type FaqItem = {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-};
-
-const helpCategories = [
-  {
-    icon: "person",
-    title: "Akun & Profil",
-    desc: "Masalah login, ganti password, verifikasi email, dan pengaturan profil pengguna.",
-    link: "Lihat Artikel →",
-  },
-  {
-    icon: "build",
-    title: "Masalah Teknis",
-    desc: "Error sistem, kendala browser, aplikasi mobile, dan akses konten video pembelajaran.",
-    link: "Lihat Artikel →",
-  },
-  {
-    icon: "school",
-    title: "Akademik",
-    desc: "Cara pengumpulan tugas, kuis online, melihat nilai, dan interaksi di forum diskusi.",
-    link: "Lihat Artikel →",
-  },
-  {
-    icon: "payments",
-    title: "Pembayaran",
-    desc: "Informasi UKT, cicilan biaya, beasiswa, dan validasi bukti bayar otomatis.",
-    link: "Lihat Artikel →",
-  },
-];
-
 export default function HelpClient() {
-  const [faqs, setFaqs] = useState<FaqItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [openId, setOpenId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/faqs")
-      .then((res) => res.json())
-      .then((data) => {
-        setFaqs(data.faqs || []);
-        setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
-  }, []);
-
-  const toggleFaq = (id: string) => {
-    setOpenId((prev) => (prev === id ? null : id));
-  };
-
-  const defaultFaqs = [
-    {
-      id: "d1",
-      question: "Bagaimana cara reset password jika saya lupa?",
-      answer:
-        'Anda dapat menekan tombol "Lupa Password" pada halaman login. Sistem akan mengirimkan link reset ke email institusi yang terdaftar. Pastikan cek folder spam jika tidak menemukannya di inbox.',
-    },
-    {
-      id: "d2",
-      question: "Kenapa saya tidak bisa mengunggah tugas PDF?",
-      answer:
-        "Pastikan ukuran file tidak melebihi 10MB dan format yang didukung adalah PDF, DOCX, atau PPT. Coba gunakan browser versi terbaru.",
-    },
-    {
-      id: "d3",
-      question: "Kapan batas akhir pengisian KRS online?",
-      answer:
-        "Batas pengisian KRS berbeda setiap semester. Silakan lihat kalender akademik di halaman utama atau hubungi bagian akademik.",
-    },
-  ];
-
-  const displayedFaqs = faqs.length > 0 ? faqs : defaultFaqs;
+  const { isLoading, openId, displayedFaqs, toggleFaq } = useHelpFaqs();
 
   return (
     <main className="app-shell flex flex-col gap-14 pb-20">
       <section className="help-hero">
         <h1 className="text-4xl md:text-5xl font-black mb-4">
-          Apa yang bisa kami <span className="highlight text-primary">bantu?</span>
+          Apa yang bisa kami{" "}
+          <span className="highlight text-primary">bantu?</span>
         </h1>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
           Cari panduan, tutorial, dan jawaban atas pertanyaan umum seputar
@@ -115,7 +43,7 @@ export default function HelpClient() {
       <section className="flex flex-col gap-6">
         <h2 className="text-2xl font-black">Kategori Bantuan</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {helpCategories.map((cat) => (
+          {HELP_CATEGORIES.map((cat) => (
             <div
               key={cat.title}
               className="neo-card flex flex-col items-start gap-3 p-6 bg-card border border-border rounded-xl transition-all hover:border-primary hover:-translate-y-1"
@@ -146,7 +74,9 @@ export default function HelpClient() {
         </div>
 
         {isLoading ? (
-          <p className="text-center text-muted-foreground">Memuat pertanyaan...</p>
+          <p className="text-center text-muted-foreground">
+            Memuat pertanyaan...
+          </p>
         ) : (
           <div className="flex flex-col gap-3 max-w-3xl mx-auto w-full">
             {displayedFaqs.map((faq) => {
@@ -156,7 +86,7 @@ export default function HelpClient() {
                   key={faq.id}
                   className={cn(
                     "rounded-xl border border-border bg-card overflow-hidden transition-colors",
-                    isOpen && "border-primary"
+                    isOpen && "border-primary",
                   )}
                 >
                   <button
@@ -170,7 +100,7 @@ export default function HelpClient() {
                       size={24}
                       className={cn(
                         "text-muted-foreground transition-transform duration-200",
-                        isOpen && "rotate-180 text-primary"
+                        isOpen && "rotate-180 text-primary",
                       )}
                     />
                   </button>
