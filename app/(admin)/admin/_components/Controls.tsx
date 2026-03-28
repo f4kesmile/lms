@@ -1,7 +1,7 @@
 "use client";
 
-import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils/index";
 
 interface DataViewportControlsProps {

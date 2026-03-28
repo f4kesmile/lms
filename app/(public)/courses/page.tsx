@@ -1,8 +1,8 @@
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { prisma } from "@/lib/core/db";
-import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
+import { Navbar } from "@/components/layout/Navbar";
 import CourseCatalogBrowser from "@/features/courses/Catalog";
+import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
+import { prisma } from "@/lib/core/db";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 

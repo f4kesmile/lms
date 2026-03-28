@@ -1,10 +1,10 @@
 "use client";
 
+import { type ActiveTab } from "@/app/(admin)/admin/courses/page";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/index";
-import { type ActiveTab } from "../page";
 
 interface FiltersProps {
   activeTab: ActiveTab;
@@ -37,7 +37,9 @@ export function Filters({
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Total Mata Kuliah
               </p>
-              <p className="text-2xl md:text-3xl font-black tracking-tight">{subjectCoursesCount}</p>
+              <p className="text-2xl md:text-3xl font-black tracking-tight">
+                {subjectCoursesCount}
+              </p>
             </div>
           </div>
         </Card>
@@ -50,13 +52,19 @@ export function Filters({
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Total Kelas
               </p>
-              <p className="text-2xl md:text-3xl font-black tracking-tight">{classesCount}</p>
+              <p className="text-2xl md:text-3xl font-black tracking-tight">
+                {classesCount}
+              </p>
             </div>
           </div>
         </Card>
         <div className="flex items-center justify-end">
           <div className="relative w-full lg:max-w-sm">
-            <Icon name="search" size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Icon
+              name="search"
+              size={20}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

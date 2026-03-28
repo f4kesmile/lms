@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
 

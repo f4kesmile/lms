@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
 import type { Route } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { prisma } from "@/lib/core/db";
 import {

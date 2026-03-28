@@ -1,13 +1,12 @@
 "use client";
 
-import { type Material } from "../page";
-
-import { Icon } from "@/components/ui/icon";
+import { type Material } from "@/app/(admin)/admin/knowledge/page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Table as UITable,
   TableBody,
@@ -88,8 +87,13 @@ export function Table({
                     }
                     action={
                       !search ? (
-                        <Button size="sm" onClick={openCreateModal} className="border border-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all ">
-                          <Icon name="add" size={16} className="mr-1" /> Upload Materi
+                        <Button
+                          size="sm"
+                          onClick={openCreateModal}
+                          className="border border-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all "
+                        >
+                          <Icon name="add" size={16} className="mr-1" /> Upload
+                          Materi
                         </Button>
                       ) : undefined
                     }

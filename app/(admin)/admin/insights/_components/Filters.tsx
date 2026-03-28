@@ -1,8 +1,8 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
+import { Input } from "@/components/ui/input";
 
 interface InsightSummary {
   totalTurns: number;

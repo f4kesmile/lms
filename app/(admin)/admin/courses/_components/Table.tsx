@@ -1,5 +1,21 @@
 "use client";
 
+import type { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  type AcademicYear,
+  type ActiveTab,
+  type ClassItem,
+  type SubjectCourseItem,
+} from "@/app/(admin)/admin/courses/page";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table as UITable,
   TableBody,
@@ -8,22 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Link from "next/link";
-import type { Route } from "next";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Icon } from "@/components/ui/icon";
-import { cn } from "@/lib/utils/index";
 import { formatDateRange } from "@/lib/utils/date";
-import {
-  type ActiveTab,
-  type ClassItem,
-  type SubjectCourseItem,
-  type AcademicYear,
-} from "../page";
+import { cn } from "@/lib/utils/index";
 
 interface TableProps {
   activeTab: ActiveTab;
@@ -160,7 +162,14 @@ export function Table({
                               <div className="flex items-center gap-4">
                                 {subject.bannerImage ? (
                                   <div className="size-11 shrink-0 rounded-lg overflow-hidden border border-border bg-muted shadow-sm">
-                                    <img src={subject.bannerImage} alt={subject.title} className="size-full object-cover" />
+                                    <Image
+                                      src={subject.bannerImage}
+                                      alt={subject.title}
+                                      width={44}
+                                      height={44}
+                                      unoptimized
+                                      className="size-full object-cover"
+                                    />
                                   </div>
                                 ) : (
                                   <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary shadow-sm">
@@ -182,8 +191,8 @@ export function Table({
                               <div className="flex -space-x-2 overflow-hidden">
                                 {subject.teachers.length > 0 ? (
                                   subject.teachers.map((t) => (
-                                    <div 
-                                      key={t.user.id} 
+                                    <div
+                                      key={t.user.id}
                                       className="size-8 rounded-full border-2 border-background bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-1 ring-border/20"
                                       title={t.user.name}
                                     >
@@ -191,7 +200,9 @@ export function Table({
                                     </div>
                                   ))
                                 ) : (
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">N/A</span>
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">
+                                    N/A
+                                  </span>
                                 )}
                               </div>
                             </TableCell>
@@ -236,9 +247,7 @@ export function Table({
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <Badge
-                                  className="bg-primary/10 text-primary border border-border shadow-sm font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-sm"
-                                >
+                                <Badge className="bg-primary/10 text-primary border border-border shadow-sm font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-sm">
                                   {classItem.academicYear.name}
                                 </Badge>
                               </TableCell>
@@ -283,7 +292,11 @@ export function Table({
                               <TableCell className="text-center">
                                 {year.isCurrent ? (
                                   <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-sm bg-primary/10 border border-border text-primary shadow-sm w-max mx-auto">
-                                    <Icon name="check_circle" size={14} className="fill-primary/20" />
+                                    <Icon
+                                      name="check_circle"
+                                      size={14}
+                                      className="fill-primary/20"
+                                    />
                                     <span className="text-[10px] font-black uppercase tracking-widest leading-none">
                                       TAHUN AKTIF
                                     </span>
@@ -303,28 +316,30 @@ export function Table({
                           );
                         })()}
                   <TableCell className="sticky right-0 z-10 bg-card px-6 py-4 text-right transition-colors group-hover:bg-muted/50">
-                      <div className="flex items-center justify-end gap-2">
-                        {activeTab === "mataKuliah" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                            asChild
-                            title="Kelola Sesi Pertemuan"
-                          >
-                            <Link href={`/admin/courses/${item.id}/meetings` as Route}>
-                              <Icon name="history_edu" size={16} />
-                            </Link>
-                          </Button>
-                        )}
+                    <div className="flex items-center justify-end gap-2">
+                      {activeTab === "mataKuliah" && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                          onClick={() => onEdit(item)}
+                          className="h-9 w-9 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                          asChild
+                          title="Kelola Sesi Pertemuan"
                         >
-                          <Icon name="edit" size={16} />
+                          <Link
+                            href={`/admin/courses/${item.id}/meetings` as Route}
+                          >
+                            <Icon name="history_edu" size={16} />
+                          </Link>
                         </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                        onClick={() => onEdit(item)}
+                      >
+                        <Icon name="edit" size={16} />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

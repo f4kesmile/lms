@@ -1,11 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+
+import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
+import { Filters } from "@/app/(admin)/admin/insights/_components/Filters";
+import { List } from "@/app/(admin)/admin/insights/_components/List";
+import { Table } from "@/app/(admin)/admin/insights/_components/Table";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Filters } from "./_components/Filters";
-import { Table } from "./_components/Table";
-import { List } from "./_components/List";
-import { DataViewportControls } from "../_components/Controls";
 
 type InsightSummary = {
   totalTurns: number;

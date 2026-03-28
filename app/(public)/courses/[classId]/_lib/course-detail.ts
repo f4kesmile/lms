@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/core/db";
 import { getCurrentUserIdFromCookie } from "@/lib/auth";
+import { prisma } from "@/lib/core/db";
 
 export type CourseSubjectView = {
   id: string;

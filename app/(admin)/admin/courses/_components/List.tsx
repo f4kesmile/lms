@@ -1,21 +1,23 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
 import type { Route } from "next";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Icon } from "@/components/ui/icon";
-import { cn } from "@/lib/utils/index";
-import { formatDateRange } from "@/lib/utils/date";
+import Image from "next/image";
+import Link from "next/link";
+
 import {
+  type AcademicYear,
   type ActiveTab,
   type ClassItem,
   type SubjectCourseItem,
-  type AcademicYear,
-} from "../page";
+} from "@/app/(admin)/admin/courses/page";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateRange } from "@/lib/utils/date";
+import { cn } from "@/lib/utils/index";
 
 interface ListProps {
   activeTab: ActiveTab;
@@ -82,7 +84,14 @@ export function List({
                       <div className="flex items-start justify-between gap-4">
                         {subject.bannerImage ? (
                           <div className="size-16 shrink-0 rounded-xl overflow-hidden border border-border shadow-sm">
-                            <img src={subject.bannerImage} alt={subject.title} className="size-full object-cover" />
+                            <Image
+                              src={subject.bannerImage}
+                              alt={subject.title}
+                              width={64}
+                              height={64}
+                              unoptimized
+                              className="size-full object-cover"
+                            />
                           </div>
                         ) : (
                           <div className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-border bg-primary/10 text-primary shadow-sm">
@@ -97,7 +106,9 @@ export function List({
                           }
                           className={cn(
                             "font-black text-[9px] px-3 py-1 border border-border rounded-sm uppercase tracking-widest shadow-sm",
-                            subject.status === "published" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                            subject.status === "published"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground",
                           )}
                         >
                           {subject.status.toUpperCase()}
@@ -114,12 +125,14 @@ export function List({
                       </div>
 
                       <div className="flex items-center gap-2 pt-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">Pengampu:</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">
+                          Pengampu:
+                        </span>
                         <div className="flex -space-x-2">
                           {subject.teachers.length > 0 ? (
                             subject.teachers.map((t) => (
-                              <div 
-                                key={t.user.id} 
+                              <div
+                                key={t.user.id}
                                 className="size-8 rounded-full border-2 border-background bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-1 ring-border/10"
                                 title={t.user.name}
                               >
@@ -127,7 +140,9 @@ export function List({
                               </div>
                             ))
                           ) : (
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Belum ada</span>
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">
+                              Belum ada
+                            </span>
                           )}
                         </div>
                       </div>
@@ -142,7 +157,10 @@ export function List({
                           </span>
                         </div>
                         <p className="text-[10px] font-bold text-muted-foreground font-mono">
-                          Updated {new Date(subject.updatedAt).toLocaleDateString("id-ID")}
+                          Updated{" "}
+                          {new Date(subject.updatedAt).toLocaleDateString(
+                            "id-ID",
+                          )}
                         </p>
                       </div>
                     </div>
@@ -157,9 +175,7 @@ export function List({
                           <div className="flex size-12 items-center justify-center rounded-md border border-border bg-secondary-brand/10 text-secondary-brand shadow-sm">
                             <Icon name="grid_view" size={24} />
                           </div>
-                          <Badge
-                            className="font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-sm border border-border bg-primary/10 text-primary shadow-sm"
-                          >
+                          <Badge className="font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-sm border border-border bg-primary/10 text-primary shadow-sm">
                             {classItem.academicYear.name}
                           </Badge>
                         </div>
@@ -168,7 +184,11 @@ export function List({
                             {classItem.name}
                           </h3>
                           <div className="mt-4 flex items-center gap-3">
-                            <Icon name="group" size={20} className="text-primary" />
+                            <Icon
+                              name="group"
+                              size={20}
+                              className="text-primary"
+                            />
                             <div className="flex-1">
                               <div className="flex justify-between items-end mb-1">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
@@ -191,8 +211,12 @@ export function List({
                           </div>
                         </div>
                         <div className="bg-primary/5 p-3 rounded-lg border border-primary/10 text-center">
-                           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Mahasiswa Terdaftar</p>
-                           <p className="text-lg font-black text-primary">{classItem.students?.length || 0} Mahasiswa</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+                            Total Mahasiswa Terdaftar
+                          </p>
+                          <p className="text-lg font-black text-primary">
+                            {classItem.students?.length || 0} Mahasiswa
+                          </p>
                         </div>
                       </div>
                     );
@@ -207,7 +231,11 @@ export function List({
                           </div>
                           {year.isCurrent && (
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border bg-primary/10 text-primary shadow-sm">
-                              <Icon name="check_circle" size={14} className="fill-primary/20" />
+                              <Icon
+                                name="check_circle"
+                                size={14}
+                                className="fill-primary/20"
+                              />
                               <span className="text-[9px] font-black uppercase tracking-widest leading-none">
                                 AKTIF
                               </span>

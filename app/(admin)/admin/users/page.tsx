@@ -1,13 +1,13 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Filters } from "./_components/Filters";
-import { Table } from "./_components/Table";
-import { List } from "./_components/List";
-import { DataViewportControls } from "../_components/Controls";
 
-import { EditUserModal } from "./_components/EditUserModal";
+import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
+import { EditUserModal } from "@/app/(admin)/admin/users/_components/EditUserModal";
+import { Filters } from "@/app/(admin)/admin/users/_components/Filters";
+import { List } from "@/app/(admin)/admin/users/_components/List";
+import { Table } from "@/app/(admin)/admin/users/_components/Table";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 type UserItem = {
   id: string;

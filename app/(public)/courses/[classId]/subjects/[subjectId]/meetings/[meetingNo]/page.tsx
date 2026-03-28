@@ -1,9 +1,10 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { prisma } from "@/lib/core/db";
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import type { Route } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { Navbar } from "@/components/layout/Navbar";
 import { Icon } from "@/components/ui/icon";
+import { prisma } from "@/lib/core/db";
 import { cn } from "@/lib/utils";
 import { renderMaterialHtml } from "@/lib/utils/material-content";
 

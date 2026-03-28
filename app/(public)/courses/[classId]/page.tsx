@@ -1,10 +1,12 @@
-import { Navbar } from "@/components/layout/Navbar";
-import Link from "next/link";
 import type { Route } from "next";
-import EnrollButton from "@/features/courses/EnrollButton";
+import Image from "next/image";
+import Link from "next/link";
+
+import { getCourseDetailView } from "@/app/(public)/courses/[classId]/_lib/course-detail";
+import { Navbar } from "@/components/layout/Navbar";
 import { Icon } from "@/components/ui/icon";
+import EnrollButton from "@/features/courses/EnrollButton";
 import { cn } from "@/lib/utils";
-import { getCourseDetailView } from "./_lib/course-detail";
 
 type CourseDetailPageProps = {
   params: Promise<{ classId: string }>;
@@ -126,9 +128,12 @@ export default async function CourseDetailPage({
                     >
                       <div className="size-20 md:size-24 shrink-0 rounded-3xl bg-muted overflow-hidden relative">
                         {sub.banner ? (
-                          <img
+                          <Image
                             src={sub.banner}
                             alt={sub.name}
+                            width={96}
+                            height={96}
+                            unoptimized
                             className="size-full object-cover transition-transform group-hover:scale-110"
                           />
                         ) : (

@@ -1,6 +1,16 @@
 "use client";
 
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table as UITable,
   TableBody,
@@ -9,17 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { getInitials, cn } from "@/lib/utils/index";
+import { cn,getInitials } from "@/lib/utils/index";
 
 type UserRole = "admin" | "dosen" | "mahasiswa";
 

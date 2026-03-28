@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SITE_CONFIG } from "@/lib/constants";
+
 import { Icon } from "@/components/ui/icon";
+import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type FaqItem = {
