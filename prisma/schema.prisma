@@ -18,6 +18,16 @@ enum CourseStatus {
     archived
 }
 
+enum DayOfWeek {
+    senin  @map("monday")
+    selasa @map("tuesday")
+    rabu   @map("wednesday")
+    kamis  @map("thursday")
+    jumat  @map("friday")
+    sabtu  @map("saturday")
+    minggu @map("sunday")
+}
+
 enum crdb_internal_region {
     aws_ap_southeast_1 @map("aws-ap-southeast-1")
 }
@@ -36,6 +46,7 @@ model User {
     updatedAt       DateTime         @updatedAt
     subjectLinks    SubjectTeacher[]
     classLinks      ClassStudent[]
+    teachingClasses ClassSubject[]
     chatSessions    ChatSession[]
     chatTurns       ChatTurn[]
     courses         Course[]
@@ -113,8 +124,14 @@ model SubjectTeacher {
 model ClassSubject {
     classId   String
     subjectId String
+    teacherUserId String?
+    dayOfWeek DayOfWeek?
+    startTime String?
+    endTime   String?
+    room      String?
     class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
     subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+    teacher   User?   @relation(fields: [teacherUserId], references: [id], onDelete: SetNull)
 
     @@id([classId, subjectId])
 }

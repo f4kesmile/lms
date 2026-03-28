@@ -36,7 +36,8 @@ export default function LoginClient() {
       setTimeout(() => {
         const role = data.user.role;
         if (role === "admin") router.push("/admin/dashboard" as Route);
-        else if (role === "dosen") router.push("/admin/dashboard" as Route);
+        else if (role === "dosen")
+          router.push("/admin/teaching-schedule" as Route);
         else router.push("/courses" as Route);
       }, 150);
     } catch (e) {

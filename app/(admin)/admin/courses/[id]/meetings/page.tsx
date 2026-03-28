@@ -49,70 +49,43 @@ export default function SubjectMeetingsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [mRes, sRes] = await Promise.all([
-      getSubjectMeetingsAction(subjectId),
-      fetch(`/api/kb/courses`).then((r) => r.json()) as Promise<{
-        courses: Array<{
-          id: string;
-          name: string;
-          code: string;
-          description: string | null;
-          bannerImage: string | null;
-          status: string;
-          credits: number;
-          teachers: Array<{ user: { id: string; name: string } }>;
-        }>;
-      }>,
-    ]);
+    try {
+      const [mRes, sRes] = await Promise.all([
+        getSubjectMeetingsAction(subjectId),
+        fetch(`/api/kb/courses`).then((r) => r.json()) as Promise<{
+          courses: Array<{
+            id: string;
+            name: string;
+            code: string;
+            description: string | null;
+            bannerImage: string | null;
+            status: string;
+            credits: number;
+            teachers: Array<{ user: { id: string; name: string } }>;
+          }>;
+        }>,
+      ]);
 
-    if (mRes.success) setMeetings(mRes.meetings || []);
+      if (mRes.success) {
+        setMeetings(mRes.meetings || []);
+      } else {
+        setMeetings([]);
+        toast.error(mRes.error || "Gagal memuat sesi");
+      }
 
-    // Find our subject in the list (quick fix without new API)
-    const currentSubject = sRes.courses?.find(
-      (c: { id: string }) => c.id === subjectId,
-    );
-    if (currentSubject) setSubject(currentSubject);
-
-    setLoading(false);
+      const currentSubject = sRes.courses?.find(
+        (c: { id: string }) => c.id === subjectId,
+      );
+      if (currentSubject) setSubject(currentSubject);
+    } finally {
+      setLoading(false);
+    }
   }, [subjectId]);
 
   useEffect(() => {
     if (!subjectId) return;
-
-    let isCancelled = false;
-
-    Promise.all([
-      getSubjectMeetingsAction(subjectId),
-      fetch(`/api/kb/courses`).then((r) => r.json()) as Promise<{
-        courses: Array<{
-          id: string;
-          name: string;
-          code: string;
-          description: string | null;
-          bannerImage: string | null;
-          status: string;
-          credits: number;
-          teachers: Array<{ user: { id: string; name: string } }>;
-        }>;
-      }>,
-    ])
-      .then(([mRes, sRes]) => {
-        if (isCancelled) return;
-
-        if (mRes.success) setMeetings(mRes.meetings || []);
-        const currentSubject = sRes.courses?.find(
-          (c: { id: string }) => c.id === subjectId,
-        );
-        if (currentSubject) setSubject(currentSubject);
-      })
-      .finally(() => {
-        if (!isCancelled) setLoading(false);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [subjectId]);
+    void loadData();
+  }, [subjectId, loadData]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus sesi pertemuan ini?")) return;
@@ -214,6 +187,21 @@ export default function SubjectMeetingsPage() {
             </div>
           </Card>
         )}
+
+        <Card className="p-5 rounded-3xl border border-border/60 bg-card/70">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm font-black uppercase tracking-widest text-foreground">
+              Mahasiswa dan preview materi tersedia di halaman Mata Kuliah Dosen.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/teaching-schedule" as Route)}
+              className="rounded-xl font-black text-[11px] uppercase tracking-widest"
+            >
+              Buka Halaman Mata Kuliah Dosen
+            </Button>
+          </div>
+        </Card>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

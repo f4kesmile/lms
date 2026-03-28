@@ -290,7 +290,11 @@ export async function GET(request: Request) {
   }
 
   const nextUrl = new URL(
-    user.role === UserRole.mahasiswa ? "/courses" : "/admin/dashboard",
+    user.role === UserRole.mahasiswa
+      ? "/courses"
+      : user.role === UserRole.dosen
+        ? "/admin/teaching-schedule"
+        : "/admin/dashboard",
     request.url
   );
   return NextResponse.redirect(nextUrl);

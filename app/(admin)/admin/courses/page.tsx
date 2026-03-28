@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CourseStatus } from "@prisma/client";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import {
@@ -128,6 +129,9 @@ const EMPTY_YEAR_FORM: YearForm = {
 };
 
 export default function AdminCoursesPage() {
+  const router = useRouter();
+  const [roleChecked, setRoleChecked] = useState(false);
+  const [activeYearLabel, setActiveYearLabel] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("years");
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [subjectCourses, setSubjectCourses] = useState<SubjectCourseItem[]>([]);
@@ -186,12 +190,40 @@ export default function AdminCoursesPage() {
   });
 
   useEffect(() => {
-    void loadData();
-  }, [activeTab]);
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role === "dosen") {
+          router.replace("/admin/teaching-schedule" as Route);
+          return;
+        }
+        setRoleChecked(true);
+      })
+      .catch(() => setRoleChecked(true));
+  }, [router]);
 
   useEffect(() => {
-    void loadMeta();
+    fetch("/api/academic-years/current")
+      .then(async (res) => {
+        if (!res.ok) {
+          setActiveYearLabel(null);
+          return;
+        }
+        const data = (await res.json()) as { name?: string };
+        setActiveYearLabel(data.name || null);
+      })
+      .catch(() => setActiveYearLabel(null));
   }, []);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+    void loadData();
+  }, [activeTab, roleChecked]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+    void loadMeta();
+  }, [roleChecked]);
 
   useEffect(() => {
     setPage(1);
@@ -551,6 +583,13 @@ export default function AdminCoursesPage() {
         }
       >
         <div className="space-y-6">
+          {activeYearLabel && (
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-primary">
+              <Icon name="calendar_month" size={14} />
+              Tahun Aktif: {activeYearLabel}
+            </div>
+          )}
+
           <Filters
             activeTab={activeTab}
             setActiveTab={setActiveTab}
