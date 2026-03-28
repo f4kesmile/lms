@@ -30,6 +30,7 @@ Dokumen ini adalah standar penamaan dan grouping untuk menjaga struktur tetap ra
 - Route-local service/data mapper: `_lib/*`
 
 Contoh:
+
 - `app/(public)/courses/[classId]/_components/*`
 - `app/(public)/courses/[classId]/_lib/*`
 
@@ -39,6 +40,7 @@ Contoh:
 - Gunakan file entrypoint yang jelas dan hindari dua implementasi aktif untuk fungsi yang sama.
 
 Contoh konsolidasi:
+
 - Canonical chatbot entrypoint: `features/chatbot/FloatingChatbot.tsx`
 - Implementasi tetap dapat diambil dari `features/chat/Chat.tsx` selama masa transisi.
 
