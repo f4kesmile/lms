@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { FloatingChatbot } from "@/features/chat/Chat";
+import { FloatingChatbot } from "@/features/chatbot/FloatingChatbot";
 
 const HIDDEN_PREFIXES = [
   "/login",

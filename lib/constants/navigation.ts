@@ -14,8 +14,8 @@ export const STUDENT_NAV_LINKS = [
 ];
 
 export const DOSEN_NAV_LINKS = [
-  { href: "/dosen/dashboard", label: "Dashboard", icon: "space_dashboard" },
-  { href: "/dosen/courses", label: "Mata Kuliah Diampu", icon: "school" },
+  { href: "/admin/dashboard", label: "Dashboard", icon: "space_dashboard" },
+  { href: "/admin/courses", label: "Mata Kuliah Diampu", icon: "school" },
 ];
 
 export const PUBLIC_NAV_LINKS = [
