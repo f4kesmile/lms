@@ -191,7 +191,8 @@ export default function SubjectMeetingsPage() {
         <Card className="p-5 rounded-3xl border border-border/60 bg-card/70">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <p className="text-sm font-black uppercase tracking-widest text-foreground">
-              Mahasiswa dan preview materi tersedia di halaman Mata Kuliah Dosen.
+              Mahasiswa dan preview materi tersedia di halaman Mata Kuliah
+              Dosen.
             </p>
             <Button
               variant="outline"

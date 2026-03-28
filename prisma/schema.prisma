@@ -122,16 +122,16 @@ model SubjectTeacher {
 }
 
 model ClassSubject {
-    classId   String
-    subjectId String
+    classId       String
+    subjectId     String
     teacherUserId String?
-    dayOfWeek DayOfWeek?
-    startTime String?
-    endTime   String?
-    room      String?
-    class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
-    subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-    teacher   User?   @relation(fields: [teacherUserId], references: [id], onDelete: SetNull)
+    dayOfWeek     DayOfWeek?
+    startTime     String?
+    endTime       String?
+    room          String?
+    class         Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+    subject       Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+    teacher       User?      @relation(fields: [teacherUserId], references: [id], onDelete: SetNull)
 
     @@id([classId, subjectId])
 }

@@ -73,7 +73,9 @@ export const AdminLayout = ({
   const sidebarTitle = isDosen
     ? `${SITE_CONFIG.name} Dosen`
     : `${SITE_CONFIG.name} Admin`;
-  const sidebarSubtitle = isDosen ? "Portal Pengajar" : SITE_CONFIG.adminSubtitle;
+  const sidebarSubtitle = isDosen
+    ? "Portal Pengajar"
+    : SITE_CONFIG.adminSubtitle;
 
   const navGroups = [
     {

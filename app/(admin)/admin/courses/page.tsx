@@ -28,7 +28,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-
 import { Filters } from "./_components/Filters";
 import { Table } from "./_components/Table";
 import { List } from "./_components/List";
@@ -495,10 +494,7 @@ export default function AdminCoursesPage() {
     if (activeTab === "kelas") {
       return q
         ? classes.filter((i) =>
-            [i.name, i.academicYear.name]
-              .join(" ")
-              .toLowerCase()
-              .includes(q),
+            [i.name, i.academicYear.name].join(" ").toLowerCase().includes(q),
           )
         : classes;
     }
@@ -544,7 +540,8 @@ export default function AdminCoursesPage() {
                       : { from: "knowledge" },
                 }}
               >
-                <Icon name="upload_file" size={16} className="sm:mr-1" /> <span className="hidden sm:inline">Upload Materi</span>
+                <Icon name="upload_file" size={16} className="sm:mr-1" />{" "}
+                <span className="hidden sm:inline">Upload Materi</span>
               </Link>
             </Button>
           )}
@@ -570,7 +567,8 @@ export default function AdminCoursesPage() {
               }
             }}
           >
-            <Icon name="add_circle" size={16} className="sm:mr-1" /> <span className="hidden sm:inline">{addButtonLabel}</span>
+            <Icon name="add_circle" size={16} className="sm:mr-1" />{" "}
+            <span className="hidden sm:inline">{addButtonLabel}</span>
           </Button>
         </div>
       }
