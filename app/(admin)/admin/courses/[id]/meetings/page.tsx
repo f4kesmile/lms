@@ -2,16 +2,24 @@
 
 import { Prisma } from "@prisma/client";
 import type { Route } from "next";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { MeetingEditor } from "@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+
+const MeetingEditor = dynamic(
+  () =>
+    import(
+      "@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor"
+    ).then((mod) => mod.MeetingEditor),
+  { ssr: false },
+);
 import {
   deleteSubjectMeetingAction,
   getSubjectMeetingsAction,
