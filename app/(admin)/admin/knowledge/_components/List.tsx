@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/utils/index";
 
 interface ListProps {
@@ -62,64 +67,100 @@ export function List({
         materials.map((item) => (
           <Card
             key={`mobile-${item.id}`}
-            className="group border border-border p-5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-md bg-card"
+            className="group relative flex flex-col overflow-hidden border border-border/30 bg-card p-6 shadow-md transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/5 rounded-2xl"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-black tracking-tight text-foreground">
-                  {item.title}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge
-                    variant="outline"
-                    className="max-w-[200px] truncate px-3 py-1 text-[9px] font-black uppercase tracking-widest border border-border shadow-sm rounded-sm"
-                  >
-                    {item.course
-                      ? `${item.course.code} - ${item.course.title}`
-                      : "Tanpa Mata Kuliah"}
-                  </Badge>
-                  <Badge
-                    variant="secondary"
-                    className="bg-primary/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-primary border border-border shadow-sm rounded-sm"
-                  >
-                    {item.module}
-                  </Badge>
+            <div className="flex flex-1 flex-col">
+              {/* Header Section (Minimal) */}
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary">
+                    <Icon name="description" size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">
+                      Material Source
+                    </span>
+                    <span className="text-xs font-bold text-foreground">
+                      {item._count.chunks} Chunks
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Minimalist Date (Top Right) */}
+                <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                   {formatDate(item.updatedAt)}
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className="text-xl font-black text-primary">
-                  {item._count.chunks}
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                  Chunks
-                </span>
+
+              {/* Title Section (Bespoke Typography) */}
+              <div className="mb-8 flex-1">
+                <h3 className="text-xl font-black leading-[1.3] tracking-tight text-foreground transition-colors group-hover:text-primary">
+                  {item.title}
+                </h3>
+              </div>
+
+              {/* Metadata Section (Non-Boxy) */}
+              <div className="grid grid-cols-1 gap-3 border-t border-border/40 pt-6">
+                <div className="flex items-start gap-3">
+                  <Icon name="auto_stories" size={16} className="mt-0.5 text-primary/40 shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                      Subject
+                    </span>
+                    <span className="truncate text-[11px] font-extrabold text-foreground/80">
+                       {item.course
+                        ? `${item.course.code} - ${item.course.title}`
+                        : "General Material"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Icon name="folder_open" size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                      Module
+                    </span>
+                    <span className="truncate text-[11px] font-extrabold text-foreground/80">
+                      {item.module}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-              <p className="text-[10px] font-mono font-bold text-muted-foreground flex items-center gap-1.5 opacity-80">
-                <span className="size-2 rounded-full border-border border bg-primary shadow-sm" />
-                DIPERBARUI: {formatDate(item.updatedAt)}
-              </p>
+            {/* Actions (Always Visible & Rounded-Square) */}
+            <div className="absolute right-4 bottom-4 flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 border border-border/40 bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:border-primary hover:text-primary transition-all rounded-lg"
+                    onClick={() => openEditModal(item)}
+                  >
+                    <Icon name="edit" size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="font-bold">
+                  Edit
+                </TooltipContent>
+              </Tooltip>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary  transition-all"
-                  onClick={() => openEditModal(item)}
-                >
-                  <Icon name="edit" size={16} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-md border border-border bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90  transition-all"
-                  onClick={() => deleteMaterial(item.id)}
-                >
-                  <Icon name="delete" size={16} />
-                </Button>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 border border-border/40 bg-destructive/5 text-destructive shadow-sm hover:bg-destructive hover:text-white transition-all rounded-lg"
+                    onClick={() => deleteMaterial(item.id)}
+                  >
+                    <Icon name="delete" size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="font-bold">
+                  Hapus
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Card>
         ))

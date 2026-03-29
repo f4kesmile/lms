@@ -24,6 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatDateRange } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/index";
 
@@ -64,7 +69,7 @@ export function Table({
                     Status
                   </TableHead>
                   <TableHead className="h-12 text-center text-[10px] font-black uppercase tracking-widest">
-                    Sesi
+                    SKS
                   </TableHead>
                 </>
               ) : activeTab === "kelas" ? (
@@ -164,7 +169,7 @@ export function Table({
                                   <div className="size-11 shrink-0 rounded-lg overflow-hidden border border-border bg-muted shadow-sm">
                                     <Image
                                       src={subject.bannerImage}
-                                      alt={subject.title}
+                                      alt={subject.name}
                                       width={44}
                                       height={44}
                                       unoptimized
@@ -178,7 +183,7 @@ export function Table({
                                 )}
                                 <div className="min-w-0">
                                   <p className="text-sm font-black tracking-tight underline decoration-primary/30 decoration-2 underline-offset-4 text-foreground">
-                                    {subject.code} - {subject.title}
+                                    {subject.code} - {subject.name}
                                   </p>
                                   <p className="truncate text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1 opacity-80">
                                     {subject.description ||
@@ -187,25 +192,25 @@ export function Table({
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex -space-x-2 overflow-hidden">
-                                {subject.teachers.length > 0 ? (
-                                  subject.teachers.map((t) => (
-                                    <div
-                                      key={t.user.id}
-                                      className="size-8 rounded-full border-2 border-background bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-1 ring-border/20"
-                                      title={t.user.name}
-                                    >
-                                      {t.user.name.charAt(0)}
-                                    </div>
-                                  ))
-                                ) : (
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">
-                                    N/A
-                                  </span>
-                                )}
-                              </div>
-                            </TableCell>
+                             <TableCell>
+                               {subject.teachers.length > 0 ? (
+                                 <div className="flex items-center gap-2">
+                                   <div
+                                     className="size-7 rounded-full border border-border bg-secondary-brand flex items-center justify-center text-[9px] font-black text-white shadow-sm"
+                                     title={subject.teachers[0].user.name}
+                                   >
+                                     {subject.teachers[0].user.name.charAt(0)}
+                                   </div>
+                                   <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
+                                     {subject.teachers[0].user.name}
+                                   </span>
+                                 </div>
+                               ) : (
+                                 <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40 italic">
+                                   Belum ada
+                                 </span>
+                               )}
+                             </TableCell>
                             <TableCell>
                               <Badge
                                 variant={
@@ -226,7 +231,7 @@ export function Table({
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center font-mono font-black text-foreground transition-colors group-hover:text-primary">
-                              {subject._count?.meetings ?? 0}
+                              {subject.credits}
                             </TableCell>
                           </>
                         );
@@ -318,36 +323,57 @@ export function Table({
                   <TableCell className="sticky right-0 z-10 bg-card px-6 py-4 text-right transition-colors group-hover:bg-muted/50">
                     <div className="flex items-center justify-end gap-2">
                       {activeTab === "mataKuliah" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                          asChild
-                          title="Kelola Sesi Pertemuan"
-                        >
-                          <Link
-                            href={`/admin/courses/${item.id}/meetings` as Route}
-                          >
-                            <Icon name="history_edu" size={16} />
-                          </Link>
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                              asChild
+                            >
+                              <Link
+                                href={`/admin/courses/${item.id}/meetings` as Route}
+                              >
+                                <Icon name="history_edu" size={16} />
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <span className="font-bold">Kelola Sesi Pertemuan</span>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                        onClick={() => onEdit(item)}
-                      >
-                        <Icon name="edit" size={16} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-md border border-border bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                        onClick={() => onDelete(item.id)}
-                      >
-                        <Icon name="delete" size={16} />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            onClick={() => onEdit(item)}
+                          >
+                            <Icon name="edit" size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <span className="font-bold">Edit Data</span>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-md border border-border bg-destructive text-destructive-foreground shadow-lg hover:bg-red-600 hover:shadow-red-500/30 hover:scale-110 active:scale-95 transition-all duration-300"
+                            onClick={() => onDelete(item.id)}
+                          >
+                            <Icon name="delete" size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <span className="font-bold">Hapus Data</span>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>

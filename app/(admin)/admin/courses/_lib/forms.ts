@@ -14,12 +14,13 @@ export const EMPTY_CLASS_FORM: ClassForm = {
 
 export const EMPTY_SUBJECT_FORM: SubjectForm = {
   code: "",
-  title: "",
+  name: "",
   description: "",
   learningOutcomes: "",
+  credits: 2,
   status: CourseStatus.published,
   bannerImage: null,
-  teacherIds: [],
+  teacherId: null,
 };
 
 export const EMPTY_YEAR_FORM: YearForm = {

@@ -15,21 +15,24 @@ export type ClassItem = {
 export type SubjectCourseItem = {
   id: string;
   code: string;
-  title: string;
+  name: string;
   description: string | null;
   learningOutcomes: string | null;
+  credits: number;
   bannerImage: string | null;
   status: CourseStatus;
-  updatedAt: string;
-  teachers: Array<{
+  _count: {
+    meetings: number;
+  };
+  teachers: {
     user: {
       id: string;
       name: string;
       nip: string | null;
       specialization: string | null;
     };
-  }>;
-  _count?: { meetings: number };
+  }[];
+  updatedAt: string;
 };
 
 export type AcademicYear = {
@@ -55,12 +58,13 @@ export type ClassForm = {
 
 export type SubjectForm = {
   code: string;
-  title: string;
+  name: string;
   description: string;
   learningOutcomes: string;
+  credits: number;
   status: CourseStatus;
   bannerImage: string | null;
-  teacherIds: string[];
+  teacherId: string | null;
 };
 
 export type YearForm = {

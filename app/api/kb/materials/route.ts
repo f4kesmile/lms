@@ -68,6 +68,7 @@ export async function GET(request: Request) {
               OR: [
                 { title: { contains: search, mode: "insensitive" } },
                 { module: { contains: search, mode: "insensitive" } },
+                { course: { code: { contains: search, mode: "insensitive" } } },
               ],
             }
           : {}),

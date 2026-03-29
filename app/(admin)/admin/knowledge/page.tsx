@@ -18,6 +18,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils/index";
 
 export type Material = {
   id: string;
@@ -109,6 +115,17 @@ export default function KnowledgeAdminPage() {
     message: "",
     onConfirm: null,
   });
+
+  const [isDesktop, setIsDesktop] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
+  }, []);
 
   async function loadData(query = "", courseId = "") {
     setLoading(true);
@@ -261,31 +278,52 @@ export default function KnowledgeAdminPage() {
     <AdminLayout
       title="Basis Pengetahuan & Training AI"
       headerActions={
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="font-bold border border-border text-primary hover:bg-primary/5 shadow-sm  transition-all rounded-md bg-card"
-            onClick={() => loadData(search, selectedCourseId)}
-          >
-            <Icon name="sync" size={16} className="sm:mr-1" />
-            <span className="hidden sm:inline">Sync Data</span>
-          </Button>
-          <Button
-            size="sm"
-            className="font-bold border border-border shadow-sm  transition-all rounded-md"
-            asChild
-          >
-            <Link
-              href={{
-                pathname: "/admin/materials/new",
-                query: { from: "knowledge" },
-              }}
-            >
-              <Icon name="upload_file" size={16} className="sm:mr-1" />
-              <span className="hidden sm:inline">Upload Materi</span>
-            </Link>
-          </Button>
+        <div className="flex items-center gap-3">
+          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-10 border border-border/40 bg-card/50 px-4 font-extrabold tracking-wide text-muted-foreground shadow-sm transition-all hover:bg-card hover:text-primary hover:shadow-md",
+                  !isDesktop && "px-0 w-10",
+                )}
+                onClick={() => loadData(search, selectedCourseId)}
+              >
+                <Icon name="sync" size={18} />
+                {isDesktop && <span className="ml-2 uppercase text-[10px]">Sync Data</span>}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="font-bold">
+              Sinkronisasi Data
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                className={cn(
+                  "h-10 border border-transparent bg-primary px-5 font-extrabold tracking-wider text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]",
+                  !isDesktop && "px-0 w-10",
+                )}
+                asChild
+              >
+                <Link
+                  href={{
+                    pathname: "/admin/materials/new",
+                    query: { from: "knowledge" },
+                  }}
+                >
+                  <Icon name="upload_file" size={18} />
+                  {isDesktop && <span className="ml-2 uppercase text-[10px]">Upload Materi</span>}
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="font-bold">
+              Upload Materi Baru
+            </TooltipContent>
+          </Tooltip>
         </div>
       }
     >

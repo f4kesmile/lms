@@ -43,28 +43,32 @@ export async function deleteClassAction(id: string) {
 
 export async function createSubjectCourseAction(data: {
   code: string;
-  title: string;
+  name: string;
   description: string | null;
   learningOutcomes: string | null;
+  credits: number;
   status: CourseStatus;
   bannerImage?: string | null;
-  teacherIds?: string[];
+  teacherId?: string | null;
 }) {
   try {
-    const { teacherIds = [], ...rest } = data;
+    const { teacherId, ...rest } = data;
     await prisma.subject.create({
       data: {
         code: rest.code,
-        name: rest.title,
+        name: rest.name,
         description: rest.description,
         learningOutcomes: rest.learningOutcomes,
+        credits: rest.credits,
         status: rest.status,
         bannerImage: rest.bannerImage,
-        teachers: {
-          create: teacherIds.map((userId) => ({
-            user: { connect: { id: userId } },
-          })),
-        },
+        teachers: teacherId
+          ? {
+              create: {
+                user: { connect: { id: teacherId } },
+              },
+            }
+          : undefined,
       },
     });
 
@@ -82,30 +86,34 @@ export async function updateSubjectCourseAction(
   id: string,
   data: {
     code: string;
-    title: string;
+    name: string;
     description: string | null;
     learningOutcomes: string | null;
+    credits: number;
     status: CourseStatus;
     bannerImage?: string | null;
-    teacherIds?: string[];
+    teacherId?: string | null;
   },
 ) {
   try {
-    const { teacherIds = [], ...rest } = data;
+    const { teacherId, ...rest } = data;
     await prisma.subject.update({
       where: { id },
       data: {
         code: rest.code,
-        name: rest.title,
+        name: rest.name,
         description: rest.description,
         learningOutcomes: rest.learningOutcomes,
+        credits: rest.credits,
         status: rest.status,
         bannerImage: rest.bannerImage,
         teachers: {
           deleteMany: {},
-          create: teacherIds.map((userId) => ({
-            user: { connect: { id: userId } },
-          })),
+          create: teacherId
+            ? {
+                user: { connect: { id: teacherId } },
+              }
+            : undefined,
         },
       },
     });

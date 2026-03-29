@@ -36,29 +36,39 @@ export function Filters({
 }: FiltersProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <Card className="border border-border bg-card p-4 md:p-5 shadow-sm rounded-md flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-md">
-          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-md border border-border bg-primary/10 text-primary shadow-sm">
-            <Icon name="database" size={24} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-              Koleksi Dokumen
-            </span>
-            <span className="text-2xl md:text-3xl font-black text-primary">
-              {materialsCount} <span className="text-sm font-bold text-foreground">Materi</span>
-            </span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+        <Card className="group relative overflow-hidden border border-border/40 bg-card p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl rounded-2xl">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary shadow-inner transition-colors group-hover:bg-primary group-hover:text-white">
+              <Icon name="database" size={28} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/60 mb-1">
+                Koleksi Dokumen
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black tracking-tight text-foreground">
+                  {materialsCount}
+                </span>
+                <span className="text-xs font-bold text-primary tracking-widest uppercase">Materi</span>
+              </div>
+            </div>
           </div>
         </Card>
-        <Card className="border border-border bg-card p-4 md:p-5 shadow-sm rounded-md flex items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-md">
-          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-md border border-border bg-secondary-brand/10 text-secondary-brand shadow-sm">
-            <Icon name="description" size={24} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-              Tipe Terbanyak
-            </span>
-            <span className="text-2xl font-black text-secondary-brand">Materi Teks</span>
+
+        <Card className="group relative overflow-hidden border border-border/40 bg-card p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl rounded-2xl">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary-brand/5 text-secondary-brand shadow-inner transition-colors group-hover:bg-secondary-brand group-hover:text-white">
+              <Icon name="description" size={28} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/60 mb-1">
+                Tipe Terbanyak
+              </span>
+              <span className="text-xl font-black tracking-tight text-foreground group-hover:text-secondary-brand transition-colors">
+                Materi Teks
+              </span>
+            </div>
           </div>
         </Card>
         <div className="flex items-center justify-end">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
 import { CourseDialogs } from "@/app/(admin)/admin/courses/_components/Dialogs";
@@ -19,6 +19,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils/index";
 
 export default function AdminCoursesPage() {
   const {
@@ -72,6 +78,17 @@ export default function AdminCoursesPage() {
     yearForm,
   } = useCoursesController();
 
+  const [isDesktop, setIsDesktop] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
+  }, []);
+
   if (!roleChecked) {
     return (
       <AdminLayout title="Pusat Akademik">
@@ -86,36 +103,57 @@ export default function AdminCoursesPage() {
     <AdminLayout
       title="Pusat Akademik"
       headerActions={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {activeTab === "mataKuliah" && (
-            <Button
-              size="sm"
-              className="font-bold border border-border shadow-sm  transition-all rounded-md"
-              asChild
-            >
-              <Link
-                href={{
-                  pathname: "/admin/materials/new",
-                  query:
-                    activeTab === "mataKuliah"
-                      ? { from: "courses" }
-                      : { from: "knowledge" },
-                }}
-              >
-                <Icon name="upload_file" size={16} className="sm:mr-1" />{" "}
-                <span className="hidden sm:inline">Upload Materi</span>
-              </Link>
-            </Button>
+            <Tooltip open={mounted && !isDesktop ? undefined : false}>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  className={cn(
+                    "font-extrabold border border-border shadow-sm transition-all rounded-md h-10 px-4",
+                    !isDesktop && "px-0 w-10",
+                  )}
+                  asChild
+                >
+                  <Link
+                    href={{
+                      pathname: "/admin/materials/new",
+                      query:
+                        activeTab === "mataKuliah"
+                          ? { from: "courses" }
+                          : { from: "knowledge" },
+                    }}
+                  >
+                    <Icon name="upload_file" size={20} />
+                    {isDesktop && <span className="ml-2">Upload Materi</span>}
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="font-bold">
+                Upload Materi Baru
+              </TooltipContent>
+            </Tooltip>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="font-bold border border-border text-primary hover:bg-primary/5 shadow-sm  transition-all rounded-md bg-card"
-            onClick={openCreateDialog}
-          >
-            <Icon name="add_circle" size={16} className="sm:mr-1" />{" "}
-            <span className="hidden sm:inline">{addButtonLabel}</span>
-          </Button>
+
+          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "font-extrabold border-2 border-primary/20 text-primary hover:bg-primary hover:text-white shadow-xl transition-all rounded-md h-10 px-6 bg-primary/5 hover:border-primary",
+                  !isDesktop && "px-0 w-10 border",
+                )}
+                onClick={openCreateDialog}
+              >
+                <Icon name="add_circle" size={20} />
+                {isDesktop && <span className="ml-2">{addButtonLabel}</span>}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="font-bold">
+              {addButtonLabel} Baru
+            </TooltipContent>
+          </Tooltip>
         </div>
       }
     >
@@ -126,11 +164,21 @@ export default function AdminCoursesPage() {
           </div>
         }
       >
-        <div className="space-y-6">
+        <div className="space-y-8">
           {activeYearLabel && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-primary">
-              <Icon name="calendar_month" size={14} />
-              Tahun Aktif: {activeYearLabel}
+            <div className="relative inline-flex overflow-hidden rounded-md border border-primary/20 bg-card p-1 shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-50" />
+              <div className="relative flex items-center gap-3 bg-primary/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-primary">
+                <div className="flex size-6 items-center justify-center rounded-full bg-primary text-white shadow-sm ring-4 ring-primary/20">
+                  <Icon name="calendar_month" size={12} />
+                </div>
+                <span>
+                  TAHUN AKTIF:{" "}
+                  <span className="text-foreground ml-1.5 opacity-90 drop-shadow-sm">
+                    {activeYearLabel}
+                  </span>
+                </span>
+              </div>
             </div>
           )}
 
