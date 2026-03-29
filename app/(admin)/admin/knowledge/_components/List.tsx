@@ -7,12 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { formatDate } from "@/lib/utils/index";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn, formatDate } from "@/lib/utils/index";
 
 interface ListProps {
   materials: Material[];
@@ -73,12 +69,18 @@ export function List({
               {/* Header Section (Minimal) */}
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <Icon name="description" size={20} />
+                  <div className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl border transition-all",
+                    item.type === 'session' ? "bg-primary/5 border-primary/20 text-primary" : "bg-muted border-border/40 text-muted-foreground/60"
+                  )}>
+                    <Icon name={item.type === 'session' ? "school" : "description"} size={20} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">
-                      Material Source
+                    <span className={cn(
+                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                      item.type === 'session' ? "text-primary/70" : "text-muted-foreground/60"
+                    )}>
+                      {item.type === 'session' ? "Course Session" : "Reference"}
                     </span>
                     <span className="text-xs font-bold text-foreground">
                       {item._count.chunks} Chunks
@@ -86,24 +88,29 @@ export function List({
                   </div>
                 </div>
                 
-                {/* Minimalist Date (Top Right) */}
-                <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                   {formatDate(item.updatedAt)}
+                <div className="flex flex-col items-end gap-1">
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                    item.type === 'session' ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground/60"
+                  )}>
+                    {item.type === 'session' ? "SESI" : "REF"}
+                  </span>
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                    {formatDate(item.updatedAt)}
+                  </div>
                 </div>
               </div>
 
-              {/* Title Section (Bespoke Typography) */}
               <div className="mb-8 flex-1">
                 <h3 className="text-xl font-black leading-[1.3] tracking-tight text-foreground transition-colors group-hover:text-primary">
                   {item.title}
                 </h3>
               </div>
 
-              {/* Metadata Section (Non-Boxy) */}
               <div className="grid grid-cols-1 gap-3 border-t border-border/40 pt-6">
                 <div className="flex items-start gap-3">
                   <Icon name="auto_stories" size={16} className="mt-0.5 text-primary/40 shrink-0" />
-                  <div className="flex flex-col min-w-0">
+                  <div className="flex flex-col min-w-0 text-left">
                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
                       Subject
                     </span>
@@ -115,13 +122,13 @@ export function List({
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Icon name="folder_open" size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
-                  <div className="flex flex-col min-w-0">
+                  <Icon name={item.type === 'session' ? "calendar_today" : "folder_open"} size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
+                  <div className="flex flex-col min-w-0 text-left">
                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
-                      Module
+                      {item.type === 'session' ? "Meeting" : "Module"}
                     </span>
                     <span className="truncate text-[11px] font-extrabold text-foreground/80">
-                      {item.module}
+                      {item.type === 'session' ? `Pertemuan Ke-${item.meetingNo}` : item.module}
                     </span>
                   </div>
                 </div>

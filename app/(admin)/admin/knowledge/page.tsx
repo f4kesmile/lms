@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
@@ -29,9 +30,11 @@ export type Material = {
   id: string;
   courseId: string | null;
   title: string;
-  module: string;
+  module: string | null;
   page: string | null;
+  meetingNo: number | null;
   content: string;
+  type: "session" | "reference";
   createdAt: string;
   updatedAt: string;
   _count: { chunks: number };
@@ -40,10 +43,12 @@ export type Material = {
 };
 
 type MaterialForm = {
+  type: "session" | "reference";
   courseId: string;
   title: string;
   module: string;
   page: string;
+  meetingNo: number;
   content: string;
 };
 
@@ -55,10 +60,12 @@ type CourseOption = {
 };
 
 const EMPTY_FORM: MaterialForm = {
+  type: "reference",
   courseId: "",
   title: "",
   module: "",
   page: "",
+  meetingNo: 1,
   content: "",
 };
 
@@ -83,7 +90,15 @@ const MODULE_SUGGESTIONS = [
   "Studi Kasus",
 ];
 
-export default function KnowledgeAdminPage() {
+export default function KnowledgePage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div></div>}>
+      <KnowledgeContent />
+    </Suspense>
+  );
+}
+
+function KnowledgeContent() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [courses, setCourses] = useState<CourseOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -166,6 +181,36 @@ export default function KnowledgeAdminPage() {
     loadCourses();
   }, []);
 
+  const searchParams = useSearchParams();
+
+  // Handle Redirection Params
+  useEffect(() => {
+    const isNew = searchParams.get("new") === "true";
+    const editId = searchParams.get("edit");
+    const courseId = searchParams.get("courseId");
+    const type = searchParams.get("type") as "session" | "reference";
+    const meetingNo = searchParams.get("meetingNo");
+
+    if (isNew) {
+      setForm({
+        ...EMPTY_FORM,
+        courseId: courseId || "",
+        type: type || "reference",
+        meetingNo: parseInt(meetingNo || "1"),
+      });
+      setShowModal(true);
+      // Clear params to avoid re-opening on refresh
+      window.history.replaceState(null, "", window.location.pathname);
+    } else if (editId) {
+      // Find from already loaded materials or wait for them
+      const found = materials.find(m => m.id === editId);
+      if (found) {
+        openEditModal(found);
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+  }, [searchParams, materials.length]); // Wait for materials to load if editing
+
   useEffect(() => {
     const timer = setTimeout(() => {
       loadData(search, selectedCourseId);
@@ -187,10 +232,12 @@ export default function KnowledgeAdminPage() {
   function openEditModal(item: Material) {
     setEditingMaterial(item);
     setForm({
+      type: item.type,
       courseId: item.course?.id ?? "",
       title: item.title,
-      module: item.module,
+      module: item.module ?? "",
       page: item.page ?? "",
+      meetingNo: item.meetingNo ?? 1,
       content: item.content,
     });
     setShowModal(true);
@@ -222,12 +269,24 @@ export default function KnowledgeAdminPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      if (!form.courseId) {
+        setNotice({
+          open: true,
+          title: "Mata Kuliah Wajib",
+          message: "Harap pilih mata kuliah untuk materi ini.",
+        });
+        return;
+      }
+
       const payload = {
-        courseId: form.courseId || undefined,
+        type: form.type,
+        courseId: form.courseId,
         title: form.title,
-        module: form.module,
-        page: form.page.trim() || undefined,
         content: form.content,
+        // Only include specific fields based on type
+        ...(form.type === "session"
+          ? { meetingNo: form.meetingNo }
+          : { module: form.module, page: form.page || "1" }),
       };
 
       const endpoint = editingMaterial
@@ -392,6 +451,7 @@ export default function KnowledgeAdminPage() {
             setForm(EMPTY_FORM);
           }}
         />
+        </Suspense>
 
         <Dialog
           open={notice.open}
@@ -458,7 +518,6 @@ export default function KnowledgeAdminPage() {
             </div>
           </DialogContent>
         </Dialog>
-      </Suspense>
     </AdminLayout>
   );
 }
