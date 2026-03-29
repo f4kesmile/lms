@@ -24,6 +24,12 @@ import {
 } from "@/components/ui/sidebar";
 import { getInitials, cn } from "@/lib/utils/index";
 import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type DosenLayoutProps = {
   title: string;
@@ -44,8 +50,13 @@ export const DosenLayout = ({
     email: string;
     role: string;
   } | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
+    const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+
     const frame = requestAnimationFrame(() => setMounted(true));
     fetch("/api/users/me")
       .then((res) => res.json())
@@ -54,7 +65,10 @@ export const DosenLayout = ({
       })
       .catch(() => {});
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", checkIsDesktop);
+    };
   }, []);
 
   async function logout() {
@@ -64,21 +78,38 @@ export const DosenLayout = ({
 
   const initials = user?.name ? getInitials(user.name) : "??";
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <Sidebar collapsible="icon" className="border-r border-border bg-sidebar">
         <SidebarHeader className="flex h-16 items-center justify-start px-3 sm:px-4 border-b border-border">
           <div className="flex w-full items-center justify-start gap-3 overflow-hidden">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand text-secondary-brand-foreground border border-border shadow-sm">
               <Icon name="history_edu" size={24} />
             </div>
-            <div className="flex flex-col gap-0.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
-              <span className="font-black tracking-widest uppercase text-sidebar-foreground">
-                {SITE_CONFIG.name} Dosen
-              </span>
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                Portal Pengajar
-              </span>
+            <div className="flex flex-col gap-1 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
+              {!mounted || !user ? (
+                <>
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-2 w-16" />
+                </>
+              ) : (
+                <>
+                  <span className="font-black tracking-widest uppercase text-sidebar-foreground text-[11px]">
+                    {SITE_CONFIG.name} Dosen
+                  </span>
+                  <span className="text-[9px] uppercase font-bold text-muted-foreground">
+                    Portal Pengajar
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </SidebarHeader>
@@ -133,15 +164,24 @@ export const DosenLayout = ({
               <SidebarMenuItem>
                 <SidebarMenuButton className="w-full justify-start gap-3 h-auto p-2 hover:bg-muted rounded-md border-2 border-transparent hover:border-border transition-colors group-data-[collapsible=icon]:justify-center">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand/10 text-secondary-brand font-black text-xs border border-secondary-brand/20">
-                    {user ? initials : <Icon name="person" size={20} />}
+                    {mounted && user ? initials : <Icon name="person" size={20} />}
                   </div>
-                  <div className="flex flex-col items-start gap-1 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
-                    <span className="font-bold text-sm truncate max-w-[150px]">
-                      {user?.name || "Memuat..."}
-                    </span>
-                    <span className="text-[10px] text-secondary-brand uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-secondary-brand/10">
-                      {user?.role || "Dosen"}
-                    </span>
+                  <div className="flex flex-col items-start gap-1.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
+                    {!mounted || !user ? (
+                      <>
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-2.5 w-16" />
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-bold text-sm truncate max-w-[150px]">
+                          {user.name}
+                        </span>
+                        <span className="text-[10px] text-secondary-brand uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-secondary-brand/10">
+                          {user.role}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -174,32 +214,51 @@ export const DosenLayout = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/"
-              className="group flex items-center gap-2 rounded-md border border-border bg-card px-2 sm:px-4 py-2 text-sm font-bold transition-all hover:bg-muted shadow-sm active:translate-y-[2px] active:shadow-none"
+            <Tooltip
+              open={mounted && !isDesktop ? undefined : false}
+              delayDuration={0}
             >
-              <Icon
-                name="home"
-                size={18}
-                className="transition-transform group-hover:scale-110"
-              />
-              <span className="hidden sm:inline">Halaman Umum</span>
-            </Link>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/"
+                  className="group flex items-center gap-2 rounded-md border border-border bg-card px-2 sm:px-4 py-2 text-sm font-bold transition-all hover:bg-muted shadow-sm active:translate-y-[2px] active:shadow-none"
+                >
+                  <Icon
+                    name="home"
+                    size={18}
+                    className="transition-transform group-hover:scale-110"
+                  />
+                  <span className="hidden lg:inline">Halaman Umum</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="font-bold">
+                Kembali ke Halaman Umum
+              </TooltipContent>
+            </Tooltip>
 
             {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="hidden sm:flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card transition-all hover:bg-muted shadow-sm active:translate-y-[2px] active:shadow-none"
-                aria-label="Toggle theme"
-              >
-                <Icon
-                  name={theme === "dark" ? "light_mode" : "dark_mode"}
-                  size={20}
-                  className={
-                    theme === "dark" ? "text-secondary-brand" : "text-primary"
-                  }
-                />
-              </button>
+              <Tooltip open={!isDesktop ? undefined : false} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card transition-all hover:bg-muted shadow-sm active:translate-y-[2px] active:shadow-none sm:flex"
+                    aria-label="Toggle theme"
+                  >
+                    <Icon
+                      name={theme === "dark" ? "light_mode" : "dark_mode"}
+                      size={20}
+                      className={
+                        theme === "dark"
+                          ? "text-secondary-brand"
+                          : "text-primary"
+                      }
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="font-bold">
+                  Toggle Tema: {theme === "dark" ? "Terang" : "Gelap"}
+                </TooltipContent>
+              </Tooltip>
             )}
 
             {headerActions && (

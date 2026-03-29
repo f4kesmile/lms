@@ -16,6 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatDateRange } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/index";
 
@@ -86,7 +91,7 @@ export function List({
                           <div className="size-16 shrink-0 rounded-xl overflow-hidden border border-border shadow-sm">
                             <Image
                               src={subject.bannerImage}
-                              alt={subject.title}
+                              alt={subject.name}
                               width={64}
                               height={64}
                               unoptimized
@@ -114,52 +119,71 @@ export function List({
                           {subject.status.toUpperCase()}
                         </Badge>
                       </div>
+
                       <div>
-                        <h3 className="text-lg font-black tracking-tight line-clamp-2 text-foreground">
-                          {subject.code} - {subject.title}
+                        <h3 className="text-xl font-black tracking-tight text-foreground leading-tight">
+                          {subject.name}
                         </h3>
-                        <p className="mt-2 text-xs font-bold text-muted-foreground line-clamp-2 leading-relaxed opacity-80">
-                          {subject.description ||
-                            "Belum ada deskripsi mata kuliah."}
+                        <p className="text-sm font-bold text-primary mt-1 uppercase tracking-wider">
+                          {subject.code}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">
-                          Pengampu:
-                        </span>
-                        <div className="flex -space-x-2">
-                          {subject.teachers.length > 0 ? (
-                            subject.teachers.map((t) => (
-                              <div
-                                key={t.user.id}
-                                className="size-8 rounded-full border-2 border-background bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-1 ring-border/10"
-                                title={t.user.name}
-                              >
-                                {t.user.name.charAt(0)}
-                              </div>
-                            ))
-                          ) : (
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">
-                              Belum ada
-                            </span>
-                          )}
+                      <div className="flex items-center gap-3 py-3 border-y border-border/50">
+                        <div className="flex size-8 items-center justify-center rounded-md bg-primary/5 text-primary border border-primary/10">
+                          <Icon name="fact_check" size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                            Beban Mata Kuliah
+                          </span>
+                          <span className="text-sm font-black text-foreground">
+                            {subject.credits} SKS
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-3 border-t border-border">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            Pertemuan
-                          </span>
-                          <span className="text-base font-black text-primary">
-                            {subject._count?.meetings ?? 0} Sesi
-                          </span>
-                        </div>
-                        <p className="text-[10px] font-bold text-muted-foreground font-mono">
-                          Updated{" "}
+                      <div className="space-y-3">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block pl-1">
+                          Dosen Pengampu
+                        </span>
+                        {subject.teachers.length > 0 ? (
+                          (() => {
+                            const t = subject.teachers[0];
+                            return (
+                              <div className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-xl border border-border/40 transition-colors hover:bg-muted/50">
+                                <div className="size-8 rounded-full bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-2 ring-background">
+                                  {t.user.name.charAt(0)}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-black text-foreground">
+                                    {t.user.name}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">
+                                    NIP: {t.user.nip || "-"}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <div className="text-xs font-bold text-muted-foreground py-2 px-1 opacity-50 italic">
+                            Belum ada dosen pengampu
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-2">
+                        <p className="text-[10px] font-bold text-muted-foreground font-mono flex items-center gap-1.5 opacity-60">
+                          <Icon name="history" size={12} />
+                          Last Update:{" "}
                           {new Date(subject.updatedAt).toLocaleDateString(
                             "id-ID",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
                           )}
                         </p>
                       </div>
@@ -265,34 +289,56 @@ export function List({
 
             <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-4">
               {activeTab === "mataKuliah" && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 transition-all"
-                  asChild
-                  title="Kelola Sesi Pertemuan"
-                >
-                  <Link href={`/admin/courses/${item.id}/meetings` as Route}>
-                    <Icon name="history_edu" size={20} />
-                  </Link>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:scale-105 transition-all"
+                      asChild
+                    >
+                      <Link href={`/admin/courses/${item.id}/meetings` as Route}>
+                        <Icon name="history_edu" size={20} />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span className="font-bold">Kelola Sesi Pertemuan</span>
+                  </TooltipContent>
+                </Tooltip>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary  transition-all"
-                onClick={() => onEdit(item)}
-              >
-                <Icon name="edit" size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-md border border-border bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90  transition-all"
-                onClick={() => onDelete(item.id)}
-              >
-                <Icon name="delete" size={18} />
-              </Button>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/10 hover:text-primary hover:scale-105 transition-all"
+                    onClick={() => onEdit(item)}
+                  >
+                    <Icon name="edit" size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <span className="font-bold">Edit Data</span>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 rounded-md border border-border bg-destructive text-destructive-foreground shadow-lg hover:bg-red-600 hover:shadow-red-500/30 hover:scale-110 active:scale-95 transition-all duration-300"
+                    onClick={() => onDelete(item.id)}
+                  >
+                    <Icon name="delete" size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <span className="font-bold">Hapus Data</span>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Card>
         ))

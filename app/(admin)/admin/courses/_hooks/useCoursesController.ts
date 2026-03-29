@@ -243,12 +243,13 @@ export function useCoursesController() {
     try {
       const payload = {
         code: subjectForm.code.trim().toUpperCase(),
-        title: subjectForm.title.trim(),
+        name: subjectForm.name.trim(),
         description: subjectForm.description.trim() || null,
         learningOutcomes: subjectForm.learningOutcomes.trim() || null,
+        credits: subjectForm.credits,
         status: subjectForm.status,
         bannerImage: subjectForm.bannerImage,
-        teacherIds: subjectForm.teacherIds,
+        teacherId: subjectForm.teacherId,
       };
       const res = editingSubject
         ? await updateSubjectCourseAction(editingSubject.id, payload)
@@ -263,9 +264,7 @@ export function useCoursesController() {
         open: true,
         title: "Gagal Menyimpan",
         message:
-          error instanceof Error
-            ? error.message
-            : "Gagal menyimpan mata kuliah",
+          error instanceof Error ? error.message : "Gagal menyimpan mata kuliah",
       });
     } finally {
       setLoading(false);
@@ -407,12 +406,13 @@ export function useCoursesController() {
       setEditingSubject(subject);
       setSubjectForm({
         code: subject.code,
-        title: subject.title,
+        name: subject.name,
         description: subject.description || "",
         learningOutcomes: subject.learningOutcomes || "",
+        credits: subject.credits,
         status: subject.status,
         bannerImage: subject.bannerImage,
-        teacherIds: subject.teachers.map((teacher) => teacher.user.id),
+        teacherId: subject.teachers[0]?.user.id || null,
       });
       setShowSubjectModal(true);
       return;
@@ -458,7 +458,7 @@ export function useCoursesController() {
     if (activeTab === "mataKuliah") {
       return q
         ? subjectCourses.filter((item) =>
-            [item.code, item.title].join(" ").toLowerCase().includes(q),
+            [item.code, item.name].join(" ").toLowerCase().includes(q),
           )
         : subjectCourses;
     }

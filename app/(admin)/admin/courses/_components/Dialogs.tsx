@@ -252,9 +252,9 @@ export function CourseDialogs({
                 </label>
                 <Input
                   required
-                  value={subjectForm.title}
+                  value={subjectForm.name}
                   onChange={(e) =>
-                    setSubjectForm({ ...subjectForm, title: e.target.value })
+                    setSubjectForm({ ...subjectForm, name: e.target.value })
                   }
                   className="h-11 rounded-xl bg-card border-border/50"
                   placeholder="Contoh: Pemrograman Dasar"
@@ -268,11 +268,11 @@ export function CourseDialogs({
                   Dosen Pengampu
                 </label>
                 <Select
-                  value={subjectForm.teacherIds[0] || "none"}
+                  value={subjectForm.teacherId || "none"}
                   onValueChange={(val) =>
                     setSubjectForm({
                       ...subjectForm,
-                      teacherIds: val === "none" ? [] : [val],
+                      teacherId: val === "none" ? null : val,
                     })
                   }
                 >
@@ -341,6 +341,27 @@ export function CourseDialogs({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Beban SKS
+              </label>
+              <Input
+                type="number"
+                min={1}
+                max={8}
+                required
+                value={subjectForm.credits}
+                onChange={(e) =>
+                  setSubjectForm({
+                    ...subjectForm,
+                    credits: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="h-11 rounded-xl bg-card border-border/50 font-bold"
+                placeholder="Contoh: 3"
+              />
             </div>
 
             <div className="space-y-1.5">
