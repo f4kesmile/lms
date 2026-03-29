@@ -53,9 +53,6 @@ export default function SubjectMeetingsPage() {
     teachers: Array<{ user: { id: string; name: string } }>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editingMeeting, setEditingMeeting] =
-    useState<SubjectMeetingItem | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -109,15 +106,25 @@ export default function SubjectMeetingsPage() {
     }
   };
 
+  const openWorkstation = (meetingId?: string) => {
+    const url = new URL("/admin/knowledge", window.location.origin);
+    url.searchParams.set("courseId", subjectId);
+    url.searchParams.set("type", "session");
+    if (meetingId) {
+      url.searchParams.set("edit", meetingId);
+    } else {
+      url.searchParams.set("new", "true");
+      url.searchParams.set("meetingNo", (meetings.length + 1).toString());
+    }
+    router.push(url.pathname + url.search as Route);
+  };
+
   return (
     <AdminLayout
       title="Manajemen Sesi Pertemuan"
       headerActions={
         <Button
-          onClick={() => {
-            setEditingMeeting(null);
-            setShowEditor(true);
-          }}
+          onClick={() => openWorkstation()}
           className="rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20"
         >
           <Icon name="add" size={18} className="mr-2" />
@@ -241,7 +248,7 @@ export default function SubjectMeetingsPage() {
             </p>
             <Button
               variant="outline"
-              onClick={() => setShowEditor(true)}
+              onClick={() => openWorkstation()}
               className="rounded-xl font-bold"
             >
               Buat Sesi Pertama
@@ -263,10 +270,7 @@ export default function SubjectMeetingsPage() {
                       variant="ghost"
                       size="icon"
                       className="size-8 rounded-lg hover:bg-primary/20 hover:text-primary transition-all"
-                      onClick={() => {
-                        setEditingMeeting(m);
-                        setShowEditor(true);
-                      }}
+                      onClick={() => openWorkstation(m.id)}
                     >
                       <Icon name="edit" size={16} />
                     </Button>
@@ -283,9 +287,8 @@ export default function SubjectMeetingsPage() {
                 <h3 className="text-lg font-black tracking-tight mb-2 line-clamp-1">
                   {m.title}
                 </h3>
-                <p className="text-xs text-muted-foreground font-medium line-clamp-2 mb-4 leading-relaxed">
-                  {m.content.substring(0, 100)}...
-                </p>
+                <div className="text-xs text-muted-foreground font-medium line-clamp-2 mb-4 leading-relaxed prose prose-sm dark:prose-invert max-h-12 overflow-hidden" dangerouslySetInnerHTML={{ __html: m.content }} />
+                
                 <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Icon name="description" size={12} />
@@ -293,7 +296,7 @@ export default function SubjectMeetingsPage() {
                   </span>
                   <span className="flex items-center gap-1">
                     <Icon name="inventory_2" size={12} />
-                    RAG Ready
+                    Pusat Pengetahuan
                   </span>
                 </div>
               </Card>
@@ -301,18 +304,6 @@ export default function SubjectMeetingsPage() {
           </div>
         )}
       </div>
-
-      {showEditor && (
-        <MeetingEditor
-          key={editingMeeting?.id || "new"}
-          subjectId={subjectId}
-          open={showEditor}
-          onClose={() => setShowEditor(false)}
-          editingMeeting={editingMeeting}
-          onSuccess={loadData}
-          nextMeetingNo={meetings.length + 1}
-        />
-      )}
     </AdminLayout>
   );
 }

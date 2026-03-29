@@ -94,11 +94,13 @@ export function MaterialSidebar({
 
           <div className="mt-4 space-y-4">
             <div className="space-y-1.5">
-              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                Mata Kuliah (Opsional)
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between">
+                <span>Mata Kuliah</span>
+                <span className="text-[9px] text-destructive tracking-widest lowercase font-bold">* Wajib</span>
               </label>
               <Select
-                value={form.courseId || "none"}
+                required
+                value={form.courseId || ""}
                 onValueChange={(value) =>
                   setForm((prev) => ({
                     ...prev,
@@ -107,7 +109,7 @@ export function MaterialSidebar({
                 }
               >
                 <SelectTrigger className="h-11 border border-border bg-background">
-                  <SelectValue placeholder="Pilih mata kuliah" />
+                  <SelectValue placeholder="Pilih mata kuliah yang sesuai" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Tanpa Mata Kuliah</SelectItem>

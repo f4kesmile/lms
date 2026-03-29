@@ -12,15 +12,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Table as UITable,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatDate } from "@/lib/utils/index";
+import { Table as UITable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn, formatDate } from "@/lib/utils/index";
 
 interface TableProps {
   materials: Material[];
@@ -112,17 +105,35 @@ export function Table({
                 >
                   <TableCell className="px-8 py-6">
                     <div className="flex items-center gap-5">
-                      <div className="size-11 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-inner">
-                        <Icon name="description" size={20} />
+                      <div className={cn(
+                        "size-11 rounded-xl border flex items-center justify-center shadow-inner transition-all group-hover:scale-105",
+                        item.type === 'session' 
+                          ? "bg-primary/10 border-primary/20 text-primary" 
+                          : "bg-muted border-border/30 text-muted-foreground/70"
+                      )}>
+                        <Icon name={item.type === 'session' ? "school" : "description"} size={20} />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-black tracking-tight text-foreground line-clamp-1">
-                          {item.title}
-                        </span>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-sm font-black tracking-tight text-foreground line-clamp-1">
+                            {item.title}
+                          </span>
+                          <span className={cn(
+                            "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                            item.type === 'session' 
+                              ? "bg-primary/20 text-primary" 
+                              : "bg-muted text-muted-foreground/60"
+                          )}>
+                            {item.type === 'session' ? "SESI" : "REF"}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="size-1.5 rounded-full bg-primary/40" />
-                           <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider">
-                            Penerbitan Materi
+                          <div className={cn(
+                            "size-1.5 rounded-full",
+                            item.type === 'session' ? "bg-primary/40" : "bg-muted-foreground/30"
+                          )} />
+                          <span className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider">
+                            {item.type === 'session' ? `Pertemuan ${item.meetingNo}` : "Referensi Pengetahuan"}
                           </span>
                         </div>
                       </div>

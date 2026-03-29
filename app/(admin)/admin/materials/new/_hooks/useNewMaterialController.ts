@@ -126,6 +126,15 @@ export function useNewMaterialController({
       (page) => htmlToPlainText(page).length > 0,
     );
 
+    if (!form.courseId) {
+      setNotice({
+        open: true,
+        title: "Mata Kuliah Belum Dipilih",
+        message: "Materi wajib dikaitkan dengan mata kuliah tertentu.",
+      });
+      return;
+    }
+
     if (!form.title.trim() || !form.module.trim()) {
       setNotice({
         open: true,

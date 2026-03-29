@@ -58,19 +58,9 @@ export async function GET(request: Request, context: Context) {
       return forbidden("Only admin or dosen can view materials");
     }
 
-    const limitGuard = getRateLimitGuard(
-      request,
-      user.id,
-      "kb-materials-id:get",
-    );
-    if (!limitGuard.allowed) {
-      return tooManyRequests(
-        "Terlalu banyak request. Coba lagi sebentar.",
-        limitGuard.retryAfterMs / 1000,
-      );
-    }
-
     const { id } = await context.params;
+
+    // Try CourseMaterial
     const material = await prisma.courseMaterial.findUnique({
       where: { id },
       include: {
@@ -80,12 +70,31 @@ export async function GET(request: Request, context: Context) {
       },
     });
 
-    if (!material) return notFound("Material not found");
-    if (!canManageMaterial(user.role, user.id, material.createdById)) {
-      return forbidden("Anda tidak memiliki akses ke materi ini");
+    if (material) {
+      if (!canManageMaterial(user.role, user.id, material.createdById)) {
+        return forbidden("Anda tidak memiliki akses ke materi ini");
+      }
+      return NextResponse.json({ ...material, type: "reference" });
     }
 
-    return NextResponse.json(material);
+    // Try SubjectMeeting
+    const meeting = await prisma.subjectMeeting.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { chunks: true } },
+        subject: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    if (meeting) {
+      return NextResponse.json({
+        ...meeting,
+        type: "session",
+        course: meeting.subject ? { id: meeting.subject.id, code: meeting.subject.code, title: meeting.subject.name } : null,
+      });
+    }
+
+    return notFound("Knowledge item not found");
   } catch (error) {
     return serverError(error, "KB_MATERIALS_ID_GET_ERROR");
   }
@@ -100,66 +109,70 @@ export async function PATCH(request: Request, context: Context) {
       return forbidden("Only admin or dosen can update materials");
     }
 
-    const limitGuard = getRateLimitGuard(
-      request,
-      user.id,
-      "kb-materials-id:patch",
-    );
-    if (!limitGuard.allowed) {
-      return tooManyRequests(
-        "Terlalu banyak request. Coba lagi sebentar.",
-        limitGuard.retryAfterMs / 1000,
-      );
-    }
-
     const { id } = await context.params;
-    const existing = await prisma.courseMaterial.findUnique({ where: { id } });
-    if (!existing) return notFound("Material not found");
-
-    if (!canManageMaterial(user.role, user.id, existing.createdById)) {
-      return forbidden("Anda tidak memiliki akses kelola materi ini");
-    }
-
     const body = await request.json();
-    const parsed = updateMaterialSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid material payload");
+    const type = body.type || "reference";
 
-    const nextContent =
-      parsed.data.content !== undefined
-        ? sanitizeMaterialInput(parsed.data.content)
-        : existing.content;
+    const safeContent = sanitizeMaterialInput(body.content);
+    const chunks = splitIntoChunks(materialToChunkText(safeContent));
 
-    const chunkSource = materialToChunkText(nextContent);
-    const chunks = splitIntoChunks(chunkSource);
-
-    if (chunks.length === 0) {
-      return badRequest("Material content is empty");
-    }
-
-    const material = await prisma.courseMaterial.update({
-      where: { id },
-      data: {
-        courseId: parsed.data.courseId,
-        title: parsed.data.title,
-        module: parsed.data.module,
-        page: parsed.data.page,
-        content: nextContent,
-        chunks: {
-          deleteMany: {},
-          create: chunks.map((chunk, index) => ({
-            content: chunk,
-            chunkIndex: index,
-          })),
+    if (type === "session") {
+      const meeting = await prisma.subjectMeeting.update({
+        where: { id },
+        data: {
+          title: body.title,
+          meetingNo: body.meetingNo,
+          content: safeContent,
+          chunks: {
+            deleteMany: {},
+            create: chunks.map((chunk, index) => ({
+              content: chunk,
+              chunkIndex: index,
+            })),
+          },
         },
-      },
-      include: {
-        _count: { select: { chunks: true } },
-        course: { select: { id: true, code: true, title: true } },
-        createdBy: { select: { id: true, name: true, email: true } },
-      },
-    });
+        include: {
+          _count: { select: { chunks: true } },
+          subject: { select: { id: true, code: true, name: true } },
+        },
+      });
+      return NextResponse.json({
+        ...meeting,
+        type: "session",
+        course: { id: meeting.subject.id, code: meeting.subject.code, title: meeting.subject.name },
+      });
+    } else {
+      const existing = await prisma.courseMaterial.findUnique({ where: { id } });
+      if (!existing) return notFound("Material not found");
 
-    return NextResponse.json(material);
+      if (!canManageMaterial(user.role, user.id, existing.createdById)) {
+        return forbidden("Anda tidak memiliki akses kelola materi ini");
+      }
+
+      const material = await prisma.courseMaterial.update({
+        where: { id },
+        data: {
+          courseId: body.courseId,
+          title: body.title,
+          module: body.module,
+          page: body.page,
+          content: safeContent,
+          chunks: {
+            deleteMany: {},
+            create: chunks.map((chunk, index) => ({
+              content: chunk,
+              chunkIndex: index,
+            })),
+          },
+        },
+        include: {
+          _count: { select: { chunks: true } },
+          course: { select: { id: true, code: true, title: true } },
+          createdBy: { select: { id: true, name: true, email: true } },
+        },
+      });
+      return NextResponse.json({ ...material, type: "reference" });
+    }
   } catch (error) {
     return serverError(error, "KB_MATERIALS_ID_PATCH_ERROR");
   }
@@ -174,28 +187,26 @@ export async function DELETE(request: Request, context: Context) {
       return forbidden("Only admin or dosen can delete materials");
     }
 
-    const limitGuard = getRateLimitGuard(
-      request,
-      user.id,
-      "kb-materials-id:delete",
-    );
-    if (!limitGuard.allowed) {
-      return tooManyRequests(
-        "Terlalu banyak request. Coba lagi sebentar.",
-        limitGuard.retryAfterMs / 1000,
-      );
-    }
-
     const { id } = await context.params;
-    const existing = await prisma.courseMaterial.findUnique({ where: { id } });
-    if (!existing) return notFound("Material not found");
 
-    if (!canManageMaterial(user.role, user.id, existing.createdById)) {
-      return forbidden("Anda tidak memiliki akses kelola materi ini");
+    // Check Reference first
+    const ref = await prisma.courseMaterial.findUnique({ where: { id } });
+    if (ref) {
+      if (!canManageMaterial(user.role, user.id, ref.createdById)) {
+        return forbidden("Anda tidak memiliki akses kelola materi ini");
+      }
+      await prisma.courseMaterial.delete({ where: { id } });
+      return NextResponse.json({ message: "Reference deleted" });
     }
 
-    await prisma.courseMaterial.delete({ where: { id } });
-    return NextResponse.json({ message: "Material deleted" });
+    // Check Session
+    const sess = await prisma.subjectMeeting.findUnique({ where: { id } });
+    if (sess) {
+      await prisma.subjectMeeting.delete({ where: { id } });
+      return NextResponse.json({ message: "Session deleted" });
+    }
+
+    return notFound("Knowledge item not found");
   } catch (error) {
     return serverError(error, "KB_MATERIALS_ID_DELETE_ERROR");
   }
