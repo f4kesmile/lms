@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils/index";
 
 interface ListProps {
@@ -69,31 +73,46 @@ export function List({
               {/* Header Section (Minimal) */}
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl border transition-all",
-                    item.type === 'session' ? "bg-primary/5 border-primary/20 text-primary" : "bg-muted border-border/40 text-muted-foreground/60"
-                  )}>
-                    <Icon name={item.type === 'session' ? "school" : "description"} size={20} />
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl border transition-all",
+                      item.type === "session"
+                        ? "bg-primary/5 border-primary/20 text-primary"
+                        : "bg-muted border-border/40 text-muted-foreground/60",
+                    )}
+                  >
+                    <Icon
+                      name={item.type === "session" ? "school" : "description"}
+                      size={20}
+                    />
                   </div>
                   <div className="flex flex-col">
-                    <span className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.2em]",
-                      item.type === 'session' ? "text-primary/70" : "text-muted-foreground/60"
-                    )}>
-                      {item.type === 'session' ? "Course Session" : "Reference"}
+                    <span
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-[0.2em]",
+                        item.type === "session"
+                          ? "text-primary/70"
+                          : "text-muted-foreground/60",
+                      )}
+                    >
+                      {item.type === "session" ? "Course Session" : "Reference"}
                     </span>
                     <span className="text-xs font-bold text-foreground">
                       {item._count.chunks} Chunks
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col items-end gap-1">
-                  <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
-                    item.type === 'session' ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground/60"
-                  )}>
-                    {item.type === 'session' ? "SESI" : "REF"}
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                      item.type === "session"
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted text-muted-foreground/60",
+                    )}
+                  >
+                    {item.type === "session" ? "SESI" : "REF"}
                   </span>
                   <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40">
                     {formatDate(item.updatedAt)}
@@ -110,26 +129,40 @@ export function List({
               <div className="flex items-end justify-between gap-4 border-t border-border/40 pt-6 mt-auto">
                 <div className="flex-1 flex flex-col gap-3 min-w-0">
                   <div className="flex items-start gap-3">
-                    <Icon name="auto_stories" size={16} className="mt-0.5 text-primary/40 shrink-0" />
+                    <Icon
+                      name="auto_stories"
+                      size={16}
+                      className="mt-0.5 text-primary/40 shrink-0"
+                    />
                     <div className="flex flex-col min-w-0 text-left">
                       <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
                         Subject
                       </span>
                       <span className="truncate text-[11px] font-extrabold text-foreground/80">
-                         {item.course
+                        {item.course
                           ? `${item.course.code} - ${item.course.title}`
                           : "General Material"}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Icon name={item.type === 'session' ? "calendar_today" : "folder_open"} size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
+                    <Icon
+                      name={
+                        item.type === "session"
+                          ? "calendar_today"
+                          : "folder_open"
+                      }
+                      size={16}
+                      className="mt-0.5 text-muted-foreground/30 shrink-0"
+                    />
                     <div className="flex flex-col min-w-0 text-left">
                       <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
-                        {item.type === 'session' ? "Meeting" : "Module"}
+                        {item.type === "session" ? "Meeting" : "Module"}
                       </span>
                       <span className="truncate text-[11px] font-extrabold text-foreground/80">
-                        {item.type === 'session' ? `Pertemuan Ke-${item.meetingNo}` : item.module}
+                        {item.type === "session"
+                          ? `Pertemuan Ke-${item.meetingNo}`
+                          : item.module}
                       </span>
                     </div>
                   </div>

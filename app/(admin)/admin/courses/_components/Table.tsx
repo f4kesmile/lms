@@ -192,25 +192,25 @@ export function Table({
                                 </div>
                               </div>
                             </TableCell>
-                             <TableCell>
-                               {subject.teachers.length > 0 ? (
-                                 <div className="flex items-center gap-2">
-                                   <div
-                                     className="size-7 rounded-full border border-border bg-secondary-brand flex items-center justify-center text-[9px] font-black text-white shadow-sm"
-                                     title={subject.teachers[0].user.name}
-                                   >
-                                     {subject.teachers[0].user.name.charAt(0)}
-                                   </div>
-                                   <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
-                                     {subject.teachers[0].user.name}
-                                   </span>
-                                 </div>
-                               ) : (
-                                 <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40 italic">
-                                   Belum ada
-                                 </span>
-                               )}
-                             </TableCell>
+                            <TableCell>
+                              {subject.teachers.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="size-7 rounded-full border border-border bg-secondary-brand flex items-center justify-center text-[9px] font-black text-white shadow-sm"
+                                    title={subject.teachers[0].user.name}
+                                  >
+                                    {subject.teachers[0].user.name.charAt(0)}
+                                  </div>
+                                  <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
+                                    {subject.teachers[0].user.name}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40 italic">
+                                  Belum ada
+                                </span>
+                              )}
+                            </TableCell>
                             <TableCell>
                               <Badge
                                 variant={
@@ -246,9 +246,16 @@ export function Table({
                                   <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-secondary-brand/10 text-secondary-brand shadow-sm">
                                     <Icon name="grid_view" size={20} />
                                   </div>
-                                  <p className="text-sm font-black tracking-tight text-foreground">
-                                    {classItem.name}
-                                  </p>
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-black tracking-tight text-foreground">
+                                      {classItem.name}
+                                    </p>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      {classItem.enrollmentKey
+                                        ? "Enrollment key aktif"
+                                        : "Tanpa enrollment key"}
+                                    </p>
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -332,14 +339,18 @@ export function Table({
                               asChild
                             >
                               <Link
-                                href={`/admin/courses/${item.id}/meetings` as Route}
+                                href={
+                                  `/admin/courses/${item.id}/meetings` as Route
+                                }
                               >
                                 <Icon name="history_edu" size={16} />
                               </Link>
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            <span className="font-bold">Kelola Sesi Pertemuan</span>
+                            <span className="font-bold">
+                              Kelola Sesi Pertemuan
+                            </span>
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -359,7 +370,9 @@ export function Table({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            <span className="font-bold">Kelola Mata Kuliah & Jadwal</span>
+                            <span className="font-bold">
+                              Kelola Mata Kuliah & Jadwal
+                            </span>
                           </TooltipContent>
                         </Tooltip>
                       )}

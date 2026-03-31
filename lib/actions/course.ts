@@ -5,9 +5,19 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/core/db";
 
-export async function createClassAction(data: { name: string; academicYearId: string; capacity: number }) {
+export async function createClassAction(data: {
+  name: string;
+  academicYearId: string;
+  capacity: number;
+  enrollmentKey?: string | null;
+}) {
   try {
-    await prisma.class.create({ data });
+    await prisma.class.create({
+      data: {
+        ...data,
+        enrollmentKey: data.enrollmentKey?.trim() || null,
+      },
+    });
     revalidatePath("/admin/courses");
     return { success: true };
   } catch (error) {
@@ -16,11 +26,22 @@ export async function createClassAction(data: { name: string; academicYearId: st
   }
 }
 
-export async function updateClassAction(id: string, data: { name: string; academicYearId: string; capacity: number }) {
+export async function updateClassAction(
+  id: string,
+  data: {
+    name: string;
+    academicYearId: string;
+    capacity: number;
+    enrollmentKey?: string | null;
+  },
+) {
   try {
     await prisma.class.update({
       where: { id },
-      data
+      data: {
+        ...data,
+        enrollmentKey: data.enrollmentKey?.trim() || null,
+      },
     });
     revalidatePath("/admin/courses");
     return { success: true };
@@ -143,19 +164,24 @@ export async function deleteSubjectCourseAction(id: string) {
 }
 
 // Academic Year Actions
-export async function createAcademicYearAction(data: { name: string; fromYear: string; toYear: string; isCurrent: boolean }) {
+export async function createAcademicYearAction(data: {
+  name: string;
+  fromYear: string;
+  toYear: string;
+  isCurrent: boolean;
+}) {
   try {
     if (data.isCurrent) {
       await prisma.academicYear.updateMany({ data: { isCurrent: false } });
     }
-    
+
     await prisma.academicYear.create({
       data: {
         name: data.name,
         fromYear: new Date(data.fromYear),
         toYear: new Date(data.toYear),
-        isCurrent: data.isCurrent
-      }
+        isCurrent: data.isCurrent,
+      },
     });
 
     revalidatePath("/admin/courses");
@@ -166,20 +192,23 @@ export async function createAcademicYearAction(data: { name: string; fromYear: s
   }
 }
 
-export async function updateAcademicYearAction(id: string, data: { name: string; fromYear: string; toYear: string; isCurrent: boolean }) {
+export async function updateAcademicYearAction(
+  id: string,
+  data: { name: string; fromYear: string; toYear: string; isCurrent: boolean },
+) {
   try {
     if (data.isCurrent) {
       await prisma.academicYear.updateMany({ data: { isCurrent: false } });
     }
-    
+
     await prisma.academicYear.update({
       where: { id },
       data: {
         name: data.name,
         fromYear: new Date(data.fromYear),
         toYear: new Date(data.toYear),
-        isCurrent: data.isCurrent
-      }
+        isCurrent: data.isCurrent,
+      },
     });
 
     revalidatePath("/admin/courses");
@@ -193,9 +222,14 @@ export async function updateAcademicYearAction(id: string, data: { name: string;
 export async function deleteAcademicYearAction(id: string) {
   try {
     // Check constraints
-    const classesCount = await prisma.class.count({ where: { academicYearId: id } });
+    const classesCount = await prisma.class.count({
+      where: { academicYearId: id },
+    });
     if (classesCount > 0) {
-      return { success: false, error: "Tahun akademik masih digunakan oleh kelas aktif" };
+      return {
+        success: false,
+        error: "Tahun akademik masih digunakan oleh kelas aktif",
+      };
     }
 
     await prisma.academicYear.delete({ where: { id } });
@@ -211,7 +245,7 @@ export async function setAcademicYearActiveAction(id: string) {
   try {
     await prisma.$transaction([
       prisma.academicYear.updateMany({ data: { isCurrent: false } }),
-      prisma.academicYear.update({ where: { id }, data: { isCurrent: true } })
+      prisma.academicYear.update({ where: { id }, data: { isCurrent: true } }),
     ]);
     revalidatePath("/admin/courses");
     return { success: true };
@@ -263,7 +297,10 @@ export async function assignSubjectToClassAction(data: {
   }
 }
 
-export async function removeSubjectFromClassAction(classId: string, subjectId: string) {
+export async function removeSubjectFromClassAction(
+  classId: string,
+  subjectId: string,
+) {
   try {
     await prisma.classSubject.delete({
       where: {

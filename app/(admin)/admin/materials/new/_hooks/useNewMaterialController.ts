@@ -19,11 +19,15 @@ import { notifyError, toastSaveFailed, toastSaved } from "@/lib/utils/toast";
 type UseNewMaterialControllerOptions = {
   from: "courses" | "knowledge";
   preselectedCourseId: string;
+  prefilledType: "session" | "reference";
+  prefilledMeetingNo: number;
 };
 
 export function useNewMaterialController({
   from,
   preselectedCourseId,
+  prefilledType,
+  prefilledMeetingNo,
 }: UseNewMaterialControllerOptions) {
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState<CourseOption[]>([]);
@@ -39,7 +43,10 @@ export function useNewMaterialController({
   const [form, setForm] = useState<MaterialForm>({
     courseId: preselectedCourseId,
     title: "",
-    module: "",
+    module:
+      prefilledType === "session"
+        ? `Pertemuan ${prefilledMeetingNo}`
+        : "",
     pages: [""],
   });
 
