@@ -3,7 +3,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { buildDosenCurrentYearSubjectWhere } from "@/lib/auth/dosen-access";
+import {
+  badRequest,
+  forbidden,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 
 const createSubjectSchema = z.object({
@@ -18,7 +24,13 @@ export async function GET(request: Request) {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return unauthorized();
-    if (!hasRole(currentUser.role, [UserRole.admin, UserRole.dosen, UserRole.mahasiswa])) {
+    if (
+      !hasRole(currentUser.role, [
+        UserRole.admin,
+        UserRole.dosen,
+        UserRole.mahasiswa,
+      ])
+    ) {
       return forbidden("User is not authorized to access this route");
     }
 
@@ -28,10 +40,11 @@ export async function GET(request: Request) {
     const search = searchParams.get("search");
 
     const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
-    const safeLimit = Number.isNaN(limit) || limit < 1 ? 10 : Math.min(limit, 100);
+    const safeLimit =
+      Number.isNaN(limit) || limit < 1 ? 10 : Math.min(limit, 100);
     const skip = (safePage - 1) * safeLimit;
 
-    const where = search
+    const searchWhere = search
       ? {
           OR: [
             { name: { contains: search, mode: "insensitive" as const } },
@@ -39,6 +52,16 @@ export async function GET(request: Request) {
           ],
         }
       : undefined;
+
+    const dosenWhere =
+      currentUser.role === UserRole.dosen
+        ? buildDosenCurrentYearSubjectWhere(currentUser.id)
+        : undefined;
+
+    const where =
+      searchWhere && dosenWhere
+        ? { AND: [dosenWhere, searchWhere] }
+        : (dosenWhere ?? searchWhere);
 
     const [total, subjects] = await Promise.all([
       prisma.subject.count({ where }),

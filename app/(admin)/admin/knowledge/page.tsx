@@ -25,6 +25,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils/index";
+import {
+  notifyError,
+  toastDeleted,
+  toastDeleteFailed,
+  toastSaveFailed,
+  toastSaved,
+  toastUpdated,
+} from "@/lib/utils/toast";
 
 export type Material = {
   id: string;
@@ -92,7 +100,13 @@ const MODULE_SUGGESTIONS = [
 
 export default function KnowledgePage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div></div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
+        </div>
+      }
+    >
       <KnowledgeContent />
     </Suspense>
   );
@@ -165,12 +179,27 @@ function KnowledgeContent() {
   async function loadCourses() {
     try {
       const res = await fetch("/api/kb/courses");
-      const data = await res.json();
+      const data: {
+        courses?: Array<{
+          id: string;
+          code: string;
+          name: string;
+          status: string;
+        }>;
+      } = await res.json();
+
       if (!res.ok) {
         setCourses([]);
         return;
       }
-      setCourses(data.courses || []);
+
+      const coursesData: CourseOption[] = (data.courses || []).map((c) => ({
+        id: c.id,
+        code: c.code,
+        title: c.name || "",
+        status: c.status,
+      }));
+      setCourses(coursesData);
     } catch {
       setCourses([]);
     }
@@ -203,7 +232,7 @@ function KnowledgeContent() {
       window.history.replaceState(null, "", window.location.pathname);
     } else if (editId) {
       // Find from already loaded materials or wait for them
-      const found = materials.find(m => m.id === editId);
+      const found = materials.find((m) => m.id === editId);
       if (found) {
         openEditModal(found);
         window.history.replaceState(null, "", window.location.pathname);
@@ -253,6 +282,7 @@ function KnowledgeContent() {
           method: "DELETE",
         });
         if (!res.ok) {
+          toastDeleteFailed("materi", null);
           setNotice({
             open: true,
             title: "Gagal Menghapus",
@@ -260,6 +290,7 @@ function KnowledgeContent() {
           });
           return;
         }
+        toastDeleted("materi");
         setMaterials((prev) => prev.filter((k) => k.id !== id));
       },
     });
@@ -270,6 +301,7 @@ function KnowledgeContent() {
     setSubmitting(true);
     try {
       if (!form.courseId) {
+        notifyError("Harap pilih mata kuliah untuk materi ini");
         setNotice({
           open: true,
           title: "Mata Kuliah Wajib",
@@ -305,11 +337,17 @@ function KnowledgeContent() {
         throw new Error(data?.message || "Gagal menyimpan materi");
       }
 
+      if (editingMaterial) {
+        toastUpdated("materi");
+      } else {
+        toastSaved("materi");
+      }
       setShowModal(false);
       setEditingMaterial(null);
       setForm(EMPTY_FORM);
       await loadData(search, selectedCourseId);
     } catch (error) {
+      toastSaveFailed("materi", error);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
@@ -350,7 +388,9 @@ function KnowledgeContent() {
                 onClick={() => loadData(search, selectedCourseId)}
               >
                 <Icon name="sync" size={18} />
-                {isDesktop && <span className="ml-2 uppercase text-[10px]">Sync Data</span>}
+                {isDesktop && (
+                  <span className="ml-2 uppercase text-[10px]">Sync Data</span>
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="font-bold">
@@ -375,7 +415,11 @@ function KnowledgeContent() {
                   }}
                 >
                   <Icon name="upload_file" size={18} />
-                  {isDesktop && <span className="ml-2 uppercase text-[10px]">Upload Materi</span>}
+                  {isDesktop && (
+                    <span className="ml-2 uppercase text-[10px]">
+                      Upload Materi
+                    </span>
+                  )}
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -451,73 +495,73 @@ function KnowledgeContent() {
             setForm(EMPTY_FORM);
           }}
         />
-        </Suspense>
+      </Suspense>
 
-        <Dialog
-          open={notice.open}
-          onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
-        >
-          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-black uppercase">
-                {notice.title}
-              </DialogTitle>
-              <DialogDescription className="font-bold text-muted-foreground">
-                {notice.message}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end pt-4">
-              <Button
-                className="font-black px-10 rounded-md border border-border shadow-sm"
-                onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
-              >
-                OK
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+      <Dialog
+        open={notice.open}
+        onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              {notice.title}
+            </DialogTitle>
+            <DialogDescription className="font-bold text-muted-foreground">
+              {notice.message}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end pt-4">
+            <Button
+              className="font-black px-10 rounded-md border border-border shadow-sm"
+              onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        <Dialog
-          open={confirmState.open}
-          onOpenChange={(open) =>
-            setConfirmState((prev) => ({
-              ...prev,
-              open,
-              onConfirm: open ? prev.onConfirm : null,
-            }))
-          }
-        >
-          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-black uppercase">
-                {confirmState.title}
-              </DialogTitle>
-              <DialogDescription className="font-bold text-muted-foreground">
-                {confirmState.message}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-3 pt-6">
-              <Button
-                variant="ghost"
-                className="font-black text-[11px] uppercase tracking-widest border border-border"
-                onClick={() =>
-                  setConfirmState((prev) => ({ ...prev, open: false }))
-                }
-              >
-                Batal
-              </Button>
-              <Button
-                className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 border border-border rounded-md shadow-sm"
-                onClick={async () => {
-                  if (confirmState.onConfirm) await confirmState.onConfirm();
-                  setConfirmState((prev) => ({ ...prev, open: false }));
-                }}
-              >
-                Ya, Hapus
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+      <Dialog
+        open={confirmState.open}
+        onOpenChange={(open) =>
+          setConfirmState((prev) => ({
+            ...prev,
+            open,
+            onConfirm: open ? prev.onConfirm : null,
+          }))
+        }
+      >
+        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              {confirmState.title}
+            </DialogTitle>
+            <DialogDescription className="font-bold text-muted-foreground">
+              {confirmState.message}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 pt-6">
+            <Button
+              variant="ghost"
+              className="font-black text-[11px] uppercase tracking-widest border border-border"
+              onClick={() =>
+                setConfirmState((prev) => ({ ...prev, open: false }))
+              }
+            >
+              Batal
+            </Button>
+            <Button
+              className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 border border-border rounded-md shadow-sm"
+              onClick={async () => {
+                if (confirmState.onConfirm) await confirmState.onConfirm();
+                setConfirmState((prev) => ({ ...prev, open: false }));
+              }}
+            >
+              Ya, Hapus
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

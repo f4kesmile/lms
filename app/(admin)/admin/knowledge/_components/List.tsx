@@ -107,67 +107,69 @@ export function List({
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 border-t border-border/40 pt-6">
-                <div className="flex items-start gap-3">
-                  <Icon name="auto_stories" size={16} className="mt-0.5 text-primary/40 shrink-0" />
-                  <div className="flex flex-col min-w-0 text-left">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
-                      Subject
-                    </span>
-                    <span className="truncate text-[11px] font-extrabold text-foreground/80">
-                       {item.course
-                        ? `${item.course.code} - ${item.course.title}`
-                        : "General Material"}
-                    </span>
+              <div className="flex items-end justify-between gap-4 border-t border-border/40 pt-6 mt-auto">
+                <div className="flex-1 flex flex-col gap-3 min-w-0">
+                  <div className="flex items-start gap-3">
+                    <Icon name="auto_stories" size={16} className="mt-0.5 text-primary/40 shrink-0" />
+                    <div className="flex flex-col min-w-0 text-left">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                        Subject
+                      </span>
+                      <span className="truncate text-[11px] font-extrabold text-foreground/80">
+                         {item.course
+                          ? `${item.course.code} - ${item.course.title}`
+                          : "General Material"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Icon name={item.type === 'session' ? "calendar_today" : "folder_open"} size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
+                    <div className="flex flex-col min-w-0 text-left">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                        {item.type === 'session' ? "Meeting" : "Module"}
+                      </span>
+                      <span className="truncate text-[11px] font-extrabold text-foreground/80">
+                        {item.type === 'session' ? `Pertemuan Ke-${item.meetingNo}` : item.module}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Icon name={item.type === 'session' ? "calendar_today" : "folder_open"} size={16} className="mt-0.5 text-muted-foreground/30 shrink-0" />
-                  <div className="flex flex-col min-w-0 text-left">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
-                      {item.type === 'session' ? "Meeting" : "Module"}
-                    </span>
-                    <span className="truncate text-[11px] font-extrabold text-foreground/80">
-                      {item.type === 'session' ? `Pertemuan Ke-${item.meetingNo}` : item.module}
-                    </span>
-                  </div>
+
+                {/* Actions (Integrated into flow to prevent overlap) */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 border border-border/40 bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:border-primary hover:text-primary transition-all rounded-lg"
+                        onClick={() => openEditModal(item)}
+                      >
+                        <Icon name="edit" size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="font-bold">
+                      Edit
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 border border-border/40 bg-destructive/5 text-destructive shadow-sm hover:bg-destructive hover:text-white transition-all rounded-lg"
+                        onClick={() => deleteMaterial(item.id)}
+                      >
+                        <Icon name="delete" size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="font-bold">
+                      Hapus
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
-            </div>
-
-            {/* Actions (Always Visible & Rounded-Square) */}
-            <div className="absolute right-4 bottom-4 flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 border border-border/40 bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:border-primary hover:text-primary transition-all rounded-lg"
-                    onClick={() => openEditModal(item)}
-                  >
-                    <Icon name="edit" size={18} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="font-bold">
-                  Edit
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 border border-border/40 bg-destructive/5 text-destructive shadow-sm hover:bg-destructive hover:text-white transition-all rounded-lg"
-                    onClick={() => deleteMaterial(item.id)}
-                  >
-                    <Icon name="delete" size={18} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="font-bold">
-                  Hapus
-                </TooltipContent>
-              </Tooltip>
             </div>
           </Card>
         ))

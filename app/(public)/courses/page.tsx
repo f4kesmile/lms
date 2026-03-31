@@ -16,46 +16,56 @@ export default async function CourseCatalogPage({
   const userId = await getCurrentUserIdFromCookie();
 
   const courses = await prisma.class.findMany({
+    where: { academicYear: { isCurrent: true } },
     orderBy: { createdAt: "desc" },
     include: {
       subjects: {
-        select: {
+        include: {
           subject: {
             select: {
               name: true,
               code: true,
+              credits: true,
               teachers: {
-                select: {
-                  user: { select: { name: true } },
-                },
+                take: 1,
+                select: { user: { select: { name: true } } },
               },
             },
           },
+          teacher: { select: { name: true } },
         },
       },
       students: { select: { userId: true } },
     },
   });
 
+  function formatTeacherDisplay(names: string[]) {
+    if (names.length === 0) return "Belum ada dosen";
+    if (names.length <= 2) return names.join(", ");
+    return `${names.slice(0, 2).join(", ")} +${names.length - 2} dosen`;
+  }
+
   const coursesWithKeyStatus = courses.map((course) => {
-    const teacherNames = Array.from(
+    const primarySubject = course.subjects[0];
+    const subject = primarySubject?.subject;
+
+    const assignedTeacherNames = Array.from(
       new Set(
         course.subjects
-          .flatMap((subjectLink) => subjectLink.subject.teachers)
-          .map((teacherLink) => teacherLink.user.name)
-          .filter(Boolean),
+          .map((item) => item.teacher?.name)
+          .filter((name): name is string => Boolean(name)),
       ),
     );
 
+    const teacherName = formatTeacherDisplay(assignedTeacherNames);
+
     return {
       id: course.id,
-      name: course.name,
-      teacherName:
-        teacherNames.length > 0
-          ? teacherNames.join(", ")
-          : "Belum ada dosen pengampu",
-      subjectName: course.subjects[0]?.subject.name || "Umum",
-      subjectCode: course.subjects[0]?.subject.code || "",
+      className: course.name,
+      teacherName,
+      subjectName: subject?.name || "Mata Kuliah Umum",
+      subjectCode: subject?.code || "EDU-00",
+      credits: subject?.credits || 2,
       studentCount: course.students.length,
       isEnrolled:
         !!userId &&
@@ -68,14 +78,6 @@ export default async function CourseCatalogPage({
     <>
       <Navbar />
       <main className="app-shell flex flex-col gap-10 pb-20">
-        <div className="catalog-header pb-4 border-b border-border">
-          <h1 className="text-3xl font-black mb-2">Eksplorasi Kelas Akademik</h1>
-          <p className="text-muted-foreground">
-            Jelajahi kelas yang sedang dibuka, temukan pengajarnya, lalu daftar
-            sesuai kebutuhan belajarmu.
-          </p>
-        </div>
-
         <CourseCatalogBrowser
           courses={coursesWithKeyStatus}
           initialQuery={q}

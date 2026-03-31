@@ -5,6 +5,7 @@ import type {
   UserRole,
   UsersResponse,
 } from "@/app/(admin)/admin/users/_lib/types";
+import { toastUpdateFailed, toastUpdated } from "@/lib/utils/toast";
 
 export function useUsersController() {
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -102,7 +103,9 @@ export function useUsersController() {
           user.id === userId ? { ...user, role: newRole } : user,
         ),
       );
+      toastUpdated("role pengguna");
     } catch (error) {
+      toastUpdateFailed("role pengguna", error);
       setError(error instanceof Error ? error.message : "Gagal mengubah role");
     } finally {
       setLoading(false);
@@ -129,7 +132,9 @@ export function useUsersController() {
           user.id === userId ? { ...user, ...updated } : user,
         ),
       );
+      toastUpdated("data pengguna");
     } catch (error) {
+      toastUpdateFailed("data pengguna", error);
       setError(
         error instanceof Error ? error.message : "Gagal memperbarui data user",
       );

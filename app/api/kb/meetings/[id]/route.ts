@@ -3,47 +3,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, forbidden, notFound, serverError, unauthorized } from "@/lib/core/http";
+import { isDosenAllowedForSubjectInCurrentYear } from "@/lib/auth/dosen-access";
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 import { splitIntoChunks } from "@/lib/ai/rag";
-
-async function canManageSubjectMeetings(userId: string, role: UserRole, subjectId: string) {
-  if (role === UserRole.admin) return true;
-  if (role !== UserRole.dosen) return false;
-
-  const currentYear = await prisma.academicYear.findFirst({
-    where: { isCurrent: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  const fallbackLink = await prisma.subjectTeacher.findUnique({
-    where: { subjectId_userId: { subjectId, userId } },
-    select: { userId: true },
-  });
-
-  if (!currentYear) return Boolean(fallbackLink);
-
-  const classSubjects = await prisma.classSubject.findMany({
-    where: {
-      subjectId,
-      class: { academicYearId: currentYear.id },
-    },
-    select: { teacherUserId: true },
-  });
-
-  if (classSubjects.length === 0) return Boolean(fallbackLink);
-
-  if (classSubjects.some((row) => row.teacherUserId && row.teacherUserId !== userId)) {
-    return false;
-  }
-
-  if (classSubjects.some((row) => row.teacherUserId === userId)) {
-    return true;
-  }
-
-  return classSubjects.every((row) => row.teacherUserId === null) && Boolean(fallbackLink);
-}
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -53,10 +22,15 @@ const updateMeetingSchema = z.object({
   meetingNo: z.number().int().min(1).optional(),
   title: z.string().min(3).optional(),
   content: z.string().min(50).optional(),
-  assets: z.array(z.object({
-    name: z.string(),
-    data: z.string(),
-  })).nullable().optional(),
+  assets: z
+    .array(
+      z.object({
+        name: z.string(),
+        data: z.string(),
+      }),
+    )
+    .nullable()
+    .optional(),
 });
 
 export async function GET(_request: Request, context: Context) {
@@ -74,7 +48,13 @@ export async function GET(_request: Request, context: Context) {
     });
 
     if (!meeting) return notFound("Meeting not found");
-    if (!(await canManageSubjectMeetings(user.id, user.role, meeting.subject.id))) {
+    if (
+      !(await isDosenAllowedForSubjectInCurrentYear({
+        userId: user.id,
+        role: user.role,
+        subjectId: meeting.subject.id,
+      }))
+    ) {
       return forbidden("Anda tidak memiliki akses ke sesi mata kuliah ini");
     }
     return NextResponse.json(meeting);
@@ -100,8 +80,16 @@ export async function PATCH(request: Request, context: Context) {
     const existing = await prisma.subjectMeeting.findUnique({ where: { id } });
     if (!existing) return notFound("Meeting not found");
 
-    if (!(await canManageSubjectMeetings(user.id, user.role, existing.subjectId))) {
-      return forbidden("Anda tidak memiliki akses kelola sesi untuk mata kuliah ini");
+    if (
+      !(await isDosenAllowedForSubjectInCurrentYear({
+        userId: user.id,
+        role: user.role,
+        subjectId: existing.subjectId,
+      }))
+    ) {
+      return forbidden(
+        "Anda tidak memiliki akses kelola sesi untuk mata kuliah ini",
+      );
     }
 
     const nextContent = parsed.data.content ?? existing.content;
@@ -114,7 +102,10 @@ export async function PATCH(request: Request, context: Context) {
         meetingNo: parsed.data.meetingNo,
         title: parsed.data.title,
         content: nextContent,
-        assets: parsed.data.assets !== undefined ? (parsed.data.assets ?? []) : undefined,
+        assets:
+          parsed.data.assets !== undefined
+            ? (parsed.data.assets ?? [])
+            : undefined,
         chunks: {
           deleteMany: {},
           create: chunks.map((chunk, index) => ({
@@ -148,8 +139,16 @@ export async function DELETE(_request: Request, context: Context) {
 
     if (!existing) return notFound("Meeting not found");
 
-    if (!(await canManageSubjectMeetings(user.id, user.role, existing.subjectId))) {
-      return forbidden("Anda tidak memiliki akses kelola sesi untuk mata kuliah ini");
+    if (
+      !(await isDosenAllowedForSubjectInCurrentYear({
+        userId: user.id,
+        role: user.role,
+        subjectId: existing.subjectId,
+      }))
+    ) {
+      return forbidden(
+        "Anda tidak memiliki akses kelola sesi untuk mata kuliah ini",
+      );
     }
 
     await prisma.subjectMeeting.delete({ where: { id } });

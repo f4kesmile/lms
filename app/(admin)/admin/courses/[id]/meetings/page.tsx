@@ -11,13 +11,27 @@ import { toast } from "sonner";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn, getInitials } from "@/lib/utils/index";
 
 const MeetingEditor = dynamic(
   () =>
-    import(
-      "@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor"
-    ).then((mod) => mod.MeetingEditor),
+    import("@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor").then(
+      (mod) => mod.MeetingEditor,
+    ),
   { ssr: false },
 );
 import {
@@ -41,6 +55,12 @@ export default function SubjectMeetingsPage() {
   const router = useRouter();
   const subjectId = params.id as string;
 
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+    role: string;
+  } | null>(null);
+
   const [meetings, setMeetings] = useState<SubjectMeetingItem[]>([]);
   const [subject, setSubject] = useState<{
     id: string;
@@ -54,10 +74,22 @@ export default function SubjectMeetingsPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: (() => Promise<void> | void) | null;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [mRes, sRes] = await Promise.all([
+      const [mRes, sRes, sessionRes] = await Promise.all([
         getSubjectMeetingsAction(subjectId),
         fetch(`/api/kb/courses`).then((r) => r.json()) as Promise<{
           courses: Array<{
@@ -70,6 +102,9 @@ export default function SubjectMeetingsPage() {
             credits: number;
             teachers: Array<{ user: { id: string; name: string } }>;
           }>;
+        }>,
+        fetch("/api/auth/session").then((r) => r.json()) as Promise<{
+          user?: { id: string; name: string; role: string };
         }>,
       ]);
 
@@ -84,10 +119,19 @@ export default function SubjectMeetingsPage() {
         (c: { id: string }) => c.id === subjectId,
       );
       if (currentSubject) setSubject(currentSubject);
+
+      setCurrentUser(sessionRes?.user ?? null);
     } finally {
       setLoading(false);
     }
   }, [subjectId]);
+
+  const headerTeachers =
+    currentUser?.role === "dosen"
+      ? [{ user: { id: currentUser.id, name: currentUser.name } }]
+      : Array.from(
+          new Map(subject?.teachers?.map((t) => [t.user.id, t]) ?? []).values(),
+        );
 
   useEffect(() => {
     if (!subjectId) return;
@@ -95,15 +139,21 @@ export default function SubjectMeetingsPage() {
   }, [subjectId, loadData]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hapus sesi pertemuan ini?")) return;
-
-    const res = await deleteSubjectMeetingAction(id);
-    if (res.success) {
-      toast.success("Pertemuan dihapus");
-      await loadData();
-    } else {
-      toast.error(res.error);
-    }
+    setConfirmState({
+      open: true,
+      title: "Hapus Sesi Pertemuan",
+      message:
+        "Aksi ini tidak dapat dibatalkan. Hapus sesi ini secara permanen?",
+      onConfirm: async () => {
+        const res = await deleteSubjectMeetingAction(id);
+        if (res.success) {
+          toast.success("Pertemuan berhasil dihapus");
+          await loadData();
+        } else {
+          toast.error(res.error || "Gagal menghapus sesi");
+        }
+      },
+    });
   };
 
   const openWorkstation = (meetingId?: string) => {
@@ -116,7 +166,7 @@ export default function SubjectMeetingsPage() {
       url.searchParams.set("new", "true");
       url.searchParams.set("meetingNo", (meetings.length + 1).toString());
     }
-    router.push(url.pathname + url.search as Route);
+    router.push((url.pathname + url.search) as Route);
   };
 
   return (
@@ -153,59 +203,82 @@ export default function SubjectMeetingsPage() {
         </div>
 
         {subject && (
-          <Card className="p-1 rounded-3xl border-none bg-gradient-to-br from-primary/20 via-background to-background shadow-2xl">
-            <div className="bg-card rounded-[22px] p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
-              <div className="size-24 rounded-2xl bg-muted overflow-hidden border-2 border-primary/20 shadow-inner">
+          <div className="relative group overflow-hidden rounded-[2.5rem] p-[1px] bg-gradient-to-br from-primary/30 via-border/50 to-background shadow-2xl transition-all hover:shadow-primary/5">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-50" />
+            <div className="relative bg-card rounded-[2.45rem] p-8 md:p-10 flex flex-col md:flex-row gap-8 items-start md:items-center overflow-hidden">
+              {/* Ornamen Background */}
+              <div className="absolute -right-20 -top-20 size-64 bg-primary/5 rounded-full blur-3xl" />
+              <div className="absolute -left-20 -bottom-20 size-64 bg-primary/5 rounded-full blur-3xl" />
+
+              <div className="relative size-28 md:size-32 shrink-0 rounded-[2rem] bg-gradient-to-br from-muted/50 to-muted overflow-hidden border border-border/40 shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                 {subject.bannerImage ? (
                   <Image
                     src={subject.bannerImage}
                     alt={subject.name}
-                    width={96}
-                    height={96}
+                    width={128}
+                    height={128}
                     unoptimized
                     className="size-full object-cover"
                   />
                 ) : (
-                  <div className="size-full flex items-center justify-center bg-primary/5 text-primary">
-                    <Icon name="menu_book" size={32} />
+                  <div className="size-full flex items-center justify-center bg-primary/5 text-primary/40">
+                    <Icon name="menu_book" size={48} />
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black uppercase tracking-tighter">
+
+              <div className="relative flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider border border-primary/20">
                     {subject.code}
-                  </span>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  </div>
+                  <div className="h-4 w-px bg-border/60 mx-1 hidden sm:block" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                    <Icon
+                      name="history_edu"
+                      size={14}
+                      className="text-primary/40"
+                    />
                     {subject.credits || 2} SKS • {subject.status}
                   </span>
                 </div>
-                <h1 className="text-2xl font-black tracking-tighter mb-2">
+
+                <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-4 text-foreground leading-[1.1]">
                   {subject.name}
                 </h1>
-                <p className="text-sm text-muted-foreground font-medium line-clamp-2 max-w-2xl leading-relaxed">
+
+                <p className="text-sm md:text-base text-muted-foreground font-medium leading-relaxed max-w-3xl line-clamp-2 md:line-clamp-none opacity-80">
                   {subject.description ||
-                    "Tentukan materi pembelajaran untuk setiap pertemuan agar mahasiswa dapat belajar secara terstruktur."}
+                    "Platform manajemen workstation untuk mendistribusikan materi pembelajaran secara terstruktur melalui asisten AI Nusa Belajar."}
                 </p>
               </div>
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <div className="flex -space-x-3 mb-1">
-                  {subject.teachers?.map((t) => (
-                    <div
-                      key={t.user.id}
-                      className="size-8 rounded-full border-2 border-card bg-primary/20 flex items-center justify-center text-[10px] font-black"
-                      title={t.user.name}
-                    >
-                      {t.user.name.substring(0, 2)}
-                    </div>
+
+              <div className="relative flex flex-col gap-4 min-w-[180px] pt-6 md:pt-0 md:pl-8 border-t md:border-t-0 md:border-l border-border/40">
+                <div className="flex -space-x-3 mb-1 justify-start md:justify-end">
+                  {headerTeachers.map((t) => (
+                    <Tooltip key={`teacher-${t.user.id}`}>
+                      <TooltipTrigger asChild>
+                        <div className="size-10 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shadow-xl ring-2 ring-background transition-transform hover:scale-110 hover:z-30 cursor-pointer">
+                          {getInitials(t.user.name)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="font-bold">
+                        {t.user.name}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Tim Dosen Pengampu
-                </p>
+                <div className="text-start md:text-end">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                    Tim Pengajar
+                  </p>
+                  <p className="text-[9px] font-bold text-muted-foreground/60 uppercase mt-0.5">
+                    Nusa Belajar Academic
+                  </p>
+                </div>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         <Card className="p-5 rounded-3xl border border-border/60 bg-card/70">
@@ -257,52 +330,129 @@ export default function SubjectMeetingsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {meetings.map((m) => (
-              <Card
+              <div
                 key={m.id}
-                className="group relative overflow-hidden rounded-3xl border-border/50 bg-card hover:bg-primary/5 transition-all p-6 shadow-sm hover:shadow-xl hover:shadow-primary/5"
+                className="group relative overflow-hidden rounded-[2rem] border border-border/40 bg-card p-7 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1"
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-lg">
-                    {m.meetingNo}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div className="relative mb-6 flex items-start justify-between">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 border border-primary/10">
+                      {m.meetingNo}
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60 pl-1">
+                      Sesi
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 rounded-lg hover:bg-primary/20 hover:text-primary transition-all"
-                      onClick={() => openWorkstation(m.id)}
-                    >
-                      <Icon name="edit" size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-all"
-                      onClick={() => handleDelete(m.id)}
-                    >
-                      <Icon name="delete" size={16} />
-                    </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-10 rounded-[1rem] border border-border/40 bg-background/50 backdrop-blur-md text-foreground shadow-sm hover:border-primary hover:text-primary transition-all"
+                          onClick={() => openWorkstation(m.id)}
+                        >
+                          <Icon name="edit" size={20} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="font-bold">
+                        Edit Sesi
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-10 rounded-[1rem] border border-destructive/10 bg-destructive/5 text-destructive shadow-sm hover:bg-destructive hover:text-white transition-all"
+                          onClick={() => handleDelete(m.id)}
+                        >
+                          <Icon name="delete" size={20} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="font-bold">
+                        Hapus Sesi
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
-                <h3 className="text-lg font-black tracking-tight mb-2 line-clamp-1">
+
+                <h3 className="relative text-xl font-black tracking-tight mb-3 text-foreground line-clamp-2 leading-tight min-h-[3rem]">
                   {m.title}
                 </h3>
-                <div className="text-xs text-muted-foreground font-medium line-clamp-2 mb-4 leading-relaxed prose prose-sm dark:prose-invert max-h-12 overflow-hidden" dangerouslySetInnerHTML={{ __html: m.content }} />
-                
-                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Icon name="description" size={12} />
-                    {m.content.length} Karakter
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Icon name="inventory_2" size={12} />
-                    Pusat Pengetahuan
-                  </span>
+
+                <div
+                  className="relative text-xs text-muted-foreground/70 font-medium line-clamp-2 mb-6 leading-relaxed max-h-12 overflow-hidden"
+                  dangerouslySetInnerHTML={{ __html: m.content }}
+                />
+
+                <div className="relative pt-6 border-t border-border/40 flex items-center gap-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-1.5 rounded-full bg-primary/40" />
+                    <Icon
+                      name="description"
+                      size={14}
+                      className="text-primary/40"
+                    />
+                    {m.content.length.toLocaleString()} Karakter
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-1.5 rounded-full bg-secondary-brand/40" />
+                    <Icon
+                      name="database"
+                      size={14}
+                      className="text-secondary-brand/40"
+                    />
+                    Knowledge Bank
+                  </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
+        <Dialog
+          open={confirmState.open}
+          onOpenChange={(o) =>
+            setConfirmState((p) => ({
+              ...p,
+              open: o,
+              onConfirm: o ? p.onConfirm : null,
+            }))
+          }
+        >
+          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black uppercase text-destructive">
+                {confirmState.title}
+              </DialogTitle>
+              <DialogDescription className="font-bold text-muted-foreground pt-2">
+                {confirmState.message}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-3 pt-6">
+              <Button
+                variant="ghost"
+                className="font-black text-[11px] uppercase tracking-widest border border-border h-11 px-6"
+                onClick={() => setConfirmState((p) => ({ ...p, open: false }))}
+              >
+                Batal
+              </Button>
+              <Button
+                className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-md border border-border shadow-sm h-11"
+                onClick={async () => {
+                  if (confirmState.onConfirm) await confirmState.onConfirm();
+                  setConfirmState((p) => ({ ...p, open: false }));
+                }}
+              >
+                Ya, Hapus Sesi
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

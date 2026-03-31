@@ -308,6 +308,24 @@ export function List({
                 </Tooltip>
               )}
 
+              {activeTab === "kelas" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-md border border-border bg-indigo-500/10 text-indigo-500 shadow-sm hover:bg-indigo-500/20 hover:scale-105 transition-all"
+                      onClick={() => (onEdit as any)(item, "manage-subjects")}
+                    >
+                      <Icon name="library_books" size={20} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span className="font-bold">Kelola Mata Kuliah & Jadwal</span>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button

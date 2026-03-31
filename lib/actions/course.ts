@@ -220,3 +220,60 @@ export async function setAcademicYearActiveAction(id: string) {
     return { success: false, error: "Gagal mengubah status aktif" };
   }
 }
+
+export async function assignSubjectToClassAction(data: {
+  classId: string;
+  subjectId: string;
+  teacherUserId?: string;
+  dayOfWeek?: any;
+  startTime?: string;
+  endTime?: string;
+  room?: string;
+}) {
+  try {
+    await prisma.classSubject.upsert({
+      where: {
+        classId_subjectId: {
+          classId: data.classId,
+          subjectId: data.subjectId,
+        },
+      },
+      update: {
+        teacherUserId: data.teacherUserId || null,
+        dayOfWeek: data.dayOfWeek || null,
+        startTime: data.startTime || null,
+        endTime: data.endTime || null,
+        room: data.room || null,
+      },
+      create: {
+        classId: data.classId,
+        subjectId: data.subjectId,
+        teacherUserId: data.teacherUserId || null,
+        dayOfWeek: data.dayOfWeek || null,
+        startTime: data.startTime || null,
+        endTime: data.endTime || null,
+        room: data.room || null,
+      },
+    });
+    revalidatePath("/admin/courses");
+    return { success: true };
+  } catch (error) {
+    console.error("Error assigning subject:", error);
+    return { success: false, error: "Gagal menugaskan mata kuliah" };
+  }
+}
+
+export async function removeSubjectFromClassAction(classId: string, subjectId: string) {
+  try {
+    await prisma.classSubject.delete({
+      where: {
+        classId_subjectId: { classId, subjectId },
+      },
+    });
+    revalidatePath("/admin/courses");
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing subject:", error);
+    return { success: false, error: "Gagal menghapus penugasan" };
+  }
+}

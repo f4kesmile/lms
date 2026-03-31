@@ -50,14 +50,13 @@ export function DocumentEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm md:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-6",
+          "prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[300px] sm:min-h-[400px] p-3 sm:p-6",
           className
         ),
       },
     },
   });
 
-  // Update content if changed from outside (e.g. when switching items)
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content);
@@ -115,83 +114,92 @@ export function DocumentEditor({
   return (
     <div className="flex flex-col w-full border border-border/60 rounded-2xl overflow-hidden bg-background ring-offset-background focus-within:ring-2 focus-within:ring-primary/20 transition-all">
       {/* Premium Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border/40 bg-muted/20 sticky top-0 z-10 backdrop-blur-md">
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          isActive={editor.isActive("heading", { level: 1 })}
-          icon="format_h1"
-          label="Heading 1"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          isActive={editor.isActive("heading", { level: 2 })}
-          icon="format_h2"
-          label="Heading 2"
-        />
-        <div className="w-px h-4 bg-border/60 mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive("bold")}
-          icon="format_bold"
-          label="Bold"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive("italic")}
-          icon="format_italic"
-          label="Italic"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          isActive={editor.isActive("underline")}
-          icon="format_underlined"
-          label="Underline"
-        />
-        <div className="w-px h-4 bg-border/60 mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          isActive={editor.isActive({ textAlign: "left" })}
-          icon="format_align_left"
-          label="Align Left"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          isActive={editor.isActive({ textAlign: "center" })}
-          icon="format_align_center"
-          label="Align Center"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          isActive={editor.isActive({ textAlign: "right" })}
-          icon="format_align_right"
-          label="Align Right"
-        />
-        <div className="w-px h-4 bg-border/60 mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive("bulletList")}
-          icon="format_list_bulleted"
-          label="Bullet List"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive("orderedList")}
-          icon="format_list_numbered"
-          label="Ordered List"
-        />
-        <div className="w-px h-4 bg-border/60 mx-1" />
-        <ToolbarButton onClick={handleImageUpload} icon="image" label="Insert Image" />
-        <div className="w-px h-4 bg-border/60 mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          icon="undo"
-          label="Undo"
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          icon="redo"
-          label="Redo"
-        />
+      <div className="flex flex-wrap items-center gap-y-2 gap-x-1 p-2 border-b border-border/40 bg-muted/20 sticky top-0 z-10 backdrop-blur-md">
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            isActive={editor.isActive("heading", { level: 1 })}
+            icon="format_h1"
+            label="Heading 1"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive("heading", { level: 2 })}
+            icon="format_h2"
+            label="Heading 2"
+          />
+        </div>
+        <div className="hidden sm:block w-px h-4 bg-border/60 mx-1" />
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive("bold")}
+            icon="format_bold"
+            label="Bold"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive("italic")}
+            icon="format_italic"
+            label="Italic"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            isActive={editor.isActive("underline")}
+            icon="format_underlined"
+            label="Underline"
+          />
+        </div>
+        <div className="hidden sm:block w-px h-4 bg-border/60 mx-1" />
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            isActive={editor.isActive({ textAlign: "left" })}
+            icon="format_align_left"
+            label="Align Left"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            isActive={editor.isActive({ textAlign: "center" })}
+            icon="format_align_center"
+            label="Align Center"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            isActive={editor.isActive({ textAlign: "right" })}
+            icon="format_align_right"
+            label="Align Right"
+          />
+        </div>
+        <div className="hidden sm:block w-px h-4 bg-border/60 mx-1" />
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive("bulletList")}
+            icon="format_list_bulleted"
+            label="Bullet List"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive("orderedList")}
+            icon="format_list_numbered"
+            label="Ordered List"
+          />
+        </div>
+        <div className="hidden sm:block w-px h-4 bg-border/60 mx-1" />
+        <div className="flex items-center gap-1">
+          <ToolbarButton onClick={handleImageUpload} icon="image" label="Insert Image" />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().undo().run()}
+            icon="undo"
+            label="Undo"
+          />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().redo().run()}
+            icon="redo"
+            label="Redo"
+          />
+        </div>
       </div>
 
       <EditorContent editor={editor} className="flex-1 overflow-y-auto" />

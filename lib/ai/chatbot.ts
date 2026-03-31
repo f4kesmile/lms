@@ -21,12 +21,21 @@ function normalizeExcerpt(text: string): string {
 function firstSentence(text: string, maxLength = 180): string {
   const clean = normalizeExcerpt(text);
   if (!clean) return "";
-
   const sentenceBreak = clean.search(/[.!?](\s|$)/);
   const base = sentenceBreak >= 0 ? clean.slice(0, sentenceBreak + 1) : clean;
-
   if (base.length <= maxLength) return base;
   const clipped = base.slice(0, maxLength);
+  const lastSpace = clipped.lastIndexOf(" ");
+  return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim()}...`;
+}
+
+function firstNSentences(text: string, count = 2, maxLength = 280): string {
+  const clean = normalizeExcerpt(text);
+  if (!clean) return "";
+  const parts = clean.match(/[^.!?]+[.!?]?/g) ?? [clean];
+  const joined = parts.slice(0, Math.max(1, count)).join(" ").trim();
+  if (joined.length <= maxLength) return joined;
+  const clipped = joined.slice(0, maxLength);
   const lastSpace = clipped.lastIndexOf(" ");
   return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim()}...`;
 }
@@ -36,66 +45,20 @@ function isExerciseRequest(question: string): boolean {
   return /rancang|latihan|exercise|praktik|soal|tugas/.test(q);
 }
 
-function needsCaseBridge(question: string): boolean {
-  const q = question.toLowerCase();
-  return /studi kasus|hubungkan|kaitkan|praktis|penerapan/.test(q);
-}
-
-function uniqueByMeaning(lines: string[]): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-
-  for (const line of lines) {
-    const normalized = normalizeExcerpt(line)
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .slice(0, 10)
-      .join(" ");
-
-    if (!normalized || seen.has(normalized)) continue;
-    seen.add(normalized);
-    result.push(line);
-  }
-
-  return result;
-}
-
 function estimateComplexity(question: string): ComplexityLevel {
   const q = question.toLowerCase();
   const words = q.split(/\s+/).filter(Boolean).length;
 
-  const hardSignals = [
-    "bandingkan",
-    "analisis",
-    "evaluasi",
-    "kritisi",
-    "trade-off",
-    "implikasi",
-    "strategi",
-    "arsitektur",
-    "mengapa",
-    "kenapa",
-  ];
-
-  const mediumSignals = [
-    "bagaimana",
-    "langkah",
-    "proses",
-    "contoh",
-    "penerapan",
-    "kapan",
-    "apa perbedaan",
-  ];
+  const hard = ["bandingkan", "analisis", "evaluasi", "kritisi", "trade-off", "implikasi", "strategi", "arsitektur", "mengapa", "kenapa"];
+  const medium = ["bagaimana", "langkah", "proses", "contoh", "penerapan", "kapan", "apa perbedaan"];
 
   let score = 0;
   if (words >= 18) score += 2;
   else if (words >= 10) score += 1;
-
   if (/[?]/.test(q)) score += 1;
   if (/,| dan | atau /.test(q)) score += 1;
-  if (hardSignals.some((item) => q.includes(item))) score += 2;
-  else if (mediumSignals.some((item) => q.includes(item))) score += 1;
+  if (hard.some((s) => q.includes(s))) score += 2;
+  else if (medium.some((s) => q.includes(s))) score += 1;
 
   if (score >= 4) return "high";
   if (score >= 2) return "medium";
@@ -103,55 +66,21 @@ function estimateComplexity(question: string): ComplexityLevel {
 }
 
 function complexityConfig(level: ComplexityLevel) {
-  if (level === "high") {
-    return {
-      refs: 4,
-      keyPoints: 4,
-      detailSentences: 3,
-      summaryMax: 220,
-      includePractical: true,
-      includeLimitations: true,
-    };
-  }
-
-  if (level === "medium") {
-    return {
-      refs: 3,
-      keyPoints: 3,
-      detailSentences: 2,
-      summaryMax: 190,
-      includePractical: true,
-      includeLimitations: false,
-    };
-  }
-
-  return {
-    refs: 2,
-    keyPoints: 2,
-    detailSentences: 1,
-    summaryMax: 150,
-    includePractical: false,
-    includeLimitations: false,
-  };
+  if (level === "high") return { refs: 4, detailSentences: 4, summaryMax: 260 };
+  if (level === "medium") return { refs: 3, detailSentences: 3, summaryMax: 220 };
+  return { refs: 2, detailSentences: 2, summaryMax: 160 };
 }
 
-function openingLine(question: string): string {
-  const q = question.toLowerCase();
-
-  if (/apa|pengertian|definisi|konsep/.test(q)) {
-    return "Baik, kita mulai dari konsep intinya terlebih dahulu.";
+function uniqueByMeaning(lines: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const line of lines) {
+    const key = normalizeExcerpt(line).toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).slice(0, 10).join(" ");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(line);
   }
-  if (/bagaimana|cara|langkah|proses/.test(q)) {
-    return "Oke, ini alur singkat yang paling penting untuk dipahami.";
-  }
-  if (/kenapa|mengapa|alasan/.test(q)) {
-    return "Pertanyaan bagus, ini alasan utamanya berdasarkan materi internal.";
-  }
-  if (/contoh|studi kasus|penerapan/.test(q)) {
-    return "Siap, saya rangkum dengan fokus ke penerapan praktis.";
-  }
-
-  return "Siap, ini rangkuman yang relevan dari materi internal.";
+  return result;
 }
 
 function getCitationNumber(id: string): string {
@@ -159,82 +88,178 @@ function getCitationNumber(id: string): string {
   return match ? match[1] : id;
 }
 
-function toSuperscriptNumber(value: string): string {
-  const supers: Record<string, string> = {
-    "0": "⁰",
-    "1": "¹",
-    "2": "²",
-    "3": "³",
-    "4": "⁴",
-    "5": "⁵",
-    "6": "⁶",
-    "7": "⁷",
-    "8": "⁸",
-    "9": "⁹",
-  };
-
-  return value
-    .split("")
-    .map((char) => supers[char] || char)
-    .join("");
+function toSuperscript(value: string): string {
+  const map: Record<string, string> = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+  return value.split("").map((c) => map[c] || c).join("");
 }
 
-function citationMark(source: Source): string {
-  const number = getCitationNumber(source.id);
-  if (!/^\d+$/.test(number)) {
-    return `[${source.id}]`;
+function cite(source: Source): string {
+  const num = getCitationNumber(source.id);
+  return /^\d+$/.test(num) ? toSuperscript(num) : `[${source.id}]`;
+}
+
+/* ── Variasi frasa agar jawaban terasa berbeda tiap kali ── */
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const OPENERS_CONCEPT = [
+  "Berdasarkan materi internal yang tersedia, berikut pembahasannya.",
+  "Saya rangkum dari materi perkuliahan yang relevan untuk menjawab pertanyaan Anda.",
+  "Dari referensi materi yang ada, berikut penjelasan yang bisa membantu.",
+  "Berikut penjelasan berdasarkan modul pembelajaran yang tersedia di sistem.",
+  "Saya temukan beberapa materi yang relevan, berikut rangkumannya.",
+];
+
+const OPENERS_HOW = [
+  "Untuk memahami prosesnya, berikut alur yang dijelaskan dalam materi internal.",
+  "Berikut langkah-langkah yang diuraikan dalam modul pembelajaran terkait.",
+  "Dari materi yang tersedia, prosesnya dapat dipahami sebagai berikut.",
+  "Saya temukan penjelasan alur yang relevan dari materi perkuliahan.",
+];
+
+const OPENERS_WHY = [
+  "Pertanyaan yang menarik. Berdasarkan materi internal, berikut alasan utamanya.",
+  "Dari pembahasan di modul terkait, berikut penjelasan mengenai hal tersebut.",
+  "Alasan di balik hal tersebut dibahas dalam materi berikut ini.",
+];
+
+const OPENERS_EXAMPLE = [
+  "Berikut contoh dan penerapannya berdasarkan materi yang tersedia.",
+  "Saya rangkum beberapa penerapan praktis dari materi perkuliahan terkait.",
+  "Dari modul yang tersedia, berikut contoh penerapan yang bisa dijadikan acuan.",
+];
+
+const OPENERS_GENERIC = [
+  "Berikut hasil pencarian saya dari materi internal yang relevan.",
+  "Saya temukan beberapa referensi yang dapat membantu menjawab pertanyaan Anda.",
+  "Berdasarkan materi perkuliahan, berikut pembahasan yang saya temukan.",
+  "Dari database materi yang tersedia, berikut informasi relevannya.",
+];
+
+function pickOpener(question: string): string {
+  const q = question.toLowerCase();
+  if (/apa|pengertian|definisi|konsep/.test(q)) return pick(OPENERS_CONCEPT);
+  if (/bagaimana|cara|langkah|proses/.test(q)) return pick(OPENERS_HOW);
+  if (/kenapa|mengapa|alasan/.test(q)) return pick(OPENERS_WHY);
+  if (/contoh|studi kasus|penerapan/.test(q)) return pick(OPENERS_EXAMPLE);
+  return pick(OPENERS_GENERIC);
+}
+
+const TRANSITIONS = [
+  "Selain itu,",
+  "Lebih lanjut,",
+  "Perlu diketahui juga bahwa",
+  "Dalam konteks yang lebih luas,",
+  "Untuk melengkapi,"  ,
+  "Di sisi lain,",
+  "Yang juga penting dipahami,",
+  "Sebagai tambahan,",
+];
+
+const PRACTICAL_INTROS = [
+  "Secara praktis, konsep ini dapat diterapkan",
+  "Dalam penerapannya, materi ini relevan",
+  "Untuk penggunaan di dunia nyata, topik ini berkaitan",
+  "Dari sisi implementasi, pembahasan ini berhubungan",
+];
+
+const CLOSERS = [
+  "Jika ada bagian yang ingin dibahas lebih detail, silakan tanyakan kembali.",
+  "Apabila butuh penjelasan lebih mendalam pada topik tertentu, saya siap membantu.",
+  "Silakan tanyakan jika ada konsep spesifik yang perlu diperjelas.",
+  "Semoga membantu! Jangan ragu bertanya lagi jika ada yang kurang jelas.",
+  "Jika ingin eksplorasi topik ini lebih jauh, saya bisa membantu dengan detail tambahan.",
+];
+
+/* ── Builder Utama ── */
+
+function buildExerciseAnswer(primary: Source, references: Source[]): string {
+  const concept = firstSentence(primary.excerpt, 140).replace(/[.!?]+$/, "");
+  const lines: string[] = [
+    `Berikut latihan yang dirancang berdasarkan materi **${primary.title}** pada mata kuliah ${primary.subjectName}. ${cite(primary)}`,
+    "",
+    `**Tujuan:** Memahami konsep utama terkait ${primary.title.toLowerCase()}.`,
+    "",
+    "**Instruksi:**",
+    `1. Tuliskan ulang konsep berikut dengan bahasa Anda sendiri: "*${concept}*". ${cite(primary)}`,
+    "2. Berikan 2 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
+  ];
+
+  if (references.length > 1) {
+    lines.push(`3. Bandingkan pendekatan di atas dengan pembahasan pada ${references[1].title} (${references[1].subjectName}). ${cite(references[1])}`);
+  } else {
+    lines.push("3. Identifikasi 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat.");
   }
-  return toSuperscriptNumber(number);
+
+  lines.push("", "**Output yang diharapkan:** Jawaban terstruktur (maksimal 1 halaman) dengan 3 insight utama.");
+  lines.push("", pick(CLOSERS));
+  return lines.join("\n");
 }
 
-function firstNSentences(text: string, sentenceCount = 2, maxLength = 240): string {
-  const clean = normalizeExcerpt(text);
-  if (!clean) return "";
+function buildNaturalAnswer(
+  question: string,
+  primary: Source,
+  references: Source[],
+  cfg: ReturnType<typeof complexityConfig>,
+): string {
+  const lines: string[] = [];
 
-  const parts = clean.match(/[^.!?]+[.!?]?/g) ?? [clean];
-  const joined = parts.slice(0, Math.max(1, sentenceCount)).join(" ").trim();
-  if (joined.length <= maxLength) return joined;
+  // Opening
+  lines.push(pickOpener(question));
+  lines.push("");
 
-  const clipped = joined.slice(0, maxLength);
-  const lastSpace = clipped.lastIndexOf(" ");
-  return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim()}...`;
-}
+  // Core explanation from primary source
+  const coreExcerpt = firstNSentences(primary.excerpt, cfg.detailSentences, cfg.summaryMax);
+  lines.push(
+    `Pada topik **${primary.title}** dalam mata kuliah ${primary.subjectName} (Pertemuan ${primary.meetingNo}), ` +
+    `${coreExcerpt} ${cite(primary)}`
+  );
 
-function buildExerciseBlock(primary: Source, references: Source[]) {
-  const citePrimary = citationMark(primary);
-  const citeSecondary = references[1] ? citationMark(references[1]) : citePrimary;
+  // Additional sources woven naturally
+  const usedTransitions = new Set<number>();
+  const additionalRefs = references.slice(1);
 
-  const concept = firstSentence(primary.excerpt, 110).replace(/[.!?]+$/, "");
+  for (const ref of additionalRefs) {
+    const excerpt = firstNSentences(ref.excerpt, cfg.detailSentences - 1, cfg.summaryMax - 40);
+    if (!excerpt) continue;
 
-  return [
-    "Latihan singkat (berdasarkan materi internal):",
-    `- Tujuan: memahami konsep utama pada ${primary.title.toLowerCase()} (Mata Kuliah: ${primary.subjectName}). ${citePrimary}`,
-    "- Instruksi:",
-    `  1) Tulis ulang konsep inti berikut dengan bahasamu sendiri: "${concept}". ${citePrimary}`,
-    "  2) Buat 2 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
-    `  3) Sebutkan 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat. ${citeSecondary}`,
-    "- Output: jawaban terstruktur (maks. 1 halaman) + 3 bullet insight utama.",
-    `- Kriteria cek: konsep tepat, contoh relevan, dan istilah kunci konsisten dengan materi pertemuan ${primary.meetingNo}. ${citePrimary}`,
-  ];
-}
+    lines.push("");
 
-function buildCaseBridgeBlock(primary: Source, references: Source[]) {
-  const focus = references.slice(0, 2);
-  const rows = focus.map((source, index) => {
-    const concept = firstSentence(source.excerpt, 140).replace(/[.!?]+$/, "");
-    const scenario =
-      index === 0
-        ? "prediksi hasil, klasifikasi data, atau rekomendasi sederhana"
-        : "evaluasi performa model lewat metrik yang relevan";
+    // Pick unique transition
+    let transIdx: number;
+    do { transIdx = Math.floor(Math.random() * TRANSITIONS.length); } while (usedTransitions.has(transIdx) && usedTransitions.size < TRANSITIONS.length);
+    usedTransitions.add(transIdx);
 
-    return `- Konsep: ${concept} -> Studi kasus: terapkan pada ${scenario}. ${citationMark(source)}`;
-  });
+    lines.push(
+      `${TRANSITIONS[transIdx]} pada materi **${ref.title}** (${ref.subjectName}, Pertemuan ${ref.meetingNo}), ` +
+      `${excerpt.charAt(0).toLowerCase()}${excerpt.slice(1)} ${cite(ref)}`
+    );
+  }
 
-  return [
-    "Hubungan konsep dengan studi kasus:",
-    ...rows,
-    "- Langkah praktik: definisikan masalah, siapkan data, pilih model dasar, lalu evaluasi hasil sebelum iterasi berikutnya.",
-  ];
+  // Practical connection (for medium/high complexity)
+  if (cfg.refs >= 3 && additionalRefs.length > 0) {
+    lines.push("");
+    const practicalRef = additionalRefs[0];
+    lines.push(
+      `${pick(PRACTICAL_INTROS)} dengan topik ${practicalRef.title} pada mata kuliah ${practicalRef.subjectName}. ` +
+      `Memahami kedua konsep ini secara bersamaan akan memberikan perspektif yang lebih utuh. ${cite(practicalRef)}`
+    );
+  }
+
+  // References section (clean)
+  lines.push("");
+  lines.push("**Sumber Referensi:**");
+  for (const ref of references) {
+    lines.push(`- ${ref.subjectCode} – ${ref.subjectName}, Pertemuan ${ref.meetingNo}: *${ref.title}*`);
+  }
+
+  // Closing
+  lines.push("");
+  lines.push(pick(CLOSERS));
+
+  return lines.join("\n");
 }
 
 export async function generateChatAnswer(params: {
@@ -242,96 +267,20 @@ export async function generateChatAnswer(params: {
   sources: Source[];
 }): Promise<string> {
   const { question, sources } = params;
-  const settings = await readChatbotSettings();
-  const promptGuidance = settings.systemPrompt;
+  await readChatbotSettings(); // keep settings loaded but don't expose prompt to user
 
   if (sources.length === 0) {
-    return "Maaf, saya belum menemukan materi yang relevan untuk menjawab pertanyaan ini. Silakan unggah materi atau perjelas pertanyaan.";
+    return "Maaf, saya belum menemukan materi yang relevan untuk menjawab pertanyaan ini. Coba perjelas pertanyaan Anda atau pastikan materi terkait sudah tersedia di sistem.";
   }
 
   const complexity = estimateComplexity(question);
   const cfg = complexityConfig(complexity);
-
   const primary = sources[0];
   const references = sources.slice(0, cfg.refs);
-  const coreSummary = firstSentence(primary.excerpt, cfg.summaryMax);
 
-  const referenceLines = references.map((source) => {
-    return `- [${source.id}] ${source.subjectCode} - ${source.subjectName} (Pertemuan ${source.meetingNo}): ${source.title}`;
-  });
+  if (isExerciseRequest(question)) {
+    return buildExerciseAnswer(primary, references);
+  }
 
-  const pointSources = references.length > 1 ? references.slice(1) : references;
-
-  const keyPoints = pointSources
-    .map((source) => {
-      const excerpt = firstSentence(source.excerpt, cfg.summaryMax - 20);
-      return excerpt ? `- ${excerpt} ${citationMark(source)}` : "";
-    })
-    .filter(Boolean);
-
-  const uniqueKeyPoints = uniqueByMeaning(keyPoints)
-    .slice(0, cfg.keyPoints);
-
-  const deepDivePoints = references
-    .map((source) => {
-      const excerpt = firstNSentences(
-        source.excerpt,
-        cfg.detailSentences,
-        cfg.summaryMax + 80,
-      );
-      return excerpt ? `- ${excerpt} ${citationMark(source)}` : "";
-    })
-    .filter(Boolean);
-
-  const uniqueDeepDivePoints = uniqueByMeaning(deepDivePoints);
-
-  const practicalPoints = references
-    .slice(0, 2)
-    .map((source) => `- Penerapan praktis dapat dimulai dari topik ${source.title} pada mata kuliah ${source.subjectName}. ${citationMark(source)}`);
-
-  const bodyBlock = isExerciseRequest(question)
-    ? buildExerciseBlock(primary, references)
-    : [
-        "Penjelasan ringkas:",
-        `- ${coreSummary || normalizeExcerpt(primary.excerpt)} ${citationMark(primary)}`,
-        "",
-        "Uraian lebih panjang:",
-        ...(uniqueDeepDivePoints.length > 0
-          ? uniqueDeepDivePoints
-          : ["- Materi tambahan belum cukup untuk memperluas pembahasan."]),
-        "",
-        "Poin penting:",
-        ...(uniqueKeyPoints.length > 0
-          ? uniqueKeyPoints
-          : ["- Detail rinci dapat dilihat pada referensi sumber."]),
-        ...(needsCaseBridge(question)
-          ? ["", ...buildCaseBridgeBlock(primary, references)]
-          : []),
-        ...(cfg.includePractical
-          ? ["", "Kaitan praktis:", ...practicalPoints]
-          : []),
-        ...(cfg.includeLimitations
-          ? [
-              "",
-              "Batasan jawaban:",
-              "- Jawaban ini dibatasi pada materi internal yang tersedia; jika butuh pembahasan lintas topik, tambahkan konteks atau materi terkait.",
-            ]
-          : []),
-      ];
-
-  return [
-    openingLine(question),
-    "",
-    `Inti jawaban berdasarkan materi internal: ${coreSummary || normalizeExcerpt(primary.excerpt)} ${citationMark(primary)}`,
-    "",
-    `Saran panduan prompt: ${promptGuidance.slice(0, 100)}...`,
-    "",
-    ...bodyBlock,
-    "",
-    "Referensi:",
-    ...referenceLines,
-    "",
-    "Keterangan sitasi: angka kecil di atas (mis. 1, 2) merujuk ke daftar Referensi [S1], [S2], dst.",
-    "Jika konteks belum cukup spesifik, saya bisa jelaskan lebih rinci dari sumber yang tersedia.",
-  ].join("\n");
+  return buildNaturalAnswer(question, primary, references, cfg);
 }
