@@ -12,11 +12,16 @@ export default function NewMaterialPage() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from") === "courses" ? "courses" : "knowledge";
   const preselectedCourseId = searchParams.get("courseId") ?? "";
-  const prefilledType = searchParams.get("type") === "session" ? "session" : "reference";
-  const prefilledMeetingNoRaw = Number.parseInt(searchParams.get("meetingNo") ?? "", 10);
-  const prefilledMeetingNo = Number.isFinite(prefilledMeetingNoRaw) && prefilledMeetingNoRaw > 0
-    ? prefilledMeetingNoRaw
-    : 1;
+  const prefilledType =
+    searchParams.get("type") === "session" ? "session" : "reference";
+  const prefilledMeetingNoRaw = Number.parseInt(
+    searchParams.get("meetingNo") ?? "",
+    10,
+  );
+  const prefilledMeetingNo =
+    Number.isFinite(prefilledMeetingNoRaw) && prefilledMeetingNoRaw > 0
+      ? prefilledMeetingNoRaw
+      : 1;
 
   const {
     backHref,

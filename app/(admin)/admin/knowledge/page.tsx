@@ -244,7 +244,6 @@ function KnowledgeContent() {
     setShowModal(true);
   }
 
-
   useEffect(() => {
     const timer = setTimeout(() => {
       loadData(search, selectedCourseId);
