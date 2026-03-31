@@ -51,7 +51,7 @@ export async function getDosenSubjectsAction() {
         name: string;
         bannerImage: string | null;
         _count: { meetings: number };
-        classes: Array<{ class: { name: string } }>;
+        classes: Array<{ class: { id: string; name: string } }>;
       }
     >();
 
@@ -66,15 +66,15 @@ export async function getDosenSubjectsAction() {
           _count: {
             meetings: row.subject._count.meetings,
           },
-          classes: [{ class: { name: row.class.name } }],
+          classes: [{ class: { id: row.class.id, name: row.class.name } }],
         });
         continue;
       }
 
-      if (
-        !existing.classes.some((item) => item.class.name === row.class.name)
-      ) {
-        existing.classes.push({ class: { name: row.class.name } });
+      if (!existing.classes.some((item) => item.class.id === row.class.id)) {
+        existing.classes.push({
+          class: { id: row.class.id, name: row.class.name },
+        });
       }
     }
 

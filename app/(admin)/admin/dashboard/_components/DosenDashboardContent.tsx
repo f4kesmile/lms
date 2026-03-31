@@ -16,6 +16,12 @@ export function DosenDashboardContent({
   dosenSubjects,
   dosenLoading,
 }: DosenDashboardContentProps) {
+  const totalUniqueClasses = new Set(
+    dosenSubjects.flatMap((subject) =>
+      subject.classes.map((classSubject) => classSubject.class.id),
+    ),
+  ).size;
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
@@ -49,10 +55,7 @@ export function DosenDashboardContent({
               <Icon name="groups" size={24} />
             </div>
             <span className="text-3xl font-black text-foreground">
-              {dosenSubjects.reduce(
-                (acc, subject) => acc + subject.classes.length,
-                0,
-              )}
+              {totalUniqueClasses}
             </span>
           </div>
           <p className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-70">
@@ -144,7 +147,7 @@ export function DosenDashboardContent({
                   <div className="flex flex-wrap gap-2 mb-4">
                     {subject.classes.map((classSubject) => (
                       <span
-                        key={classSubject.class.name}
+                        key={classSubject.class.id}
                         className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
                       >
                         Kelas {classSubject.class.name}

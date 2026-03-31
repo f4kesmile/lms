@@ -274,8 +274,15 @@ export async function GET() {
         .map((item) => item.assignedTeacher?.id)
         .filter((id): id is string => Boolean(id)),
     );
+    const uniqueSubjectIds = new Set(rows.map((item) => item.subjectId));
+    const uniqueClassIds = new Set(rows.map((item) => item.classId));
     const uniqueStudentIds = new Set(
       schedules.flatMap((item) => item.students.map((student) => student.id)),
+    );
+    const updatedMeetingIdsThisWeek = new Set(
+      rows.flatMap((item) =>
+        item.subject.meetings.map((meeting) => meeting.id),
+      ),
     );
 
     return NextResponse.json({
@@ -286,12 +293,11 @@ export async function GET() {
       },
       summary: {
         totalSchedules: schedules.length,
+        totalSubjects: uniqueSubjectIds.size,
+        totalClasses: uniqueClassIds.size,
         totalTeachers: uniqueTeacherIds.size,
         totalStudents: uniqueStudentIds.size,
-        totalUpdatesThisWeek: schedules.reduce(
-          (acc, schedule) => acc + schedule.subject.meetingsUpdatedThisWeek,
-          0,
-        ),
+        totalUpdatesThisWeek: updatedMeetingIdsThisWeek.size,
       },
       canManage: currentUser.role === UserRole.admin,
       schedules,

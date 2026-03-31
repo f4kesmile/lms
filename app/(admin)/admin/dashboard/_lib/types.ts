@@ -33,6 +33,7 @@ export type SessionUser = {
 
 export type SubjectClassItem = {
   class: {
+    id: string;
     name: string;
   };
 };
