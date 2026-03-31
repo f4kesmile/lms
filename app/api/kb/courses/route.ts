@@ -2,6 +2,7 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { buildDosenCurrentYearSubjectWhere } from "@/lib/auth/dosen-access";
 import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 
@@ -19,51 +20,7 @@ export async function GET() {
         user.role === UserRole.dosen
           ? {
               isActive: true,
-              OR: [
-                {
-                  classes: {
-                    some: {
-                      class: {
-                        academicYear: {
-                          isCurrent: true,
-                        },
-                      },
-                      teacherUserId: user.id,
-                    },
-                  },
-                },
-                {
-                  classes: {
-                    some: {
-                      class: {
-                        academicYear: {
-                          isCurrent: true,
-                        },
-                      },
-                      teacherUserId: null,
-                    },
-                  },
-                  teachers: {
-                    some: {
-                      userId: user.id,
-                    },
-                  },
-                  NOT: {
-                    classes: {
-                      some: {
-                        class: {
-                          academicYear: {
-                            isCurrent: true,
-                          },
-                        },
-                        teacherUserId: {
-                          not: null,
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
+              ...buildDosenCurrentYearSubjectWhere(user.id),
             }
           : { isActive: true },
       select: {

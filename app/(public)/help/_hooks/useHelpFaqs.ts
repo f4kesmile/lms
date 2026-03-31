@@ -7,6 +7,7 @@ export function useHelpFaqs() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetch("/api/faqs")
@@ -18,10 +19,17 @@ export function useHelpFaqs() {
       .catch(() => setIsLoading(false));
   }, []);
 
-  const displayedFaqs = useMemo(
-    () => (faqs.length > 0 ? faqs : DEFAULT_FAQS),
-    [faqs],
-  );
+  const displayedFaqs = useMemo(() => {
+    const baseFaqs = faqs.length > 0 ? faqs : DEFAULT_FAQS;
+    if (!searchQuery.trim()) return baseFaqs;
+
+    const query = searchQuery.toLowerCase().trim();
+    return baseFaqs.filter(
+      (faq) =>
+        faq.question.toLowerCase().includes(query) ||
+        faq.answer.toLowerCase().includes(query)
+    );
+  }, [faqs, searchQuery]);
 
   function toggleFaq(id: string) {
     setOpenId((prev) => (prev === id ? null : id));
@@ -32,5 +40,7 @@ export function useHelpFaqs() {
     openId,
     displayedFaqs,
     toggleFaq,
+    searchQuery,
+    setSearchQuery,
   };
 }

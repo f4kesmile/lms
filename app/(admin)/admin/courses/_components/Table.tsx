@@ -343,21 +343,26 @@ export function Table({
                           </TooltipContent>
                         </Tooltip>
                       )}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-md border border-border bg-background text-foreground shadow-sm hover:bg-primary/20 hover:text-primary hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
-                            onClick={() => onEdit(item)}
-                          >
-                            <Icon name="edit" size={16} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          <span className="font-bold">Edit Data</span>
-                        </TooltipContent>
-                      </Tooltip>
+                      {activeTab === "kelas" && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 rounded-md border border-border bg-indigo-500/10 text-indigo-500 shadow-sm hover:bg-indigo-500/20 hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all"
+                              onClick={() => {
+                                // This will be handled by the controller to open a new modal
+                                (onEdit as any)(item, "manage-subjects");
+                              }}
+                            >
+                              <Icon name="library_books" size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <span className="font-bold">Kelola Mata Kuliah & Jadwal</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
 
                       <Tooltip>
                         <TooltipTrigger asChild>

@@ -5,6 +5,7 @@ import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/core/db";
 import { splitIntoChunks } from "@/lib/ai/chunking";
 import { getCurrentUser } from "@/lib/auth/user";
+import { getDosenSubjectAccessInCurrentYear } from "@/lib/auth/dosen-access";
 
 async function canManageSubjectMeetings(subjectId: string) {
   const user = await getCurrentUser();
@@ -20,46 +21,13 @@ async function canManageSubjectMeetings(subjectId: string) {
     return { ok: false, message: "Akses ditolak" };
   }
 
-  const currentYear = await prisma.academicYear.findFirst({
-    where: { isCurrent: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
+  const access = await getDosenSubjectAccessInCurrentYear({
+    userId: user.id,
+    role: user.role,
+    subjectId,
   });
 
-  const fallbackLink = await prisma.subjectTeacher.findUnique({
-    where: {
-      subjectId_userId: {
-        subjectId,
-        userId: user.id,
-      },
-    },
-    select: { userId: true },
-  });
-
-  if (!currentYear) {
-    return fallbackLink
-      ? { ok: true }
-      : { ok: false, message: "Anda bukan pengampu mata kuliah ini" };
-  }
-
-  const classSubjects = await prisma.classSubject.findMany({
-    where: {
-      subjectId,
-      class: { academicYearId: currentYear.id },
-    },
-    select: { teacherUserId: true },
-  });
-
-  if (classSubjects.length === 0) {
-    return fallbackLink
-      ? { ok: true }
-      : { ok: false, message: "Anda bukan pengampu mata kuliah ini" };
-  }
-
-  const assignedToOther = classSubjects.some(
-    (row) => row.teacherUserId && row.teacherUserId !== user.id,
-  );
-  if (assignedToOther) {
+  if (access.status === "assigned-to-other-dosen") {
     return {
       ok: false,
       message:
@@ -67,14 +35,14 @@ async function canManageSubjectMeetings(subjectId: string) {
     };
   }
 
-  const assignedToCurrent = classSubjects.some((row) => row.teacherUserId === user.id);
-  const allUnassigned = classSubjects.every((row) => row.teacherUserId === null);
-
-  if (assignedToCurrent || (allUnassigned && fallbackLink)) {
+  if (access.allowed) {
     return { ok: true };
   }
 
-  return { ok: false, message: "Anda tidak memiliki akses kelola sesi untuk mata kuliah ini" };
+  return {
+    ok: false,
+    message: "Anda tidak memiliki akses kelola sesi untuk mata kuliah ini",
+  };
 }
 
 export async function getSubjectMeetingsAction(subjectId: string) {
@@ -100,7 +68,7 @@ export async function createSubjectMeetingAction(data: {
   meetingNo: number;
   title: string;
   content: string;
-  assets?: Prisma.InputJsonValue; 
+  assets?: Prisma.InputJsonValue;
 }) {
   try {
     const access = await canManageSubjectMeetings(data.subjectId);
@@ -189,7 +157,7 @@ export async function updateSubjectMeetingAction(
     if (updatedMeeting) {
       revalidatePath(`/admin/courses/${updatedMeeting.subjectId}/meetings`);
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error("Error updating meeting:", error);
@@ -218,7 +186,7 @@ export async function deleteSubjectMeetingAction(id: string) {
     if (meeting) {
       revalidatePath(`/admin/courses/${meeting.subjectId}/meetings`);
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error("Error deleting meeting:", error);
@@ -226,8 +194,16 @@ export async function deleteSubjectMeetingAction(id: string) {
   }
 }
 
-export async function getSubjectParticipantsAction(subjectId: string) {
+export async function getSubjectParticipantsAction(
+  subjectId: string,
+  classId?: string,
+) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: "Silakan login ulang" };
+    }
+
     const access = await canManageSubjectMeetings(subjectId);
     if (!access.ok) {
       return { success: false, error: access.message };
@@ -247,8 +223,17 @@ export async function getSubjectParticipantsAction(subjectId: string) {
       where: {
         subjectId,
         class: { academicYearId: currentYear.id },
+        ...(classId ? { classId } : {}),
+        ...(user.role === UserRole.dosen ? { teacherUserId: user.id } : {}),
       },
       select: {
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
         class: {
           select: {
             id: true,
@@ -281,9 +266,28 @@ export async function getSubjectParticipantsAction(subjectId: string) {
       },
     });
 
+    if (classId && classSubjects.length === 0) {
+      return {
+        success: false,
+        error: "Anda tidak memiliki akses ke daftar mahasiswa kelas ini",
+      };
+    }
+
+    const firstScope = classSubjects[0];
+
     return {
       success: true,
       yearName: currentYear.name,
+      scope: {
+        subjectId: firstScope?.subject.id || subjectId,
+        subjectName: firstScope?.subject.name || "Mata Kuliah",
+        subjectCode: firstScope?.subject.code || "-",
+        classId: classId || null,
+        className:
+          classId && classSubjects.length > 0
+            ? classSubjects[0].class.name
+            : null,
+      },
       classes: classSubjects.map((row) => ({
         id: row.class.id,
         name: row.class.name,

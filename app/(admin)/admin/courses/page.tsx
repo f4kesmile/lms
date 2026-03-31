@@ -76,6 +76,12 @@ export default function AdminCoursesPage() {
     totalItems,
     totalPages,
     yearForm,
+    // New
+    showManageSubjectsModal,
+    setShowManageSubjectsModal,
+    classSubjects,
+    handleAssignSubject,
+    handleRemoveSubject,
   } = useCoursesController();
 
   const [isDesktop, setIsDesktop] = useState(true);
@@ -248,6 +254,13 @@ export default function AdminCoursesPage() {
           setYearForm={setYearForm}
           onYearSubmit={handleYearSubmit}
           loading={loading}
+          // New
+          showManageSubjectsModal={showManageSubjectsModal}
+          setShowManageSubjectsModal={setShowManageSubjectsModal}
+          classSubjects={classSubjects}
+          allSubjects={meta.allSubjects}
+          onAssignSubject={handleAssignSubject}
+          onRemoveSubject={handleRemoveSubject}
         />
 
         <Dialog

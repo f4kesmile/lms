@@ -2,7 +2,7 @@
 
 import { CourseStatus } from "@prisma/client";
 import Image from "next/image";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import {
   type AcademicYear,
@@ -14,6 +14,7 @@ import {
   type YearForm,
 } from "@/app/(admin)/admin/courses/_lib/types";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CourseDialogsProps {
   showClassModal: boolean;
@@ -55,6 +61,14 @@ interface CourseDialogsProps {
   onYearSubmit: (e: React.FormEvent) => Promise<void>;
 
   loading: boolean;
+  
+  // New props
+  showManageSubjectsModal?: boolean;
+  setShowManageSubjectsModal?: (open: boolean) => void;
+  classSubjects?: any[];
+  allSubjects?: any[];
+  onAssignSubject?: (data: any) => Promise<void>;
+  onRemoveSubject?: (id: string) => Promise<void>;
 }
 
 export function CourseDialogs({
@@ -79,7 +93,29 @@ export function CourseDialogs({
   setYearForm,
   onYearSubmit,
   loading,
+  
+  showManageSubjectsModal,
+  setShowManageSubjectsModal,
+  classSubjects = [],
+  allSubjects = [],
+  onAssignSubject,
+  onRemoveSubject,
 }: CourseDialogsProps) {
+  const [confirmRemoval, setConfirmRemoval] = useState<{
+    open: boolean;
+    subjectId: string | null;
+    subjectName: string;
+  }>({ open: false, subjectId: null, subjectName: "" });
+
+  const [assignForm, setAssignForm] = useState({
+    subjectId: "",
+    teacherUserId: "none",
+    dayOfWeek: "",
+    startTime: "",
+    endTime: "",
+    room: "",
+  });
+
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -528,6 +564,262 @@ export function CourseDialogs({
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showManageSubjectsModal} onOpenChange={setShowManageSubjectsModal}>
+        <DialogContent className="border-none max-w-4xl rounded-3xl max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
+              Kelola Mata Kuliah & Jadwal: {editingClass?.name}
+            </DialogTitle>
+            <DialogDescription className="font-medium">
+              Tentukan mata kuliah apa saja yang tersedia di kelas ini beserta jadwal dan dosen pengampunya.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-8 pt-4">
+            {/* Form Penugasan */}
+            <div className="space-y-4 p-6 rounded-2xl bg-muted/20 border border-border">
+              <h4 className="text-xs font-black uppercase tracking-widest text-primary">Penugasan Baru/Edit</h4>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pilih Mata Kuliah</label>
+                  <Select
+                    value={assignForm.subjectId}
+                    onValueChange={(val) => setAssignForm({ ...assignForm, subjectId: val })}
+                  >
+                    <SelectTrigger className="h-10 rounded-xl bg-card">
+                      <SelectValue placeholder="Pilih MK" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allSubjects.map((s: any) => (
+                        <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dosen Pengampu</label>
+                  <Select
+                    value={assignForm.teacherUserId}
+                    onValueChange={(val) => setAssignForm({ ...assignForm, teacherUserId: val })}
+                  >
+                    <SelectTrigger className="h-10 rounded-xl bg-card">
+                      <SelectValue placeholder="Pilih Dosen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Default (Koordinator MK)</SelectItem>
+                      {Array.from(new Map(teachers.map(t => [t.id, t])).values()).map((t) => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Hari</label>
+                    <Select
+                      value={assignForm.dayOfWeek}
+                      onValueChange={(val) => setAssignForm({ ...assignForm, dayOfWeek: val })}
+                    >
+                      <SelectTrigger className="h-10 rounded-xl bg-card">
+                        <SelectValue placeholder="Pilih Hari" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="senin">Senin</SelectItem>
+                        <SelectItem value="selasa">Selasa</SelectItem>
+                        <SelectItem value="rabu">Rabu</SelectItem>
+                        <SelectItem value="kamis">Kamis</SelectItem>
+                        <SelectItem value="jumat">Jumat</SelectItem>
+                        <SelectItem value="sabtu">Sabtu</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ruangan</label>
+                    <Input
+                      value={assignForm.room}
+                      onChange={(e) => setAssignForm({ ...assignForm, room: e.target.value })}
+                      placeholder="Contoh: R.401"
+                      className="h-10 rounded-xl bg-card"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Jam Mulai</label>
+                    <Input
+                      type="time"
+                      value={assignForm.startTime}
+                      onChange={(e) => setAssignForm({ ...assignForm, startTime: e.target.value })}
+                      className="h-10 rounded-xl bg-card"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Jam Selesai</label>
+                    <Input
+                      type="time"
+                      value={assignForm.endTime}
+                      onChange={(e) => setAssignForm({ ...assignForm, endTime: e.target.value })}
+                      className="h-10 rounded-xl bg-card"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-11 rounded-xl font-black text-[10px] uppercase tracking-widest mt-2"
+                  disabled={!assignForm.subjectId || loading}
+                  onClick={async () => {
+                    await onAssignSubject?.({
+                      ...assignForm,
+                      teacherUserId: assignForm.teacherUserId === "none" ? undefined : assignForm.teacherUserId,
+                    });
+                    setAssignForm({
+                      subjectId: "",
+                      teacherUserId: "none",
+                      dayOfWeek: "",
+                      startTime: "",
+                      endTime: "",
+                      room: "",
+                    });
+                  }}
+                >
+                  {loading ? "Proses..." : "Simpan Penugasan"}
+                </Button>
+              </div>
+            </div>
+
+            {/* List MK Aktif */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mata Kuliah Terdaftar</h4>
+              <div className="space-y-3">
+                {classSubjects.length > 0 ? (
+                  classSubjects.map((cs: any) => (
+                    <div key={cs.subject.id} className="p-4 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/30 transition-all group">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-primary/10 text-primary rounded-md">{cs.subject.code}</span>
+                            <h5 className="text-sm font-black">{cs.subject.name}</h5>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 opacity-70">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                              <Icon name="person" size={12} className="text-primary" />
+                              <span>{cs.teacher?.name || "Default"}</span>
+                            </div>
+                            {cs.dayOfWeek && (
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                                <Icon name="schedule" size={12} className="text-secondary-brand" />
+                                <span className="uppercase">{cs.dayOfWeek} {cs.startTime && `- ${cs.startTime}`}</span>
+                              </div>
+                            )}
+                            {cs.room && (
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                                <Icon name="location_on" size={12} className="text-destructive" />
+                                <span>{cs.room}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9 rounded-xl border border-border/40 bg-background/50 hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                                onClick={() => {
+                                  setAssignForm({
+                                    subjectId: cs.subject.id,
+                                    teacherUserId: cs.teacher?.id || "none",
+                                    dayOfWeek: cs.dayOfWeek || "",
+                                    startTime: cs.startTime || "",
+                                    endTime: cs.endTime || "",
+                                    room: cs.room || "",
+                                  });
+                                  // Scroll to top of dialog to see the form
+                                  const container = document.querySelector('.overflow-y-auto');
+                                  if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                              >
+                                <Icon name="edit" size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="font-bold">Edit Jadwal</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9 rounded-xl border border-destructive/10 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white transition-all shadow-sm"
+                                disabled={loading}
+                                onClick={() => setConfirmRemoval({
+                                  open: true,
+                                  subjectId: cs.subject.id,
+                                  subjectName: cs.subject.name
+                                })}
+                              >
+                                <Icon name="delete" size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="font-bold">Hapus MK dari Kelas</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-12 text-center border-2 border-dashed border-border rounded-3xl opacity-50 flex flex-col items-center gap-3">
+                    <Icon name="history_edu" size={32} />
+                    <p className="text-xs font-bold">Belum ada mata kuliah</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Konfirmasi Hapus MK dari Kelas */}
+          <Dialog
+            open={confirmRemoval.open}
+            onOpenChange={(o) => setConfirmRemoval(p => ({ ...p, open: o }))}
+          >
+            <DialogContent className="sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-black uppercase text-destructive">
+                  Hapus Penugasan?
+                </DialogTitle>
+                <DialogDescription className="font-bold text-muted-foreground pt-2">
+                  Anda akan menghapus mata kuliah <span className="text-foreground">{confirmRemoval.subjectName}</span> dari kelas ini. Data nilai atau presensi yang terkait mungkin akan terpengaruh.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-3 pt-6">
+                <Button
+                  variant="ghost"
+                  className="font-black text-[11px] uppercase tracking-widest border border-border h-11 px-6 rounded-xl"
+                  onClick={() => setConfirmRemoval(p => ({ ...p, open: false }))}
+                >
+                  Batal
+                </Button>
+                <Button
+                  className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-xl border-none shadow-xl h-11"
+                  onClick={() => {
+                    if (confirmRemoval.subjectId) {
+                      onRemoveSubject?.(confirmRemoval.subjectId);
+                    }
+                    setConfirmRemoval(p => ({ ...p, open: false, subjectId: null }));
+                  }}
+                >
+                  Ya, Lepas Penugasan
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </DialogContent>
       </Dialog>
     </>

@@ -17,6 +17,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toastSaveFailed, toastSaved } from "@/lib/utils/toast";
 
 type Stats = {
   totalMaterials: number;
@@ -104,6 +105,7 @@ export default function AdminStatsPage() {
       }
 
       setSettings(data.settings);
+      toastSaved("pengaturan chatbot");
       setNotice({
         open: true,
         title: "Pengaturan Tersimpan",
@@ -111,6 +113,7 @@ export default function AdminStatsPage() {
           "Konfigurasi chatbot RAG berhasil diperbarui dan langsung dipakai oleh sistem.",
       });
     } catch (e) {
+      toastSaveFailed("pengaturan chatbot", e);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
@@ -133,13 +136,15 @@ export default function AdminStatsPage() {
       title: "Sesi Chat",
       value: stats?.totalSessions ?? 0,
       icon: "forum",
-      accent: "bg-secondary-brand/10 text-secondary-brand border-secondary-brand/20",
+      accent:
+        "bg-secondary-brand/10 text-secondary-brand border-secondary-brand/20",
     },
     {
       title: "Total Pertanyaan",
       value: stats?.totalTurns ?? 0,
       icon: "smart_toy",
-      accent: "bg-secondary-brand/10 text-secondary-brand border-secondary-brand/20",
+      accent:
+        "bg-secondary-brand/10 text-secondary-brand border-secondary-brand/20",
     },
     {
       title: "Rata-rata Rating",
@@ -362,7 +367,8 @@ export default function AdminStatsPage() {
                         {stats?.ratedTurns ?? 0}
                       </p>
                       <p className="mt-2 text-xs font-bold text-muted-foreground">
-                        Jumlah percakapan yang sudah diberi rating oleh pengguna.
+                        Jumlah percakapan yang sudah diberi rating oleh
+                        pengguna.
                       </p>
                     </div>
                   </div>
@@ -380,16 +386,37 @@ export default function AdminStatsPage() {
                 </div>
                 <ul className="mt-5 space-y-4 text-sm font-bold text-muted-foreground">
                   <li className="flex gap-2">
-                    <Icon name="check_circle" size={20} className="text-primary shrink-0" />
-                    <span>Chatbot saat ini menggunakan RAG internal tanpa model AI eksternal.</span>
+                    <Icon
+                      name="check_circle"
+                      size={20}
+                      className="text-primary shrink-0"
+                    />
+                    <span>
+                      Chatbot saat ini menggunakan RAG internal tanpa model AI
+                      eksternal.
+                    </span>
                   </li>
                   <li className="flex gap-2">
-                    <Icon name="check_circle" size={20} className="text-primary shrink-0" />
-                    <span>Top-K dan Min Score langsung mempengaruhi pipeline RAG saat memilih materi yang relevan.</span>
+                    <Icon
+                      name="check_circle"
+                      size={20}
+                      className="text-primary shrink-0"
+                    />
+                    <span>
+                      Top-K dan Min Score langsung mempengaruhi pipeline RAG
+                      saat memilih materi yang relevan.
+                    </span>
                   </li>
                   <li className="flex gap-2">
-                    <Icon name="check_circle" size={20} className="text-primary shrink-0" />
-                    <span>Jika API key Gemini tidak tersedia, chatbot berjalan dengan fallback internal.</span>
+                    <Icon
+                      name="check_circle"
+                      size={20}
+                      className="text-primary shrink-0"
+                    />
+                    <span>
+                      Jika API key Gemini tidak tersedia, chatbot berjalan
+                      dengan fallback internal.
+                    </span>
                   </li>
                 </ul>
               </Card>
@@ -404,8 +431,12 @@ export default function AdminStatsPage() {
       >
         <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black uppercase">{notice.title}</DialogTitle>
-            <DialogDescription className="font-bold text-muted-foreground">{notice.message}</DialogDescription>
+            <DialogTitle className="text-xl font-black uppercase">
+              {notice.title}
+            </DialogTitle>
+            <DialogDescription className="font-bold text-muted-foreground">
+              {notice.message}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end pt-4">
             <Button

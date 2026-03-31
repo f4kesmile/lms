@@ -52,11 +52,12 @@ export default async function CourseDetailPage({
                     {data.title}
                   </h1>
                   <p className="text-muted-foreground text-sm font-medium flex items-center gap-2">
-                    <Icon name="tag" size={14} className="text-primary" />
-                    {data.subjects.length > 0
-                      ? data.subjects[0].code
-                      : "General"}{" "}
-                    · {data.subjects.length} Mata Kuliah
+                    <Icon
+                      name="auto_stories"
+                      size={14}
+                      className="text-primary"
+                    />
+                    Kurikulum Kelas · {data.subjects.length} Mata Kuliah
                   </p>
                 </div>
               </div>
@@ -115,59 +116,110 @@ export default async function CourseDetailPage({
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-5">
                 {data.subjects.length > 0 ? (
                   data.subjects.map((sub) => (
                     <Link
                       href={`/courses/${classId}/subjects/${sub.id}` as Route}
                       key={sub.id}
                       className={cn(
-                        "group flex flex-col md:flex-row items-center gap-6 p-6 rounded-[2rem] border-2 border-border bg-card transition-all duration-300",
-                        "hover:border-primary hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1",
+                        "group flex flex-col items-stretch gap-0 rounded-[2rem] border border-border bg-card transition-all duration-300 overflow-hidden",
+                        "hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1",
                       )}
                     >
-                      <div className="size-20 md:size-24 shrink-0 rounded-3xl bg-muted overflow-hidden relative">
-                        {sub.banner ? (
-                          <Image
-                            src={sub.banner}
-                            alt={sub.name}
-                            width={96}
-                            height={96}
-                            unoptimized
-                            className="size-full object-cover transition-transform group-hover:scale-110"
-                          />
-                        ) : (
-                          <div className="size-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary">
-                            <Icon name="auto_stories" size={32} />
+                      <div className="flex flex-col md:flex-row items-center gap-6 p-6">
+                        <div className="size-20 md:size-24 shrink-0 rounded-3xl bg-muted overflow-hidden relative shadow-inner">
+                          {sub.banner ? (
+                            <Image
+                              src={sub.banner}
+                              alt={sub.name}
+                              width={96}
+                              height={96}
+                              unoptimized
+                              className="size-full object-cover transition-transform group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="size-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary">
+                              <Icon name="auto_stories" size={32} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 text-center md:text-left space-y-2">
+                          <div className="flex flex-col md:flex-row md:items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md self-center md:self-auto border border-primary/20">
+                              {sub.code}
+                            </span>
+                            <h4 className="text-xl font-black tracking-tight leading-none">
+                              {sub.name}
+                            </h4>
                           </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                              <Icon
+                                name="person"
+                                size={14}
+                                className="text-primary/60"
+                              />
+                              <span>{sub.teacherName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                              <Icon
+                                name="school"
+                                size={14}
+                                className="text-primary/60"
+                              />
+                              <span>{sub.credits} SKS</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                              <Icon
+                                name="history_edu"
+                                size={14}
+                                className="text-indigo-500/60"
+                              />
+                              <span>{sub.meetingCount} Pertemuan</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-3">
+                          <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                            <Icon name="arrow_forward" size={20} />
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex-1 text-center md:text-left space-y-1">
-                        <div className="flex flex-col md:flex-row md:items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md self-center md:self-auto">
-                            {sub.code}
-                          </span>
-                          <h4 className="text-xl font-black tracking-tight">
-                            {sub.name}
-                          </h4>
+                      {(sub.dayOfWeek || sub.room) && (
+                        <div className="px-6 py-3 bg-muted/30 border-t border-border flex flex-wrap items-center gap-6">
+                          {sub.dayOfWeek && (
+                            <div className="flex items-center gap-2">
+                              <Icon
+                                name="calendar_today"
+                                size={14}
+                                className="text-primary"
+                              />
+                              <span className="text-[10px] font-black uppercase tracking-widest">
+                                {sub.dayOfWeek}
+                                {sub.startTime &&
+                                  ` • ${sub.startTime}${sub.endTime ? ` - ${sub.endTime}` : ""}`}
+                              </span>
+                            </div>
+                          )}
+                          {sub.room && (
+                            <div className="flex items-center gap-2">
+                              <Icon
+                                name="location_on"
+                                size={14}
+                                className="text-destructive"
+                              />
+                              <span className="text-[10px] font-black uppercase tracking-widest">
+                                Ruangan: {sub.room}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {sub.meetingCount > 0
-                            ? `${sub.meetingCount} Pertemuan Tersedia`
-                            : "Materi Belum Tersedia"}
-                        </p>
-                      </div>
-
-                      <div className="shrink-0 flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors hidden sm:block">
-                          Lihat Sesi
-                        </span>
-                        <div className="size-10 rounded-full border-2 border-border flex items-center justify-center group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                          <Icon name="arrow_forward" size={20} />
-                        </div>
-                      </div>
+                      )}
                     </Link>
                   ))
                 ) : (

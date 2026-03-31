@@ -5,6 +5,12 @@ export type CourseSubjectView = {
   id: string;
   name: string;
   code: string;
+  credits: number;
+  teacherName: string;
+  dayOfWeek: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  room: string | null;
   meetingCount: number;
   banner: string | null;
 };
@@ -23,7 +29,9 @@ export type CourseDetailView = {
   subjects: CourseSubjectView[];
 };
 
-export async function getCourseDetailView(classId: string): Promise<CourseDetailView> {
+export async function getCourseDetailView(
+  classId: string,
+): Promise<CourseDetailView> {
   const [course, userId] = await Promise.all([
     prisma.class.findFirst({
       where: {
@@ -36,14 +44,10 @@ export async function getCourseDetailView(classId: string): Promise<CourseDetail
         students: { select: { userId: true } },
         subjects: {
           include: {
+            teacher: { select: { name: true } },
             subject: {
               include: {
                 _count: { select: { meetings: true } },
-                teachers: {
-                  include: {
-                    user: { select: { name: true } },
-                  },
-                },
               },
             },
           },
@@ -57,8 +61,8 @@ export async function getCourseDetailView(classId: string): Promise<CourseDetail
   const teacherNames = Array.from(
     new Set(
       (course?.subjects ?? [])
-        .flatMap((item) => item.subject.teachers)
-        .map((item) => item.user.name)
+        .map((item) => item.teacher?.name)
+        .filter((name): name is string => Boolean(name))
         .filter(Boolean),
     ),
   );
@@ -82,6 +86,12 @@ export async function getCourseDetailView(classId: string): Promise<CourseDetail
         id: item.subject.id,
         name: item.subject.name,
         code: item.subject.code,
+        credits: item.subject.credits,
+        teacherName: item.teacher?.name || "Belum ada dosen",
+        dayOfWeek: item.dayOfWeek,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        room: item.room,
         meetingCount: item.subject._count.meetings,
         banner: item.subject.bannerImage,
       })) ?? [],

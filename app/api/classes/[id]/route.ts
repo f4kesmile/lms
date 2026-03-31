@@ -34,6 +34,7 @@ export async function GET(_request: Request, context: Context) {
         subjects: {
           include: {
             subject: { select: { id: true, name: true, code: true } },
+            teacher: { select: { id: true, name: true } },
           },
         },
         students: {

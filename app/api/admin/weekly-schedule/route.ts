@@ -2,7 +2,13 @@ import { DayOfWeek, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { buildDosenCurrentYearClassSubjectWhere } from "@/lib/auth/dosen-access";
+import {
+  badRequest,
+  forbidden,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 
 function getWeekRange(date = new Date()) {
@@ -44,13 +50,24 @@ function isTimeText(value: string) {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 }
 
+function isTimeOverlap(
+  startA: string,
+  endA: string,
+  startB: string,
+  endB: string,
+) {
+  return startA < endB && startB < endA;
+}
+
 export async function GET() {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return unauthorized();
 
     if (!hasRole(currentUser.role, [UserRole.admin, UserRole.dosen])) {
-      return forbidden("Hanya admin dan dosen yang dapat melihat jadwal mengajar");
+      return forbidden(
+        "Hanya admin dan dosen yang dapat melihat jadwal mengajar",
+      );
     }
 
     const { start, end } = getWeekRange();
@@ -64,25 +81,7 @@ export async function GET() {
           },
         },
         ...(currentUser.role === UserRole.dosen
-          ? {
-              OR: [
-                { teacherUserId: currentUser.id },
-                {
-                  teacherUserId: null,
-                  subject: { teachers: { some: { userId: currentUser.id } } },
-                  NOT: {
-                    subject: {
-                      classes: {
-                        some: {
-                          class: { academicYear: { isCurrent: true } },
-                          teacherUserId: { not: null },
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
-            }
+          ? buildDosenCurrentYearClassSubjectWhere(currentUser.id)
           : {}),
       },
       select: {
@@ -230,7 +229,9 @@ export async function GET() {
     }
 
     const schedules = rows.map((item) => {
-      const teacherCandidates = item.subject.teachers.map((teacher) => teacher.user);
+      const teacherCandidates = item.subject.teachers.map(
+        (teacher) => teacher.user,
+      );
       const assignedTeacher = item.teacher ?? teacherCandidates[0] ?? null;
 
       return {
@@ -336,7 +337,11 @@ export async function PATCH(request: Request) {
       return badRequest("Format jam selesai harus HH:MM");
     }
 
-    if (payload.startTime && payload.endTime && payload.startTime >= payload.endTime) {
+    if (
+      payload.startTime &&
+      payload.endTime &&
+      payload.startTime >= payload.endTime
+    ) {
       return badRequest("Jam selesai harus lebih besar dari jam mulai");
     }
 
@@ -348,35 +353,82 @@ export async function PATCH(request: Request) {
       if (!teacher || teacher.role !== UserRole.dosen || !teacher.isActive) {
         return badRequest("Pengampu kelas harus user dosen yang aktif");
       }
+    }
 
-      if (!payload.allowCrossClassTeacher) {
-        const conflicts = await prisma.classSubject.findMany({
-          where: {
-            subjectId: payload.subjectId,
-            classId: { not: payload.classId },
-            teacherUserId: { not: null },
-            NOT: { teacherUserId: payload.teacherUserId },
-          },
-          select: {
-            class: { select: { name: true } },
-            teacher: { select: { name: true } },
-          },
-          take: 5,
-        });
+    const existingSlot = await prisma.classSubject.findUnique({
+      where: {
+        classId_subjectId: {
+          classId: payload.classId,
+          subjectId: payload.subjectId,
+        },
+      },
+      select: {
+        dayOfWeek: true,
+        startTime: true,
+        endTime: true,
+      },
+    });
 
-        if (conflicts.length > 0) {
-          return NextResponse.json(
-            {
-              message:
-                "Mata kuliah ini sudah memiliki pengampu berbeda di kelas lain. Lanjutkan hanya jika memang beda kelas dengan dosen berbeda.",
-              conflicts: conflicts.map((item) => ({
-                className: item.class.name,
-                teacherName: item.teacher?.name || "Belum diatur",
-              })),
+    if (!existingSlot) {
+      return badRequest("Relasi kelas dan mata kuliah tidak ditemukan");
+    }
+
+    const nextDayOfWeek = payload.dayOfWeek ?? existingSlot.dayOfWeek;
+    const nextStartTime = payload.startTime ?? existingSlot.startTime;
+    const nextEndTime = payload.endTime ?? existingSlot.endTime;
+
+    if (nextDayOfWeek && nextStartTime && nextEndTime) {
+      const sameSubjectSchedules = await prisma.classSubject.findMany({
+        where: {
+          subjectId: payload.subjectId,
+          classId: { not: payload.classId },
+          class: {
+            academicYear: {
+              isCurrent: true,
             },
-            { status: 409 },
-          );
-        }
+          },
+          dayOfWeek: nextDayOfWeek,
+          startTime: { not: null },
+          endTime: { not: null },
+        },
+        select: {
+          startTime: true,
+          endTime: true,
+          class: { select: { name: true } },
+          teacher: { select: { name: true } },
+        },
+      });
+
+      const overlapped = sameSubjectSchedules
+        .filter(
+          (
+            item,
+          ): item is typeof item & { startTime: string; endTime: string } =>
+            Boolean(item.startTime && item.endTime),
+        )
+        .find((item) =>
+          isTimeOverlap(
+            nextStartTime,
+            nextEndTime,
+            item.startTime,
+            item.endTime,
+          ),
+        );
+
+      if (overlapped) {
+        return NextResponse.json(
+          {
+            message:
+              "Jadwal bentrok. Mata kuliah yang sama tidak boleh berada di hari dan jam yang bertabrakan antar kelas.",
+            conflict: {
+              className: overlapped.class.name,
+              teacherName: overlapped.teacher?.name || "Belum diatur",
+              startTime: overlapped.startTime,
+              endTime: overlapped.endTime,
+            },
+          },
+          { status: 409 },
+        );
       }
     }
 

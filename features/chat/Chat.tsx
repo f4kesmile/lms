@@ -9,8 +9,9 @@ import type { Source } from "@/lib/ai/chatbot";
 import {
   Bot,
   History,
-  Minimize2,
   Maximize2,
+  ChevronDown,
+  ChevronUp,
   X,
   Send,
   MessageSquare,
@@ -18,10 +19,28 @@ import {
   Plus,
   FileText,
   Loader2,
-  Monitor,
+  Minimize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function renderMarkdown(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/^(\d+)\.\s+(.+)$/gm, "<li class='ml-4 list-decimal'>$2</li>")
+    .replace(/^[-–]\s+(.+)$/gm, "<li class='ml-4 list-disc'>$1</li>")
+    .replace(/\n\n/g, "<br/><br/>")
+    .replace(/\n/g, "<br/>");
+}
 
 interface Message {
   id: string;
@@ -55,7 +74,6 @@ export const FloatingChatbot = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showSuggestions] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,6 +84,7 @@ export const FloatingChatbot = () => {
     Record<string, boolean>
   >({});
   const [position, setPosition] = useState({ x: 24, y: 24 });
+  const [isMobile, setIsMobile] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
@@ -77,6 +96,13 @@ export const FloatingChatbot = () => {
   const suggestionContextKey = `${pathname}|class:${classId}|course:${courseId}`;
 
   useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
     if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
@@ -84,7 +110,6 @@ export const FloatingChatbot = () => {
 
   useEffect(() => {
     if (!isOpen) return;
-
     fetch("/api/chat/sessions")
       .then((r) => r.json())
       .then((d) => setSessions(d.sessions || []))
@@ -93,14 +118,12 @@ export const FloatingChatbot = () => {
     if (
       suggestionsLoadedKeyRef.current === suggestionContextKey &&
       suggestions.length > 0
-    ) {
+    )
       return;
-    }
 
-    const params = new URLSearchParams({ limit: "8" });
+    const params = new URLSearchParams({ limit: "5" });
     if (classId) params.set("classId", classId);
     if (courseId) params.set("courseId", courseId);
-
     fetch(`/api/chat/suggestions?${params.toString()}`)
       .then((r) => r.json())
       .then((d) => {
@@ -111,7 +134,7 @@ export const FloatingChatbot = () => {
   }, [isOpen, classId, courseId, suggestionContextKey, suggestions.length]);
 
   const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMaximized || isMinimized) return;
+    if (isMaximized || isMinimized || isMobile) return;
     isDraggingRef.current = true;
     dragOffsetRef.current = {
       x: e.clientX - (window.innerWidth - position.x),
@@ -122,25 +145,12 @@ export const FloatingChatbot = () => {
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
-      const nx = Math.max(
-        8,
-        Math.min(
-          window.innerWidth - 8,
-          window.innerWidth - (e.clientX - dragOffsetRef.current.x),
-        ),
-      );
-      const ny = Math.max(
-        8,
-        Math.min(
-          window.innerHeight - 8,
-          window.innerHeight - (e.clientY - dragOffsetRef.current.y),
-        ),
-      );
-      setPosition({ x: nx, y: ny });
+      setPosition({
+        x: Math.max(8, Math.min(window.innerWidth - 8, window.innerWidth - (e.clientX - dragOffsetRef.current.x))),
+        y: Math.max(8, Math.min(window.innerHeight - 8, window.innerHeight - (e.clientY - dragOffsetRef.current.y))),
+      });
     };
-    const onUp = () => {
-      isDraggingRef.current = false;
-    };
+    const onUp = () => { isDraggingRef.current = false; };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
     return () => {
@@ -153,7 +163,6 @@ export const FloatingChatbot = () => {
     const res = await fetch(`/api/chat/sessions/${id}`);
     const data = await res.json();
     if (!res.ok) return;
-
     const msgs: Message[] = (data.turns || []).flatMap((t: ChatTurn) => [
       { id: `${t.id}-q`, role: "user" as const, content: t.question },
       {
@@ -186,8 +195,7 @@ export const FloatingChatbot = () => {
         body: JSON.stringify({ question, sessionId: sessionId ?? undefined }),
       });
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Gagal memproses pertanyaan");
+      if (!res.ok) throw new Error(data.message || "Gagal memproses pertanyaan");
       setSessionId(data.sessionId);
       setMessages((prev) => [
         ...prev,
@@ -233,7 +241,7 @@ export const FloatingChatbot = () => {
         prev.map((msg) => (msg.turnId === turnId ? { ...msg, rating } : msg)),
       );
     } catch {
-      // Fail silently
+      /* silent */
     } finally {
       setRatingLoadingByTurn((prev) => ({ ...prev, [turnId]: false }));
     }
@@ -241,157 +249,185 @@ export const FloatingChatbot = () => {
 
   if (pathname === "/chatbot") return null;
 
+  /* ── Floating Toggle ── */
   if (!isOpen) {
     return (
-      <button
-        onClick={() => {
-          setIsOpen(true);
-          setIsMinimized(false);
-        }}
-        className="fixed z-40 right-6 bottom-6 h-16 w-16 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-        title="Buka Chatbot"
-      >
-        <Bot className="h-8 w-8" />
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => { setIsOpen(true); setIsMinimized(false); }}
+            className="fixed z-[100] right-5 bottom-5 sm:right-6 sm:bottom-6 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          >
+            <Bot className="h-7 w-7" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">Asisten AI</TooltipContent>
+      </Tooltip>
     );
   }
 
+  /* ── Window Styles ── */
+  const windowStyle: React.CSSProperties = isMaximized
+    ? { inset: isMobile ? 0 : 16 }
+    : isMobile
+      ? { bottom: 0, left: 0, right: 0, height: isMinimized ? 56 : "92dvh" }
+      : { right: position.x, bottom: position.y, width: 420, height: isMinimized ? 56 : 620 };
+
   return (
     <div
-      style={
-        isMaximized
-          ? { inset: 16 }
-          : {
-              right: position.x,
-              bottom: position.y,
-              width: 400,
-              height: isMinimized ? 60 : 600,
-            }
-      }
+      style={windowStyle}
       className={cn(
-        "fixed z-40 flex flex-col bg-card border border-border rounded-2xl overflow-hidden shadow-2xl transition-all duration-200",
-        isMaximized && "w-[calc(100%-32px)] h-[calc(100%-32px)] rounded-[2rem]",
+        "fixed z-[100] flex flex-col overflow-hidden transition-all duration-300",
+        "bg-background border border-border shadow-2xl",
+        isMobile
+          ? isMaximized ? "rounded-none" : isMinimized ? "rounded-t-2xl" : "rounded-t-2xl"
+          : isMaximized ? "rounded-2xl" : isMinimized ? "rounded-xl" : "rounded-2xl",
       )}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <div
         onMouseDown={startDrag}
         className={cn(
-          "h-14 shrink-0 bg-primary px-4 flex items-center justify-between text-on-primary select-none",
-          !isMaximized && !isMinimized && "cursor-grab active:cursor-grabbing",
+          "h-14 shrink-0 px-4 flex items-center justify-between border-b border-border bg-card",
+          !isMaximized && !isMinimized && !isMobile && "cursor-grab active:cursor-grabbing",
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <Bot className="h-5 w-5" />
-          <span className="text-sm font-black tracking-tight">
-            {SITE_CONFIG.assistantName}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+            <Bot className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-bold leading-none">{SITE_CONFIG.assistantName}</p>
+            <p className="text-[10px] text-primary font-semibold mt-0.5">Online</p>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
+
+        <div className="flex items-center gap-0.5">
           {!isMinimized && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-on-primary hover:bg-white/10"
-              onClick={() => setShowHistory(!showHistory)}
-            >
-              <History className="h-4 w-4" />
-            </Button>
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost" size="icon"
+                    className={cn("h-8 w-8 rounded-lg", showHistory ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground")}
+                    onClick={() => setShowHistory(!showHistory)}
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Riwayat</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost" size="icon"
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    onClick={() => { setMessages([]); setSessionId(null); }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Chat Baru</TooltipContent>
+              </Tooltip>
+            </>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-on-primary hover:bg-white/10"
-            onClick={() => {
-              setIsMinimized(!isMinimized);
-              if (isMaximized) setIsMaximized(false);
-            }}
-          >
-            {isMinimized ? (
-              <Maximize2 className="h-4 w-4" />
-            ) : (
-              <Minimize2 className="h-4 w-4" />
-            )}
-          </Button>
+
           {!isMinimized && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-on-primary hover:bg-white/10"
-              onClick={() => setIsMaximized(!isMaximized)}
-            >
-              <Monitor className="h-4 w-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost" size="icon"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsMaximized(!isMaximized)}
+                >
+                  {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isMaximized ? "Kembalikan" : "Layar Penuh"}</TooltipContent>
+            </Tooltip>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-on-primary hover:bg-white/10"
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost" size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setIsMinimized(!isMinimized);
+                  if (isMaximized) setIsMaximized(false);
+                }}
+              >
+                {isMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isMinimized ? "Buka" : "Kecilkan"}</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost" size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Tutup</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
-      {/* Body */}
+      {/* ── Body ── */}
       {!isMinimized && (
-        <div className="flex flex-1 min-h-0 bg-background">
-          {/* History Sidebar */}
+        <div className="flex flex-1 min-h-0">
+          {/* History Panel */}
           {showHistory && (
-            <aside className="w-48 shrink-0 border-r-2 border-border bg-muted/30 flex flex-col">
-              <div className="p-3 border-b-2 border-border flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Riwayat
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-[10px] font-bold rounded-lg"
-                  onClick={() => {
-                    setMessages([]);
-                    setSessionId(null);
-                  }}
-                >
-                  <Plus className="h-3 w-3 mr-1" /> Baru
-                </Button>
+            <aside className="w-52 shrink-0 border-r border-border bg-card flex flex-col">
+              <div className="p-3 border-b border-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Riwayat Sesi
+                </p>
               </div>
-              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {sessions.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <History className="h-6 w-6 mx-auto mb-2 opacity-30" />
+                    <p className="text-[10px] font-semibold">Belum ada riwayat</p>
+                  </div>
+                )}
                 {sessions.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => loadSession(s.id)}
                     className={cn(
-                      "w-full text-left p-3 rounded-xl border transition-all transition-colors",
+                      "w-full text-left p-3 rounded-xl transition-colors",
                       sessionId === s.id
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "border-transparent hover:bg-muted",
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted text-foreground",
                     )}
                   >
-                    <p className="text-xs font-bold truncate underline-offset-2">
-                      {s.title}
-                    </p>
-                    <p className="text-[10px] font-medium opacity-60 mt-1">
-                      {s.totalTurns} pesan
-                    </p>
+                    <p className="text-xs font-bold truncate">{s.title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{s.totalTurns} pesan</p>
                   </button>
                 ))}
               </div>
             </aside>
           )}
 
-          {/* Chat Area */}
+          {/* Chat Column */}
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 && (
-                <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 opacity-40">
-                  <MessageSquare className="h-12 w-12" />
-                  <div className="space-y-1">
-                    <p className="font-bold">Mulai Percakapan</p>
-                    <p className="text-xs">
-                      Tanyakan apa pun seputar materi kuliah Anda.
-                    </p>
+                <div className="h-full flex flex-col items-center justify-center text-center px-6 gap-4 text-muted-foreground">
+                  <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <MessageSquare className="h-7 w-7 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-foreground">Mulai Percakapan</p>
+                    <p className="text-xs mt-1">Tanyakan seputar materi kuliah Anda.</p>
                   </div>
                 </div>
               )}
@@ -406,62 +442,51 @@ export const FloatingChatbot = () => {
                 >
                   <div
                     className={cn(
-                      "px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed shadow-sm",
+                      "px-4 py-3 text-sm leading-relaxed",
                       msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-none border border-primary/20"
-                        : "bg-card border border-border rounded-tl-none",
+                        ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md"
+                        : "bg-muted rounded-2xl rounded-bl-md [&_strong]:font-bold [&_em]:italic [&_li]:my-0.5",
                     )}
                   >
-                    {msg.content}
+                    {msg.role === "assistant" ? (
+                      <div dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+                    ) : (
+                      msg.content
+                    )}
                   </div>
 
-                  {msg.role === "assistant" &&
-                    msg.sources &&
-                    msg.sources.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {msg.sources.slice(0, 3).map((src) => (
-                          <Link
-                            key={src.id}
-                            href={
-                              `/courses/${classId}/subjects/${src.subjectId}/meetings/${src.meetingNo}` as Route
-                            }
-                            className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted border border-border text-[10px] font-bold text-primary hover:bg-primary/5 transition-colors"
-                          >
-                            <FileText className="h-3 w-3" />
-                            <span className="truncate max-w-[100px]">
-                              {src.subjectCode} • {src.title}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                  {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {msg.sources.slice(0, 3).map((src) => (
+                        <Link
+                          key={src.id}
+                          href={`/courses/${classId}/subjects/${src.subjectId}/meetings/${src.meetingNo}` as Route}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors"
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span className="truncate max-w-[100px]">{src.subjectCode} · {src.title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
 
                   {msg.role === "assistant" && msg.turnId && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Rating:
-                      </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] font-semibold text-muted-foreground">Rating</span>
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map((val) => (
                           <button
                             key={val}
-                            disabled={
-                              ratingLoadingByTurn[msg.turnId!] || !!msg.rating
-                            }
+                            disabled={ratingLoadingByTurn[msg.turnId!] || !!msg.rating}
                             onClick={() => rateTurn(msg.turnId!, val)}
                             className={cn(
-                              "transition-all",
+                              "transition-colors",
                               (msg.rating || 0) >= val
-                                ? "text-primary scale-110"
+                                ? "text-primary"
                                 : "text-muted-foreground/30 hover:text-primary/50",
                             )}
                           >
-                            <Star
-                              className={cn(
-                                "h-3 w-3",
-                                (msg.rating || 0) >= val && "fill-current",
-                              )}
-                            />
+                            <Star className={cn("h-3 w-3", (msg.rating || 0) >= val && "fill-current")} />
                           </button>
                         ))}
                       </div>
@@ -473,14 +498,15 @@ export const FloatingChatbot = () => {
             </div>
 
             {/* Suggestions */}
-            {showSuggestions && suggestions.length > 0 && !loading && (
-              <div className="px-4 py-2 border-t border-border flex items-center gap-3 overflow-x-auto no-scrollbar bg-muted/20">
-                <div className="flex gap-2">
-                  {suggestions.map((s, idx) => (
+            {suggestions.length > 0 && !loading && messages.length === 0 && (
+              <div className="px-4 py-3 border-t border-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Saran</p>
+                <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}>
+                  {suggestions.map((s, i) => (
                     <button
-                      key={idx}
+                      key={i}
                       onClick={() => sendQuestion(s)}
-                      className="whitespace-nowrap px-3 py-1.5 rounded-xl bg-card border border-border text-[11px] font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all shadow-sm"
+                      className="whitespace-nowrap shrink-0 px-3 py-1.5 rounded-lg bg-muted border border-border text-[11px] font-semibold text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
                     >
                       {s}
                     </button>
@@ -489,40 +515,34 @@ export const FloatingChatbot = () => {
               </div>
             )}
 
-            {/* Input Area */}
-            <div className="p-4 bg-muted/30 border-t-2 border-border">
+            {/* Input */}
+            <div className="p-3 border-t border-border bg-card">
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendQuestion(input);
-                }}
-                className="relative flex items-center gap-2"
+                onSubmit={(e) => { e.preventDefault(); sendQuestion(input); }}
+                className="flex items-center gap-2"
               >
                 <input
                   type="text"
-                  placeholder="Ketik pertanyaan Anda..."
+                  placeholder="Ketik pertanyaan…"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={loading}
-                  className="w-full h-12 pl-4 pr-12 rounded-2xl bg-card border border-border text-sm font-medium focus:border-primary focus:outline-none transition-all disabled:opacity-50"
+                  className="flex-1 h-10 px-4 rounded-xl bg-background border border-border text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all disabled:opacity-50 placeholder:text-muted-foreground/60"
                 />
-                <Button
-                  type="submit"
-                  variant="default"
-                  size="icon"
-                  disabled={loading || !input.trim()}
-                  className="absolute right-1.5 top-1.5 h-9 w-9"
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="submit"
+                      size="icon"
+                      disabled={loading || !input.trim()}
+                      className="h-10 w-10 rounded-xl shrink-0"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Kirim</TooltipContent>
+                </Tooltip>
               </form>
-              <p className="text-[10px] text-center mt-3 font-bold text-muted-foreground opacity-50 uppercase tracking-widest">
-                Didukung oleh AI Nusa Belajar
-              </p>
             </div>
           </div>
         </div>

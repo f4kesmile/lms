@@ -3,57 +3,29 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { isDosenAllowedForSubjectInCurrentYear } from "@/lib/auth/dosen-access";
+import {
+  badRequest,
+  forbidden,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 import { splitIntoChunks } from "@/lib/ai/rag";
-
-async function canManageSubjectMeetings(userId: string, role: UserRole, subjectId: string) {
-  if (role === UserRole.admin) return true;
-  if (role !== UserRole.dosen) return false;
-
-  const currentYear = await prisma.academicYear.findFirst({
-    where: { isCurrent: true },
-    select: { id: true },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  const fallbackLink = await prisma.subjectTeacher.findUnique({
-    where: { subjectId_userId: { subjectId, userId } },
-    select: { userId: true },
-  });
-
-  if (!currentYear) return Boolean(fallbackLink);
-
-  const classSubjects = await prisma.classSubject.findMany({
-    where: {
-      subjectId,
-      class: { academicYearId: currentYear.id },
-    },
-    select: { teacherUserId: true },
-  });
-
-  if (classSubjects.length === 0) return Boolean(fallbackLink);
-
-  if (classSubjects.some((row) => row.teacherUserId && row.teacherUserId !== userId)) {
-    return false;
-  }
-
-  if (classSubjects.some((row) => row.teacherUserId === userId)) {
-    return true;
-  }
-
-  return classSubjects.every((row) => row.teacherUserId === null) && Boolean(fallbackLink);
-}
 
 const createMeetingSchema = z.object({
   subjectId: z.string().uuid(),
   meetingNo: z.number().int().min(1),
   title: z.string().min(3),
   content: z.string().min(50),
-  assets: z.array(z.object({
-    name: z.string(),
-    data: z.string(),
-  })).optional(),
+  assets: z
+    .array(
+      z.object({
+        name: z.string(),
+        data: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 export async function GET(request: Request) {
@@ -68,7 +40,14 @@ export async function GET(request: Request) {
     const subjectId = searchParams.get("subjectId") ?? "";
     const search = searchParams.get("search") ?? "";
 
-    if (subjectId.trim() && !(await canManageSubjectMeetings(user.id, user.role, subjectId.trim()))) {
+    if (
+      subjectId.trim() &&
+      !(await isDosenAllowedForSubjectInCurrentYear({
+        userId: user.id,
+        role: user.role,
+        subjectId: subjectId.trim(),
+      }))
+    ) {
       return forbidden("Anda tidak memiliki akses ke sesi mata kuliah ini");
     }
 
@@ -111,8 +90,16 @@ export async function POST(request: Request) {
 
     const { subjectId, meetingNo, title, content, assets } = parsed.data;
 
-    if (!(await canManageSubjectMeetings(user.id, user.role, subjectId))) {
-      return forbidden("Anda tidak memiliki akses kelola sesi untuk mata kuliah ini");
+    if (
+      !(await isDosenAllowedForSubjectInCurrentYear({
+        userId: user.id,
+        role: user.role,
+        subjectId,
+      }))
+    ) {
+      return forbidden(
+        "Anda tidak memiliki akses kelola sesi untuk mata kuliah ini",
+      );
     }
 
     const subjectExists = await prisma.subject.findUnique({

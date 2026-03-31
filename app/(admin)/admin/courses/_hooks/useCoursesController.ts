@@ -29,6 +29,17 @@ import {
   updateClassAction,
   updateSubjectCourseAction,
 } from "@/lib/actions/course";
+import {
+  getErrorMessage,
+  notifyError,
+  toastAssigned,
+  toastAssignFailed,
+  toastDeleted,
+  toastSaveFailed,
+  toastSaved,
+  toastUnassigned,
+  toastUpdated,
+} from "@/lib/utils/toast";
 
 type NoticeState = {
   open: boolean;
@@ -73,10 +84,14 @@ export function useCoursesController() {
   const [meta, setMeta] = useState<{
     years: AcademicYear[];
     teachers: Teacher[];
+    allSubjects: Array<{ id: string; name: string; code: string }>;
   }>({
     years: [],
     teachers: [],
+    allSubjects: [],
   });
+  const [showManageSubjectsModal, setShowManageSubjectsModal] = useState(false);
+  const [classSubjects, setClassSubjects] = useState<any[]>([]);
 
   const [notice, setNotice] = useState<NoticeState>({
     open: false,
@@ -140,14 +155,20 @@ export function useCoursesController() {
 
   const loadMeta = useCallback(async () => {
     try {
-      const [yData, tRes] = await Promise.all([
+      const [yData, tRes, sRes] = await Promise.all([
         fetchAcademicYears(),
         fetch("/api/users?role=dosen"),
+        fetch("/api/kb/courses"),
       ]);
       const tData = await tRes.json();
-      setMeta({ years: yData || [], teachers: tData.users || [] });
+      const sData = await sRes.json();
+      setMeta({
+        years: yData || [],
+        teachers: tData.users || [],
+        allSubjects: sData.courses || [],
+      });
     } catch {
-      setMeta({ years: [], teachers: [] });
+      setMeta({ years: [], teachers: [], allSubjects: [] });
     }
   }, [fetchAcademicYears]);
 
@@ -222,10 +243,16 @@ export function useCoursesController() {
         ? await updateClassAction(editingClass.id, payload)
         : await createClassAction(payload);
       if (!res.success) throw new Error(res.error || "Gagal menyimpan kelas");
+      if (editingClass) {
+        toastUpdated("kelas");
+      } else {
+        toastSaved("kelas");
+      }
       setShowClassModal(false);
       resetClassForm();
       await loadData();
     } catch (error) {
+      toastSaveFailed("kelas", error);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
@@ -256,15 +283,23 @@ export function useCoursesController() {
         : await createSubjectCourseAction(payload);
       if (!res.success)
         throw new Error(res.error || "Gagal menyimpan mata kuliah");
+      if (editingSubject) {
+        toastUpdated("mata kuliah");
+      } else {
+        toastSaved("mata kuliah");
+      }
       setShowSubjectModal(false);
       resetSubjectForm();
       await loadData();
     } catch (error) {
+      toastSaveFailed("mata kuliah", error);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
         message:
-          error instanceof Error ? error.message : "Gagal menyimpan mata kuliah",
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan mata kuliah",
       });
     } finally {
       setLoading(false);
@@ -290,12 +325,18 @@ export function useCoursesController() {
           });
       if (!res.success)
         throw new Error(res.error || "Gagal menyimpan tahun akademik");
+      if (editingYear) {
+        toastUpdated("tahun akademik");
+      } else {
+        toastSaved("tahun akademik");
+      }
       setShowYearModal(false);
       setEditingYear(null);
       setYearForm(EMPTY_YEAR_FORM);
       await loadData();
       await loadMeta();
     } catch (error) {
+      toastSaveFailed("tahun akademik", error);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",
@@ -317,6 +358,7 @@ export function useCoursesController() {
       onConfirm: async () => {
         const res = await deleteClassAction(id);
         if (!res.success) {
+          notifyError(res.error || "Gagal menghapus kelas.");
           setNotice({
             open: true,
             title: "Gagal Menghapus",
@@ -324,6 +366,7 @@ export function useCoursesController() {
           });
           return;
         }
+        toastDeleted("kelas");
         await loadData();
       },
     });
@@ -338,6 +381,7 @@ export function useCoursesController() {
       onConfirm: async () => {
         const res = await deleteSubjectCourseAction(id);
         if (!res.success) {
+          notifyError(res.error || "Gagal menghapus mata kuliah.");
           setNotice({
             open: true,
             title: "Gagal Menghapus",
@@ -345,6 +389,7 @@ export function useCoursesController() {
           });
           return;
         }
+        toastDeleted("mata kuliah");
         await loadData();
       },
     });
@@ -358,6 +403,7 @@ export function useCoursesController() {
       onConfirm: async () => {
         const res = await deleteAcademicYearAction(id);
         if (!res.success) {
+          notifyError(res.error || "Gagal menghapus tahun akademik.");
           setNotice({
             open: true,
             title: "Gagal Menghapus",
@@ -365,6 +411,7 @@ export function useCoursesController() {
           });
           return;
         }
+        toastDeleted("tahun akademik");
         await loadData();
         await loadMeta();
       },
@@ -374,6 +421,7 @@ export function useCoursesController() {
   async function setYearActive(id: string) {
     const res = await setAcademicYearActiveAction(id);
     if (!res.success) {
+      notifyError(res.error || "Gagal mengubah status aktif");
       setNotice({
         open: true,
         title: "Gagal Mengubah Status",
@@ -381,6 +429,7 @@ export function useCoursesController() {
       });
       return;
     }
+    toastUpdated("tahun akademik aktif");
     await loadData();
   }
 
@@ -400,7 +449,27 @@ export function useCoursesController() {
     setShowYearModal(true);
   }
 
-  function handleEditItem(item: SubjectCourseItem | ClassItem | AcademicYear) {
+  const fetchClassSubjects = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/classes/${id}/subjects`);
+      const data = await res.json();
+      setClassSubjects(data.subjects || []);
+    } catch {
+      setClassSubjects([]);
+    }
+  }, []);
+
+  function handleEditItem(
+    item: SubjectCourseItem | ClassItem | AcademicYear,
+    action?: string,
+  ) {
+    if (action === "manage-subjects") {
+      const classItem = item as ClassItem;
+      setEditingClass(classItem);
+      void fetchClassSubjects(classItem.id);
+      setShowManageSubjectsModal(true);
+      return;
+    }
     if (activeTab === "mataKuliah") {
       const subject = item as SubjectCourseItem;
       setEditingSubject(subject);
@@ -510,6 +579,58 @@ export function useCoursesController() {
         ? "kelas"
         : "tahun akademik";
 
+  async function handleAssignSubject(data: any) {
+    if (!editingClass) return;
+    setLoading(true);
+    try {
+      const { assignSubjectToClassAction } =
+        await import("@/lib/actions/course");
+      const res = await assignSubjectToClassAction({
+        classId: editingClass.id,
+        ...data,
+      });
+      if (!res.success) throw new Error(res.error);
+      toastAssigned("mata kuliah ke kelas");
+      await fetchClassSubjects(editingClass.id);
+    } catch (error) {
+      toastAssignFailed("mata kuliah", error);
+      setNotice({
+        open: true,
+        title: "Gagal Menugaskan",
+        message: error instanceof Error ? error.message : "Gagal",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRemoveSubject(subjectId: string) {
+    if (!editingClass) return;
+    setLoading(true);
+    try {
+      const { removeSubjectFromClassAction } =
+        await import("@/lib/actions/course");
+      const res = await removeSubjectFromClassAction(
+        editingClass.id,
+        subjectId,
+      );
+      if (!res.success) throw new Error(res.error);
+      toastUnassigned("penugasan mata kuliah");
+      await fetchClassSubjects(editingClass.id);
+    } catch (error) {
+      notifyError(
+        getErrorMessage(error, "Gagal melepas penugasan mata kuliah."),
+      );
+      setNotice({
+        open: true,
+        title: "Gagal Menghapus",
+        message: error instanceof Error ? error.message : "Gagal",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return {
     activeTab,
     setActiveTab,
@@ -559,5 +680,11 @@ export function useCoursesController() {
     setClassForm,
     setSubjectForm,
     setYearForm,
+    // New
+    showManageSubjectsModal,
+    setShowManageSubjectsModal,
+    classSubjects,
+    handleAssignSubject,
+    handleRemoveSubject,
   };
 }

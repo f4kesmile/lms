@@ -14,6 +14,7 @@ import type {
   NoticeState,
 } from "@/app/(admin)/admin/materials/new/_lib/types";
 import { joinMaterialPages } from "@/lib/utils/material-content";
+import { notifyError, toastSaveFailed, toastSaved } from "@/lib/utils/toast";
 
 type UseNewMaterialControllerOptions = {
   from: "courses" | "knowledge";
@@ -127,6 +128,7 @@ export function useNewMaterialController({
     );
 
     if (!form.courseId) {
+      notifyError("Materi wajib dikaitkan dengan mata kuliah");
       setNotice({
         open: true,
         title: "Mata Kuliah Belum Dipilih",
@@ -136,6 +138,7 @@ export function useNewMaterialController({
     }
 
     if (!form.title.trim() || !form.module.trim()) {
+      notifyError("Judul dan modul materi wajib diisi");
       setNotice({
         open: true,
         title: "Data Belum Lengkap",
@@ -145,6 +148,7 @@ export function useNewMaterialController({
     }
 
     if (normalizedPages.length === 0) {
+      notifyError("Isi materi belum diisi");
       setNotice({
         open: true,
         title: "Isi Materi Kosong",
@@ -173,6 +177,7 @@ export function useNewMaterialController({
         throw new Error(payload?.message || "Gagal menyimpan materi");
       }
 
+      toastSaved("materi");
       setNotice({
         open: true,
         title: "Berhasil",
@@ -180,6 +185,7 @@ export function useNewMaterialController({
         redirectTo: "/admin/knowledge",
       });
     } catch (error) {
+      toastSaveFailed("materi", error);
       setNotice({
         open: true,
         title: "Gagal Menyimpan",

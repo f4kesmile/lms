@@ -6,6 +6,7 @@ import { AppToaster } from "@/components/shared/AppToaster";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { ChatbotVisibilityGuard } from "@/features/chat/ChatbotVisibilityGuard";
 import { SITE_CONFIG } from "@/lib/constants";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -38,11 +39,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <AppToaster />
-          <Suspense fallback={null}>
-            <ChatbotVisibilityGuard />
-          </Suspense>
+          <TooltipProvider>
+            {children}
+            <AppToaster />
+            <Suspense fallback={null}>
+              <ChatbotVisibilityGuard />
+            </Suspense>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
