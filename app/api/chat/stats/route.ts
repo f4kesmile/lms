@@ -21,19 +21,31 @@ export async function GET() {
       return forbidden("Only admin or dosen can access chatbot stats");
     }
 
-    const [totalMeetings, totalSessions, totalTurns, ratedTurns, fastTurns, citationTurns] =
-      await Promise.all([
-        prisma.subjectMeeting.count(),
-        prisma.chatSession.count(),
-        prisma.chatTurn.count(),
-        prisma.chatTurn.findMany({ where: { rating: { not: null } }, select: { rating: true } }),
-        prisma.chatTurn.count({ where: { responseTimeMs: { lt: 3000 } } }),
-        prisma.chatTurn.findMany({ select: { citations: true } }),
-      ]);
+    const [
+      totalMaterials,
+      totalSessions,
+      totalTurns,
+      ratedTurns,
+      fastTurns,
+      citationTurns,
+    ] = await Promise.all([
+      prisma.subjectMeeting.count(),
+      prisma.chatSession.count(),
+      prisma.chatTurn.count(),
+      prisma.chatTurn.findMany({
+        where: { rating: { not: null } },
+        select: { rating: true },
+      }),
+      prisma.chatTurn.count({ where: { responseTimeMs: { lt: 3000 } } }),
+      prisma.chatTurn.findMany({ select: { citations: true } }),
+    ]);
 
     const avgRating =
       ratedTurns.length > 0
-        ? ratedTurns.reduce((sum: number, item: RatedTurn) => sum + (item.rating ?? 0), 0) / ratedTurns.length
+        ? ratedTurns.reduce(
+            (sum: number, item: RatedTurn) => sum + (item.rating ?? 0),
+            0,
+          ) / ratedTurns.length
         : null;
 
     const citedAnswers = citationTurns.filter((item: CitationTurn) => {
@@ -50,7 +62,7 @@ export async function GET() {
       totalTurns > 0 ? Number(((fastTurns / totalTurns) * 100).toFixed(2)) : 0;
 
     return NextResponse.json({
-      totalMeetings,
+      totalMaterials,
       totalSessions,
       totalTurns,
       avgRating: avgRating ? Number(avgRating.toFixed(2)) : null,

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { splitIntoChunks } from "@/lib/ai/chunking";
+import { isDosenAllowedForSubjectInCurrentYear } from "@/lib/auth/dosen-access";
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";
 import {
@@ -87,10 +88,27 @@ export async function GET(request: Request, context: Context) {
     });
 
     if (meeting) {
+      if (user.role === UserRole.dosen) {
+        const allowed = await isDosenAllowedForSubjectInCurrentYear({
+          userId: user.id,
+          role: user.role,
+          subjectId: meeting.subjectId,
+        });
+        if (!allowed) {
+          return forbidden("Anda tidak memiliki akses ke materi sesi ini");
+        }
+      }
+
       return NextResponse.json({
         ...meeting,
         type: "session",
-        course: meeting.subject ? { id: meeting.subject.id, code: meeting.subject.code, title: meeting.subject.name } : null,
+        course: meeting.subject
+          ? {
+              id: meeting.subject.id,
+              code: meeting.subject.code,
+              title: meeting.subject.name,
+            }
+          : null,
       });
     }
 
@@ -117,6 +135,25 @@ export async function PATCH(request: Request, context: Context) {
     const chunks = splitIntoChunks(materialToChunkText(safeContent));
 
     if (type === "session") {
+      const meetingExists = await prisma.subjectMeeting.findUnique({
+        where: { id },
+        select: { subjectId: true },
+      });
+      if (!meetingExists) {
+        return notFound("Session not found");
+      }
+
+      if (user.role === UserRole.dosen) {
+        const allowed = await isDosenAllowedForSubjectInCurrentYear({
+          userId: user.id,
+          role: user.role,
+          subjectId: meetingExists.subjectId,
+        });
+        if (!allowed) {
+          return forbidden("Anda tidak memiliki akses kelola sesi ini");
+        }
+      }
+
       const meeting = await prisma.subjectMeeting.update({
         where: { id },
         data: {
@@ -139,10 +176,16 @@ export async function PATCH(request: Request, context: Context) {
       return NextResponse.json({
         ...meeting,
         type: "session",
-        course: { id: meeting.subject.id, code: meeting.subject.code, title: meeting.subject.name },
+        course: {
+          id: meeting.subject.id,
+          code: meeting.subject.code,
+          title: meeting.subject.name,
+        },
       });
     } else {
-      const existing = await prisma.courseMaterial.findUnique({ where: { id } });
+      const existing = await prisma.courseMaterial.findUnique({
+        where: { id },
+      });
       if (!existing) return notFound("Material not found");
 
       if (!canManageMaterial(user.role, user.id, existing.createdById)) {
@@ -202,6 +245,17 @@ export async function DELETE(request: Request, context: Context) {
     // Check Session
     const sess = await prisma.subjectMeeting.findUnique({ where: { id } });
     if (sess) {
+      if (user.role === UserRole.dosen) {
+        const allowed = await isDosenAllowedForSubjectInCurrentYear({
+          userId: user.id,
+          role: user.role,
+          subjectId: sess.subjectId,
+        });
+        if (!allowed) {
+          return forbidden("Anda tidak memiliki akses kelola sesi ini");
+        }
+      }
+
       await prisma.subjectMeeting.delete({ where: { id } });
       return NextResponse.json({ message: "Session deleted" });
     }

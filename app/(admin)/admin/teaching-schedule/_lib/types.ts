@@ -19,7 +19,9 @@ export const DAY_OPTIONS: Array<{ value: DayOfWeek; label: string }> = [
 
 export function dayLabel(day: DayOfWeek | null) {
   if (!day) return "Belum diatur";
-  return DAY_OPTIONS.find((item) => item.value === day)?.label || "Belum diatur";
+  return (
+    DAY_OPTIONS.find((item) => item.value === day)?.label || "Belum diatur"
+  );
 }
 
 export type WeekResponse = {
@@ -30,6 +32,8 @@ export type WeekResponse = {
   };
   summary: {
     totalSchedules: number;
+    totalSubjects: number;
+    totalClasses: number;
     totalTeachers: number;
     totalStudents: number;
     totalUpdatesThisWeek: number;

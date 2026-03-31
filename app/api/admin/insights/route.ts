@@ -31,42 +31,47 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")?.trim() || "";
     const skip = (page - 1) * limit;
 
-    // CockroachDB via pg-adapter supports ILIKE via mode:"insensitive", but
-    // to be safe we pass the lowercased term and match against lowercased fields.
-    // Prisma does not expose SQL functions directly, so we use a raw-safe
-    // contains without mode and lowercase the search term instead so results
-    // remain useful even if the DB falls back to case-sensitive.
-    const q = search.toLowerCase();
-    const where = q
+    const where = search
       ? {
           OR: [
-            { question: { contains: q } },
-            { answer: { contains: q } },
-            { user: { name: { contains: search } } },
+            { question: { contains: search, mode: "insensitive" as const } },
+            { answer: { contains: search, mode: "insensitive" as const } },
+            {
+              user: {
+                name: { contains: search, mode: "insensitive" as const },
+              },
+            },
           ],
         }
       : undefined;
 
-    const [turns, totalTurns, filteredTotal] = await Promise.all([
-      prisma.chatTurn.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: skip,
-        select: {
-          id: true,
-          question: true,
-          answer: true,
-          createdAt: true,
-          responseTimeMs: true,
-          rating: true,
-          citations: true,
-          user: { select: { name: true } },
-        },
-      }),
-      prisma.chatTurn.count(),
-      prisma.chatTurn.count({ where }),
-    ]);
+    const [turns, totalTurns, filteredTotal, qualitySignals] =
+      await Promise.all([
+        prisma.chatTurn.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: skip,
+          select: {
+            id: true,
+            question: true,
+            answer: true,
+            createdAt: true,
+            responseTimeMs: true,
+            rating: true,
+            citations: true,
+            user: { select: { name: true } },
+          },
+        }),
+        prisma.chatTurn.count(),
+        prisma.chatTurn.count({ where }),
+        prisma.chatTurn.findMany({
+          select: {
+            rating: true,
+            citations: true,
+          },
+        }),
+      ]);
 
     // Summary metrics based on ALL data for accurate dashboarding
     // But for performance, we might want to aggregate this differently if data grows huge
@@ -77,16 +82,17 @@ export async function GET(request: Request) {
       },
     });
 
-    const successTurnsCount = await prisma.chatTurn.count({
-      where: {
-        OR: [
-          { citations: { not: [] } },
-          { answer: { not: "" } }
-        ]
-      }
-    });
+    const successTurnsCount = qualitySignals.filter((item) => {
+      const hasCitation =
+        Array.isArray(item.citations) && item.citations.length > 0;
+      const goodRating = (item.rating ?? 0) >= 4;
+      return hasCitation || goodRating;
+    }).length;
 
-    const accuracyScore = totalTurns > 0 ? Number(((successTurnsCount / totalTurns) * 100).toFixed(1)) : 0;
+    const accuracyScore =
+      totalTurns > 0
+        ? Number(((successTurnsCount / totalTurns) * 100).toFixed(1))
+        : 0;
 
     const interactions: InteractionItem[] = turns.map((item) => ({
       id: item.id,
@@ -110,7 +116,9 @@ export async function GET(request: Request) {
         totalTurns,
         avgResponseTimeMs: Math.round(summaryData._avg.responseTimeMs || 0),
         accuracyScore,
-        avgRating: summaryData._avg.rating ? Number(summaryData._avg.rating.toFixed(2)) : null,
+        avgRating: summaryData._avg.rating
+          ? Number(summaryData._avg.rating.toFixed(2))
+          : null,
       },
       interactions,
       pagination: {
@@ -118,7 +126,7 @@ export async function GET(request: Request) {
         pages: Math.ceil(filteredTotal / limit),
         currentPage: page,
         limit: limit,
-      }
+      },
     });
   } catch (error) {
     return serverError(error);

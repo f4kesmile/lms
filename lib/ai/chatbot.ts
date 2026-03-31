@@ -14,6 +14,20 @@ type ComplexityLevel = "low" | "medium" | "high";
 
 import { readChatbotSettings } from "@/lib/ai/settings";
 
+type PromptControls = {
+  concise: boolean;
+  mentionLimits: boolean;
+};
+
+function parsePromptControls(systemPrompt: string): PromptControls {
+  const normalized = systemPrompt.toLowerCase();
+
+  return {
+    concise: /ringkas|singkat|padat/.test(normalized),
+    mentionLimits: /batasan|konteks kurang|keterbatasan/.test(normalized),
+  };
+}
+
 function normalizeExcerpt(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -49,8 +63,27 @@ function estimateComplexity(question: string): ComplexityLevel {
   const q = question.toLowerCase();
   const words = q.split(/\s+/).filter(Boolean).length;
 
-  const hard = ["bandingkan", "analisis", "evaluasi", "kritisi", "trade-off", "implikasi", "strategi", "arsitektur", "mengapa", "kenapa"];
-  const medium = ["bagaimana", "langkah", "proses", "contoh", "penerapan", "kapan", "apa perbedaan"];
+  const hard = [
+    "bandingkan",
+    "analisis",
+    "evaluasi",
+    "kritisi",
+    "trade-off",
+    "implikasi",
+    "strategi",
+    "arsitektur",
+    "mengapa",
+    "kenapa",
+  ];
+  const medium = [
+    "bagaimana",
+    "langkah",
+    "proses",
+    "contoh",
+    "penerapan",
+    "kapan",
+    "apa perbedaan",
+  ];
 
   let score = 0;
   if (words >= 18) score += 2;
@@ -67,7 +100,8 @@ function estimateComplexity(question: string): ComplexityLevel {
 
 function complexityConfig(level: ComplexityLevel) {
   if (level === "high") return { refs: 4, detailSentences: 4, summaryMax: 260 };
-  if (level === "medium") return { refs: 3, detailSentences: 3, summaryMax: 220 };
+  if (level === "medium")
+    return { refs: 3, detailSentences: 3, summaryMax: 220 };
   return { refs: 2, detailSentences: 2, summaryMax: 160 };
 }
 
@@ -75,7 +109,12 @@ function uniqueByMeaning(lines: string[]): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
   for (const line of lines) {
-    const key = normalizeExcerpt(line).toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).slice(0, 10).join(" ");
+    const key = normalizeExcerpt(line)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .slice(0, 10)
+      .join(" ");
     if (!key || seen.has(key)) continue;
     seen.add(key);
     result.push(line);
@@ -89,11 +128,26 @@ function getCitationNumber(id: string): string {
 }
 
 function toSuperscript(value: string): string {
-  const map: Record<string, string> = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
-  return value.split("").map((c) => map[c] || c).join("");
+  const map: Record<string, string> = {
+    "0": "⁰",
+    "1": "¹",
+    "2": "²",
+    "3": "³",
+    "4": "⁴",
+    "5": "⁵",
+    "6": "⁶",
+    "7": "⁷",
+    "8": "⁸",
+    "9": "⁹",
+  };
+  return value
+    .split("")
+    .map((c) => map[c] || c)
+    .join("");
 }
 
-function cite(source: Source): string {
+function cite(source: Source, controls: PromptControls): string {
+  void controls;
   const num = getCitationNumber(source.id);
   return /^\d+$/.test(num) ? toSuperscript(num) : `[${source.id}]`;
 }
@@ -152,7 +206,7 @@ const TRANSITIONS = [
   "Lebih lanjut,",
   "Perlu diketahui juga bahwa",
   "Dalam konteks yang lebih luas,",
-  "Untuk melengkapi,"  ,
+  "Untuk melengkapi,",
   "Di sisi lain,",
   "Yang juga penting dipahami,",
   "Sebagai tambahan,",
@@ -175,25 +229,36 @@ const CLOSERS = [
 
 /* ── Builder Utama ── */
 
-function buildExerciseAnswer(primary: Source, references: Source[]): string {
+function buildExerciseAnswer(
+  primary: Source,
+  references: Source[],
+  controls: PromptControls,
+): string {
   const concept = firstSentence(primary.excerpt, 140).replace(/[.!?]+$/, "");
   const lines: string[] = [
-    `Berikut latihan yang dirancang berdasarkan materi **${primary.title}** pada mata kuliah ${primary.subjectName}. ${cite(primary)}`,
+    `Berikut latihan yang dirancang berdasarkan materi **${primary.title}** pada mata kuliah ${primary.subjectName}. ${cite(primary, controls)}`,
     "",
     `**Tujuan:** Memahami konsep utama terkait ${primary.title.toLowerCase()}.`,
     "",
     "**Instruksi:**",
-    `1. Tuliskan ulang konsep berikut dengan bahasa Anda sendiri: "*${concept}*". ${cite(primary)}`,
+    `1. Tuliskan ulang konsep berikut dengan bahasa Anda sendiri: "*${concept}*". ${cite(primary, controls)}`,
     "2. Berikan 2 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
   ];
 
   if (references.length > 1) {
-    lines.push(`3. Bandingkan pendekatan di atas dengan pembahasan pada ${references[1].title} (${references[1].subjectName}). ${cite(references[1])}`);
+    lines.push(
+      `3. Bandingkan pendekatan di atas dengan pembahasan pada ${references[1].title} (${references[1].subjectName}). ${cite(references[1], controls)}`,
+    );
   } else {
-    lines.push("3. Identifikasi 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat.");
+    lines.push(
+      "3. Identifikasi 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat.",
+    );
   }
 
-  lines.push("", "**Output yang diharapkan:** Jawaban terstruktur (maksimal 1 halaman) dengan 3 insight utama.");
+  lines.push(
+    "",
+    "**Output yang diharapkan:** Jawaban terstruktur (maksimal 1 halaman) dengan 3 insight utama.",
+  );
   lines.push("", pick(CLOSERS));
   return lines.join("\n");
 }
@@ -203,6 +268,7 @@ function buildNaturalAnswer(
   primary: Source,
   references: Source[],
   cfg: ReturnType<typeof complexityConfig>,
+  controls: PromptControls,
 ): string {
   const lines: string[] = [];
 
@@ -211,10 +277,14 @@ function buildNaturalAnswer(
   lines.push("");
 
   // Core explanation from primary source
-  const coreExcerpt = firstNSentences(primary.excerpt, cfg.detailSentences, cfg.summaryMax);
+  const coreExcerpt = firstNSentences(
+    primary.excerpt,
+    cfg.detailSentences,
+    cfg.summaryMax,
+  );
   lines.push(
     `Pada topik **${primary.title}** dalam mata kuliah ${primary.subjectName} (Pertemuan ${primary.meetingNo}), ` +
-    `${coreExcerpt} ${cite(primary)}`
+      `${coreExcerpt} ${cite(primary, controls)}`,
   );
 
   // Additional sources woven naturally
@@ -222,19 +292,28 @@ function buildNaturalAnswer(
   const additionalRefs = references.slice(1);
 
   for (const ref of additionalRefs) {
-    const excerpt = firstNSentences(ref.excerpt, cfg.detailSentences - 1, cfg.summaryMax - 40);
+    const excerpt = firstNSentences(
+      ref.excerpt,
+      cfg.detailSentences - 1,
+      cfg.summaryMax - 40,
+    );
     if (!excerpt) continue;
 
     lines.push("");
 
     // Pick unique transition
     let transIdx: number;
-    do { transIdx = Math.floor(Math.random() * TRANSITIONS.length); } while (usedTransitions.has(transIdx) && usedTransitions.size < TRANSITIONS.length);
+    do {
+      transIdx = Math.floor(Math.random() * TRANSITIONS.length);
+    } while (
+      usedTransitions.has(transIdx) &&
+      usedTransitions.size < TRANSITIONS.length
+    );
     usedTransitions.add(transIdx);
 
     lines.push(
       `${TRANSITIONS[transIdx]} pada materi **${ref.title}** (${ref.subjectName}, Pertemuan ${ref.meetingNo}), ` +
-      `${excerpt.charAt(0).toLowerCase()}${excerpt.slice(1)} ${cite(ref)}`
+        `${excerpt.charAt(0).toLowerCase()}${excerpt.slice(1)} ${cite(ref, controls)}`,
     );
   }
 
@@ -244,7 +323,14 @@ function buildNaturalAnswer(
     const practicalRef = additionalRefs[0];
     lines.push(
       `${pick(PRACTICAL_INTROS)} dengan topik ${practicalRef.title} pada mata kuliah ${practicalRef.subjectName}. ` +
-      `Memahami kedua konsep ini secara bersamaan akan memberikan perspektif yang lebih utuh. ${cite(practicalRef)}`
+        `Memahami kedua konsep ini secara bersamaan akan memberikan perspektif yang lebih utuh. ${cite(practicalRef, controls)}`,
+    );
+  }
+
+  if (controls.mentionLimits && references.length < 2) {
+    lines.push("");
+    lines.push(
+      "Catatan: Konteks materi yang ditemukan masih terbatas, jadi jawaban ini merangkum referensi terdekat yang tersedia.",
     );
   }
 
@@ -252,7 +338,9 @@ function buildNaturalAnswer(
   lines.push("");
   lines.push("**Sumber Referensi:**");
   for (const ref of references) {
-    lines.push(`- ${ref.subjectCode} – ${ref.subjectName}, Pertemuan ${ref.meetingNo}: *${ref.title}*`);
+    lines.push(
+      `- ${ref.subjectCode} – ${ref.subjectName}, Pertemuan ${ref.meetingNo}: *${ref.title}*`,
+    );
   }
 
   // Closing
@@ -267,7 +355,8 @@ export async function generateChatAnswer(params: {
   sources: Source[];
 }): Promise<string> {
   const { question, sources } = params;
-  await readChatbotSettings(); // keep settings loaded but don't expose prompt to user
+  const settings = await readChatbotSettings();
+  const controls = parsePromptControls(settings.systemPrompt);
 
   if (sources.length === 0) {
     return "Maaf, saya belum menemukan materi yang relevan untuk menjawab pertanyaan ini. Coba perjelas pertanyaan Anda atau pastikan materi terkait sudah tersedia di sistem.";
@@ -275,12 +364,25 @@ export async function generateChatAnswer(params: {
 
   const complexity = estimateComplexity(question);
   const cfg = complexityConfig(complexity);
+  const effectiveCfg = controls.concise
+    ? {
+        ...cfg,
+        refs: Math.max(1, cfg.refs - 1),
+        detailSentences: Math.max(1, cfg.detailSentences - 1),
+      }
+    : cfg;
   const primary = sources[0];
-  const references = sources.slice(0, cfg.refs);
+  const references = sources.slice(0, effectiveCfg.refs);
 
   if (isExerciseRequest(question)) {
-    return buildExerciseAnswer(primary, references);
+    return buildExerciseAnswer(primary, references, controls);
   }
 
-  return buildNaturalAnswer(question, primary, references, cfg);
+  return buildNaturalAnswer(
+    question,
+    primary,
+    references,
+    effectiveCfg,
+    controls,
+  );
 }

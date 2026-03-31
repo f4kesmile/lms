@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { splitIntoChunks } from "@/lib/ai/chunking";
+import {
+  isDosenAllowedForSubjectInCurrentYear,
+  buildDosenCurrentYearSubjectWhere,
+} from "@/lib/auth/dosen-access";
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";
 import {
@@ -78,12 +82,17 @@ export async function GET(request: Request) {
     // Map Subject meetings to a similar material format
     const meetings = await prisma.subjectMeeting.findMany({
       where: {
+        ...(user.role === UserRole.dosen
+          ? { subject: buildDosenCurrentYearSubjectWhere(user.id) }
+          : {}),
         ...(courseId ? { subjectId: courseId } : {}),
         ...(search
           ? {
               OR: [
                 { title: { contains: search, mode: "insensitive" } },
-                { subject: { code: { contains: search, mode: "insensitive" } } },
+                {
+                  subject: { code: { contains: search, mode: "insensitive" } },
+                },
               ],
             }
           : {}),
@@ -106,10 +115,15 @@ export async function GET(request: Request) {
         ...m,
         type: "session",
         module: `Pertemuan ${m.meetingNo}`,
-        course: m.subject ? { id: m.subject.id, code: m.subject.code, title: m.subject.name } : null,
+        course: m.subject
+          ? { id: m.subject.id, code: m.subject.code, title: m.subject.name }
+          : null,
         page: null,
       })),
-    ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    ].sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
 
     return NextResponse.json({ materials: unified });
   } catch (error) {
@@ -138,6 +152,23 @@ export async function POST(request: Request) {
     }
 
     if (type === "session") {
+      if (!courseId) {
+        return badRequest("Mata kuliah sesi wajib dipilih");
+      }
+
+      if (user.role === UserRole.dosen) {
+        const allowed = await isDosenAllowedForSubjectInCurrentYear({
+          userId: user.id,
+          role: user.role,
+          subjectId: courseId,
+        });
+        if (!allowed) {
+          return forbidden(
+            "Dosen hanya dapat menambah sesi pada mata kuliah yang diampu",
+          );
+        }
+      }
+
       const meeting = await prisma.subjectMeeting.create({
         data: {
           subjectId: courseId,
@@ -156,11 +187,18 @@ export async function POST(request: Request) {
           subject: { select: { id: true, code: true, name: true } },
         },
       });
-      return NextResponse.json({
-        ...meeting,
-        type: "session",
-        course: { id: meeting.subject.id, code: meeting.subject.code, title: meeting.subject.name },
-      }, { status: 201 });
+      return NextResponse.json(
+        {
+          ...meeting,
+          type: "session",
+          course: {
+            id: meeting.subject.id,
+            code: meeting.subject.code,
+            title: meeting.subject.name,
+          },
+        },
+        { status: 201 },
+      );
     } else {
       const material = await prisma.courseMaterial.create({
         data: {
@@ -183,7 +221,10 @@ export async function POST(request: Request) {
           createdBy: { select: { id: true, name: true, email: true } },
         },
       });
-      return NextResponse.json({ ...material, type: "reference" }, { status: 201 });
+      return NextResponse.json(
+        { ...material, type: "reference" },
+        { status: 201 },
+      );
     }
   } catch (error) {
     return serverError(error, "KB_MATERIALS_POST_ERROR");
