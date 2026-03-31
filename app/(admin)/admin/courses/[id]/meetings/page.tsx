@@ -159,11 +159,12 @@ export default function SubjectMeetingsPage() {
   const openWorkstation = (meetingId?: string) => {
     const url = new URL("/admin/knowledge", window.location.origin);
     url.searchParams.set("courseId", subjectId);
-    url.searchParams.set("type", "session");
     if (meetingId) {
+      url.searchParams.set("type", "session");
       url.searchParams.set("edit", meetingId);
     } else {
       url.searchParams.set("new", "true");
+      url.searchParams.set("type", "session");
       url.searchParams.set("meetingNo", (meetings.length + 1).toString());
     }
     router.push((url.pathname + url.search) as Route);

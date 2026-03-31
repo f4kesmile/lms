@@ -61,7 +61,7 @@ interface CourseDialogsProps {
   onYearSubmit: (e: React.FormEvent) => Promise<void>;
 
   loading: boolean;
-  
+
   // New props
   showManageSubjectsModal?: boolean;
   setShowManageSubjectsModal?: (open: boolean) => void;
@@ -93,7 +93,7 @@ export function CourseDialogs({
   setYearForm,
   onYearSubmit,
   loading,
-  
+
   showManageSubjectsModal,
   setShowManageSubjectsModal,
   classSubjects = [],
@@ -188,19 +188,70 @@ export function CourseDialogs({
                 <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                   Kapasitas
                 </label>
-                <Input
-                  type="number"
-                  required
-                  value={classForm.capacity}
-                  onChange={(e) =>
-                    setClassForm({
-                      ...classForm,
-                      capacity: parseInt(e.target.value),
-                    })
-                  }
-                  className="h-11 rounded-xl bg-card border-border/50"
-                />
+                <div className="flex h-11 items-center rounded-xl border border-border/50 bg-card">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-full rounded-r-none px-3 font-black"
+                    onClick={() =>
+                      setClassForm({
+                        ...classForm,
+                        capacity: Math.max(
+                          1,
+                          Number(classForm.capacity || 1) - 1,
+                        ),
+                      })
+                    }
+                  >
+                    <Icon name="remove" size={18} />
+                  </Button>
+                  <Input
+                    required
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={classForm.capacity}
+                    onChange={(e) => {
+                      const digitsOnly = e.target.value.replace(/[^0-9]/g, "");
+                      setClassForm({
+                        ...classForm,
+                        capacity: digitsOnly ? Number(digitsOnly) : 1,
+                      });
+                    }}
+                    className="h-full rounded-none border-0 bg-transparent text-center font-black shadow-none focus-visible:ring-0"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-full rounded-l-none px-3 font-black"
+                    onClick={() =>
+                      setClassForm({
+                        ...classForm,
+                        capacity: Number(classForm.capacity || 0) + 1,
+                      })
+                    }
+                  >
+                    <Icon name="add" size={18} />
+                  </Button>
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                Enrollment Key
+              </label>
+              <Input
+                value={classForm.enrollmentKey}
+                onChange={(e) =>
+                  setClassForm({ ...classForm, enrollmentKey: e.target.value })
+                }
+                className="h-11 rounded-xl bg-card border-border/50"
+                placeholder="Kosongkan jika kelas publik"
+                autoComplete="off"
+              />
+              <p className="pl-1 text-[10px] font-semibold text-muted-foreground">
+                Jika diisi, mahasiswa wajib memasukkan key ini saat mendaftar.
+              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border/30">
@@ -566,53 +617,75 @@ export function CourseDialogs({
           </form>
         </DialogContent>
       </Dialog>
-      
-      <Dialog open={showManageSubjectsModal} onOpenChange={setShowManageSubjectsModal}>
+
+      <Dialog
+        open={showManageSubjectsModal}
+        onOpenChange={setShowManageSubjectsModal}
+      >
         <DialogContent className="border-none max-w-4xl rounded-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
               Kelola Mata Kuliah & Jadwal: {editingClass?.name}
             </DialogTitle>
             <DialogDescription className="font-medium">
-              Tentukan mata kuliah apa saja yang tersedia di kelas ini beserta jadwal dan dosen pengampunya.
+              Tentukan mata kuliah apa saja yang tersedia di kelas ini beserta
+              jadwal dan dosen pengampunya.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-8 pt-4">
             {/* Form Penugasan */}
             <div className="space-y-4 p-6 rounded-2xl bg-muted/20 border border-border">
-              <h4 className="text-xs font-black uppercase tracking-widest text-primary">Penugasan Baru/Edit</h4>
+              <h4 className="text-xs font-black uppercase tracking-widest text-primary">
+                Penugasan Baru/Edit
+              </h4>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pilih Mata Kuliah</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Pilih Mata Kuliah
+                  </label>
                   <Select
                     value={assignForm.subjectId}
-                    onValueChange={(val) => setAssignForm({ ...assignForm, subjectId: val })}
+                    onValueChange={(val) =>
+                      setAssignForm({ ...assignForm, subjectId: val })
+                    }
                   >
                     <SelectTrigger className="h-10 rounded-xl bg-card">
                       <SelectValue placeholder="Pilih MK" />
                     </SelectTrigger>
                     <SelectContent>
                       {allSubjects.map((s: any) => (
-                        <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.code} - {s.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dosen Pengampu</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Dosen Pengampu
+                  </label>
                   <Select
                     value={assignForm.teacherUserId}
-                    onValueChange={(val) => setAssignForm({ ...assignForm, teacherUserId: val })}
+                    onValueChange={(val) =>
+                      setAssignForm({ ...assignForm, teacherUserId: val })
+                    }
                   >
                     <SelectTrigger className="h-10 rounded-xl bg-card">
                       <SelectValue placeholder="Pilih Dosen" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Default (Koordinator MK)</SelectItem>
-                      {Array.from(new Map(teachers.map(t => [t.id, t])).values()).map((t) => (
-                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      <SelectItem value="none">
+                        Default (Koordinator MK)
+                      </SelectItem>
+                      {Array.from(
+                        new Map(teachers.map((t) => [t.id, t])).values(),
+                      ).map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -620,10 +693,14 @@ export function CourseDialogs({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Hari</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Hari
+                    </label>
                     <Select
                       value={assignForm.dayOfWeek}
-                      onValueChange={(val) => setAssignForm({ ...assignForm, dayOfWeek: val })}
+                      onValueChange={(val) =>
+                        setAssignForm({ ...assignForm, dayOfWeek: val })
+                      }
                     >
                       <SelectTrigger className="h-10 rounded-xl bg-card">
                         <SelectValue placeholder="Pilih Hari" />
@@ -639,10 +716,14 @@ export function CourseDialogs({
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ruangan</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Ruangan
+                    </label>
                     <Input
                       value={assignForm.room}
-                      onChange={(e) => setAssignForm({ ...assignForm, room: e.target.value })}
+                      onChange={(e) =>
+                        setAssignForm({ ...assignForm, room: e.target.value })
+                      }
                       placeholder="Contoh: R.401"
                       className="h-10 rounded-xl bg-card"
                     />
@@ -651,20 +732,34 @@ export function CourseDialogs({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Jam Mulai</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Jam Mulai
+                    </label>
                     <Input
                       type="time"
                       value={assignForm.startTime}
-                      onChange={(e) => setAssignForm({ ...assignForm, startTime: e.target.value })}
+                      onChange={(e) =>
+                        setAssignForm({
+                          ...assignForm,
+                          startTime: e.target.value,
+                        })
+                      }
                       className="h-10 rounded-xl bg-card"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Jam Selesai</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Jam Selesai
+                    </label>
                     <Input
                       type="time"
                       value={assignForm.endTime}
-                      onChange={(e) => setAssignForm({ ...assignForm, endTime: e.target.value })}
+                      onChange={(e) =>
+                        setAssignForm({
+                          ...assignForm,
+                          endTime: e.target.value,
+                        })
+                      }
                       className="h-10 rounded-xl bg-card"
                     />
                   </div>
@@ -676,7 +771,10 @@ export function CourseDialogs({
                   onClick={async () => {
                     await onAssignSubject?.({
                       ...assignForm,
-                      teacherUserId: assignForm.teacherUserId === "none" ? undefined : assignForm.teacherUserId,
+                      teacherUserId:
+                        assignForm.teacherUserId === "none"
+                          ? undefined
+                          : assignForm.teacherUserId,
                     });
                     setAssignForm({
                       subjectId: "",
@@ -695,31 +793,55 @@ export function CourseDialogs({
 
             {/* List MK Aktif */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mata Kuliah Terdaftar</h4>
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                Mata Kuliah Terdaftar
+              </h4>
               <div className="space-y-3">
                 {classSubjects.length > 0 ? (
                   classSubjects.map((cs: any) => (
-                    <div key={cs.subject.id} className="p-4 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/30 transition-all group">
+                    <div
+                      key={cs.subject.id}
+                      className="p-4 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/30 transition-all group"
+                    >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-primary/10 text-primary rounded-md">{cs.subject.code}</span>
-                            <h5 className="text-sm font-black">{cs.subject.name}</h5>
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-primary/10 text-primary rounded-md">
+                              {cs.subject.code}
+                            </span>
+                            <h5 className="text-sm font-black">
+                              {cs.subject.name}
+                            </h5>
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 opacity-70">
                             <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                              <Icon name="person" size={12} className="text-primary" />
+                              <Icon
+                                name="person"
+                                size={12}
+                                className="text-primary"
+                              />
                               <span>{cs.teacher?.name || "Default"}</span>
                             </div>
                             {cs.dayOfWeek && (
                               <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                                <Icon name="schedule" size={12} className="text-secondary-brand" />
-                                <span className="uppercase">{cs.dayOfWeek} {cs.startTime && `- ${cs.startTime}`}</span>
+                                <Icon
+                                  name="schedule"
+                                  size={12}
+                                  className="text-secondary-brand"
+                                />
+                                <span className="uppercase">
+                                  {cs.dayOfWeek}{" "}
+                                  {cs.startTime && `- ${cs.startTime}`}
+                                </span>
                               </div>
                             )}
                             {cs.room && (
                               <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                                <Icon name="location_on" size={12} className="text-destructive" />
+                                <Icon
+                                  name="location_on"
+                                  size={12}
+                                  className="text-destructive"
+                                />
                                 <span>{cs.room}</span>
                               </div>
                             )}
@@ -742,14 +864,21 @@ export function CourseDialogs({
                                     room: cs.room || "",
                                   });
                                   // Scroll to top of dialog to see the form
-                                  const container = document.querySelector('.overflow-y-auto');
-                                  if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                                  const container =
+                                    document.querySelector(".overflow-y-auto");
+                                  if (container)
+                                    container.scrollTo({
+                                      top: 0,
+                                      behavior: "smooth",
+                                    });
                                 }}
                               >
                                 <Icon name="edit" size={16} />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent className="font-bold">Edit Jadwal</TooltipContent>
+                            <TooltipContent className="font-bold">
+                              Edit Jadwal
+                            </TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
@@ -759,16 +888,20 @@ export function CourseDialogs({
                                 size="icon"
                                 className="size-9 rounded-xl border border-destructive/10 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white transition-all shadow-sm"
                                 disabled={loading}
-                                onClick={() => setConfirmRemoval({
-                                  open: true,
-                                  subjectId: cs.subject.id,
-                                  subjectName: cs.subject.name
-                                })}
+                                onClick={() =>
+                                  setConfirmRemoval({
+                                    open: true,
+                                    subjectId: cs.subject.id,
+                                    subjectName: cs.subject.name,
+                                  })
+                                }
                               >
                                 <Icon name="delete" size={16} />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent className="font-bold">Hapus MK dari Kelas</TooltipContent>
+                            <TooltipContent className="font-bold">
+                              Hapus MK dari Kelas
+                            </TooltipContent>
                           </Tooltip>
                         </div>
                       </div>
@@ -787,7 +920,7 @@ export function CourseDialogs({
           {/* Konfirmasi Hapus MK dari Kelas */}
           <Dialog
             open={confirmRemoval.open}
-            onOpenChange={(o) => setConfirmRemoval(p => ({ ...p, open: o }))}
+            onOpenChange={(o) => setConfirmRemoval((p) => ({ ...p, open: o }))}
           >
             <DialogContent className="sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
               <DialogHeader>
@@ -795,14 +928,21 @@ export function CourseDialogs({
                   Hapus Penugasan?
                 </DialogTitle>
                 <DialogDescription className="font-bold text-muted-foreground pt-2">
-                  Anda akan menghapus mata kuliah <span className="text-foreground">{confirmRemoval.subjectName}</span> dari kelas ini. Data nilai atau presensi yang terkait mungkin akan terpengaruh.
+                  Anda akan menghapus mata kuliah{" "}
+                  <span className="text-foreground">
+                    {confirmRemoval.subjectName}
+                  </span>{" "}
+                  dari kelas ini. Data nilai atau presensi yang terkait mungkin
+                  akan terpengaruh.
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end gap-3 pt-6">
                 <Button
                   variant="ghost"
                   className="font-black text-[11px] uppercase tracking-widest border border-border h-11 px-6 rounded-xl"
-                  onClick={() => setConfirmRemoval(p => ({ ...p, open: false }))}
+                  onClick={() =>
+                    setConfirmRemoval((p) => ({ ...p, open: false }))
+                  }
                 >
                   Batal
                 </Button>
@@ -812,7 +952,11 @@ export function CourseDialogs({
                     if (confirmRemoval.subjectId) {
                       onRemoveSubject?.(confirmRemoval.subjectId);
                     }
-                    setConfirmRemoval(p => ({ ...p, open: false, subjectId: null }));
+                    setConfirmRemoval((p) => ({
+                      ...p,
+                      open: false,
+                      subjectId: null,
+                    }));
                   }}
                 >
                   Ya, Lepas Penugasan

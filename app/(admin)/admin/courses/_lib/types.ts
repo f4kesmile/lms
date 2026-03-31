@@ -8,6 +8,7 @@ export type ClassItem = {
   academicYear: { id: string; name: string };
   academicYearId: string;
   capacity: number;
+  enrollmentKey: string | null;
   students: Array<{ userId: string }>;
   createdAt: string;
 };
@@ -54,6 +55,7 @@ export type ClassForm = {
   name: string;
   academicYearId: string;
   capacity: number;
+  enrollmentKey: string;
 };
 
 export type SubjectForm = {

@@ -207,6 +207,11 @@ export function List({
                           <h3 className="text-xl font-black tracking-tight text-foreground">
                             {classItem.name}
                           </h3>
+                          <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            {classItem.enrollmentKey
+                              ? "Enrollment key aktif"
+                              : "Tanpa enrollment key"}
+                          </p>
                           <div className="mt-4 flex items-center gap-3">
                             <Icon
                               name="group"
@@ -297,7 +302,9 @@ export function List({
                       className="h-10 w-10 rounded-md border border-border bg-primary/10 text-primary shadow-sm hover:bg-primary/20 hover:scale-105 transition-all"
                       asChild
                     >
-                      <Link href={`/admin/courses/${item.id}/meetings` as Route}>
+                      <Link
+                        href={`/admin/courses/${item.id}/meetings` as Route}
+                      >
                         <Icon name="history_edu" size={20} />
                       </Link>
                     </Button>
@@ -321,7 +328,9 @@ export function List({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
-                    <span className="font-bold">Kelola Mata Kuliah & Jadwal</span>
+                    <span className="font-bold">
+                      Kelola Mata Kuliah & Jadwal
+                    </span>
                   </TooltipContent>
                 </Tooltip>
               )}

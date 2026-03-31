@@ -10,6 +10,7 @@ export const EMPTY_CLASS_FORM: ClassForm = {
   name: "",
   academicYearId: "",
   capacity: 40,
+  enrollmentKey: "",
 };
 
 export const EMPTY_SUBJECT_FORM: SubjectForm = {

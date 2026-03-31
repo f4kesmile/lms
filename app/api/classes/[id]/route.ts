@@ -3,13 +3,20 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, forbidden, notFound, serverError, unauthorized } from "@/lib/core/http";
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
 
 const updateClassSchema = z.object({
   name: z.string().min(2).optional(),
   academicYearId: z.string().optional(),
   capacity: z.number().int().positive().optional(),
+  enrollmentKey: z.string().trim().min(1).optional().nullable(),
   subjectIds: z.array(z.string()).optional(),
   studentIds: z.array(z.string()).optional(),
 });
@@ -22,7 +29,13 @@ export async function GET(_request: Request, context: Context) {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return unauthorized();
-    if (!hasRole(currentUser.role, [UserRole.admin, UserRole.dosen, UserRole.mahasiswa])) {
+    if (
+      !hasRole(currentUser.role, [
+        UserRole.admin,
+        UserRole.dosen,
+        UserRole.mahasiswa,
+      ])
+    ) {
       return forbidden("User is not authorized to access this route");
     }
 
@@ -69,7 +82,14 @@ export async function PATCH(request: Request, context: Context) {
     const existing = await prisma.class.findUnique({ where: { id } });
     if (!existing) return notFound("Class not found");
 
-    const { name, academicYearId, capacity, subjectIds, studentIds } = parsed.data;
+    const {
+      name,
+      academicYearId,
+      capacity,
+      enrollmentKey,
+      subjectIds,
+      studentIds,
+    } = parsed.data;
 
     const updatedClass = await prisma.class.update({
       where: { id },
@@ -77,6 +97,9 @@ export async function PATCH(request: Request, context: Context) {
         name,
         academicYearId,
         capacity,
+        ...(enrollmentKey !== undefined
+          ? { enrollmentKey: enrollmentKey?.trim() || null }
+          : {}),
         ...(subjectIds
           ? {
               subjects: {

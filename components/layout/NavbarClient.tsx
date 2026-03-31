@@ -11,10 +11,26 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PUBLIC_NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/Logo";
-import { Moon, Sun, Menu, User, LogOut, LayoutDashboard, GraduationCap } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Menu,
+  User,
+  LogOut,
+  LayoutDashboard,
+  GraduationCap,
+} from "lucide-react";
 
 type UserData = { name: string; role: string } | null;
 
@@ -26,6 +42,11 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   const [user, setUser] = useState<UserData>(initialUser);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutSource, setLogoutSource] = useState<"dropdown" | "sheet" | null>(
+    null,
+  );
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,10 +111,25 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   async function handleSignOut() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
-    router.replace("/");
-    router.refresh();
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      setShowLogoutConfirm(false);
+      setDropdownOpen(false);
+      if (logoutSource === "sheet") {
+        setSheetOpen(false);
+      }
+      router.replace("/");
+      router.refresh();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
+  function openLogoutConfirm(source: "dropdown" | "sheet") {
+    setLogoutSource(source);
+    setShowLogoutConfirm(true);
   }
 
   function isActive(href: string) {
@@ -119,12 +155,12 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   "relative px-5 py-2.5 text-[13px] font-black uppercase tracking-[0.15em] transition-all duration-300 rounded-full",
                   isActive(item.href)
                     ? "text-primary bg-primary/10 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 {item.label}
                 {isActive(item.href) && (
-                   <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
                 )}
               </Link>
             ))}
@@ -139,8 +175,22 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
               aria-label="Ganti Tema"
             >
               <div className="relative h-5 w-5">
-                <Sun className={cn("absolute inset-0 transition-transform duration-500", theme === "dark" ? "rotate-90 scale-0" : "rotate-0 scale-100")} />
-                <Moon className={cn("absolute inset-0 transition-transform duration-500", theme === "dark" ? "rotate-0 scale-100" : "-rotate-90 scale-0")} />
+                <Sun
+                  className={cn(
+                    "absolute inset-0 transition-transform duration-500",
+                    theme === "dark"
+                      ? "rotate-90 scale-0"
+                      : "rotate-0 scale-100",
+                  )}
+                />
+                <Moon
+                  className={cn(
+                    "absolute inset-0 transition-transform duration-500",
+                    theme === "dark"
+                      ? "rotate-0 scale-100"
+                      : "-rotate-90 scale-0",
+                  )}
+                />
               </div>
             </button>
           )}
@@ -172,7 +222,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   aria-label="Menu Pengguna"
                 >
                   <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors hidden lg:block">
-                    {user.name.split(' ')[0]}
+                    {user.name.split(" ")[0]}
                   </span>
                   <div className="h-10 w-10 rounded-xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center text-sm font-black text-primary-foreground transform group-hover:scale-105 transition-transform">
                     {user.name.charAt(0).toUpperCase()}
@@ -182,14 +232,17 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                 {dropdownOpen && (
                   <div className="absolute right-0 top-full mt-3 z-[100] w-64 overflow-hidden rounded-[2.5rem] border border-border bg-background p-2 shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="px-5 py-5 bg-muted/40 rounded-[2rem] mb-2 border border-border/20">
-                       <p className="truncate text-sm font-black tracking-tight text-foreground mb-1">
+                      <p className="truncate text-sm font-black tracking-tight text-foreground mb-1">
                         {user.name}
                       </p>
-                      <Badge variant="outline" className="text-[9px] uppercase tracking-[0.2em] font-black h-5 border-primary/20 text-primary bg-primary/10">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] uppercase tracking-[0.2em] font-black h-5 border-primary/20 text-primary bg-primary/10"
+                      >
                         {user.role}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-1">
                       <Link
                         href={
@@ -201,13 +254,17 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                         }
                         className="flex w-full items-center gap-3 rounded-2xl px-5 py-3.5 text-[13px] font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                       >
-                         {user.role === "mahasiswa" ? <GraduationCap size={18} /> : <LayoutDashboard size={18} />}
+                        {user.role === "mahasiswa" ? (
+                          <GraduationCap size={18} />
+                        ) : (
+                          <LayoutDashboard size={18} />
+                        )}
                         {user.role === "mahasiswa"
                           ? "Ruang Belajar"
                           : "Dashboard Akses"}
                       </Link>
                       <button
-                        onClick={handleSignOut}
+                        onClick={() => openLogoutConfirm("dropdown")}
                         className="flex w-full items-center gap-3 rounded-2xl px-5 py-3.5 text-[13px] font-black text-destructive transition-all hover:bg-destructive/10 hover:text-destructive"
                       >
                         <LogOut size={18} />
@@ -249,7 +306,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                           "flex items-center rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-[0.2em] transition-all",
                           isActive(item.href)
                             ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
                         )}
                       >
                         {item.label}
@@ -288,14 +345,17 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                           <p className="truncate text-sm font-black tracking-tight tracking-[0.05em]">
                             {user.name}
                           </p>
-                          <Badge variant="outline" className="text-[10px] uppercase font-black tracking-widest h-5 border-primary/20 text-primary bg-primary/10">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] uppercase font-black tracking-widest h-5 border-primary/20 text-primary bg-primary/10"
+                          >
                             {user.role}
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-1">
-                         <Link
+                        <Link
                           href={
                             (user.role === "mahasiswa"
                               ? "/courses"
@@ -305,16 +365,17 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                           }
                           className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                         >
-                          {user.role === "mahasiswa" ? <GraduationCap size={18} /> : <LayoutDashboard size={18} />}
+                          {user.role === "mahasiswa" ? (
+                            <GraduationCap size={18} />
+                          ) : (
+                            <LayoutDashboard size={18} />
+                          )}
                           {user.role === "mahasiswa"
                             ? "Ruang Belajar"
                             : "Dashboard Akses"}
                         </Link>
                         <button
-                          onClick={() => {
-                            setSheetOpen(false);
-                            handleSignOut();
-                          }}
+                          onClick={() => openLogoutConfirm("sheet")}
                           className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-black text-destructive transition-all hover:bg-destructive/10 w-full"
                         >
                           <LogOut size={18} />
@@ -329,6 +390,38 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
           </Sheet>
         </div>
       </div>
+
+      <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              Konfirmasi Logout
+            </DialogTitle>
+            <DialogDescription className="font-bold text-muted-foreground">
+              Yakin ingin keluar dari sesi sekarang?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isLoggingOut}
+              className="font-black text-[11px] uppercase tracking-widest border border-border"
+              onClick={() => setShowLogoutConfirm(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              disabled={isLoggingOut}
+              className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-md border border-border shadow-sm"
+              onClick={handleSignOut}
+            >
+              {isLoggingOut ? "Keluar..." : "Ya, Keluar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

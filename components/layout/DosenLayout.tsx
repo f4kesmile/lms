@@ -30,6 +30,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type DosenLayoutProps = {
   title: string;
@@ -51,6 +60,8 @@ export const DosenLayout = ({
     role: string;
   } | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -72,8 +83,13 @@ export const DosenLayout = ({
   }, []);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login";
+    } finally {
+      setIsLoggingOut(false);
+    }
   }
 
   const initials = user?.name ? getInitials(user.name) : "??";
@@ -164,7 +180,11 @@ export const DosenLayout = ({
               <SidebarMenuItem>
                 <SidebarMenuButton className="w-full justify-start gap-3 h-auto p-2 hover:bg-muted rounded-md border-2 border-transparent hover:border-border transition-colors group-data-[collapsible=icon]:justify-center">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand/10 text-secondary-brand font-black text-xs border border-secondary-brand/20">
-                    {mounted && user ? initials : <Icon name="person" size={20} />}
+                    {mounted && user ? (
+                      initials
+                    ) : (
+                      <Icon name="person" size={20} />
+                    )}
                   </div>
                   <div className="flex flex-col items-start gap-1.5 leading-none transition-opacity group-data-[collapsible=icon]:hidden">
                     {!mounted || !user ? (
@@ -188,7 +208,7 @@ export const DosenLayout = ({
             </SidebarMenu>
             <button
               type="button"
-              onClick={logout}
+              onClick={() => setShowLogoutConfirm(true)}
               className="flex w-full items-center justify-center group-data-[collapsible=icon]:justify-center gap-2 rounded-md border border-border bg-destructive/10 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground shadow-sm group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:aspect-square group-data-[collapsible=icon]:w-auto"
             >
               <Icon name="logout" size={18} className="shrink-0" />
@@ -240,7 +260,9 @@ export const DosenLayout = ({
               <Tooltip open={!isDesktop ? undefined : false} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
                     className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card transition-all hover:bg-muted shadow-sm active:translate-y-[2px] active:shadow-none sm:flex"
                     aria-label="Toggle theme"
                   >
@@ -276,6 +298,38 @@ export const DosenLayout = ({
           </div>
         </main>
       </SidebarInset>
+
+      <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase">
+              Konfirmasi Logout
+            </DialogTitle>
+            <DialogDescription className="font-bold text-muted-foreground">
+              Yakin ingin keluar dari sesi sekarang?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isLoggingOut}
+              className="font-black text-[11px] uppercase tracking-widest border border-border"
+              onClick={() => setShowLogoutConfirm(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              disabled={isLoggingOut}
+              className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-md border border-border shadow-sm"
+              onClick={logout}
+            >
+              {isLoggingOut ? "Keluar..." : "Ya, Keluar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };

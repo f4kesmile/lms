@@ -228,7 +228,6 @@ function KnowledgeContent() {
         meetingNo: parseInt(meetingNo || "1"),
       });
       setShowModal(true);
-      // Clear params to avoid re-opening on refresh
       window.history.replaceState(null, "", window.location.pathname);
     } else if (editId) {
       // Find from already loaded materials or wait for them
@@ -239,6 +238,12 @@ function KnowledgeContent() {
       }
     }
   }, [searchParams, materials.length]); // Wait for materials to load if editing
+  function openCreateModal() {
+    setEditingMaterial(null);
+    setForm(EMPTY_FORM);
+    setShowModal(true);
+  }
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -251,12 +256,6 @@ function KnowledgeContent() {
   useEffect(() => {
     setPage(1);
   }, [search, selectedCourseId, rowsPerPage]);
-
-  function openCreateModal() {
-    setEditingMaterial(null);
-    setForm(EMPTY_FORM);
-    setShowModal(true);
-  }
 
   function openEditModal(item: Material) {
     setEditingMaterial(item);
@@ -406,21 +405,16 @@ function KnowledgeContent() {
                   "h-10 border border-transparent bg-primary px-5 font-extrabold tracking-wider text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]",
                   !isDesktop && "px-0 w-10",
                 )}
-                asChild
+                onClick={openCreateModal}
               >
-                <Link
-                  href={{
-                    pathname: "/admin/materials/new",
-                    query: { from: "knowledge" },
-                  }}
-                >
+                <>
                   <Icon name="upload_file" size={18} />
                   {isDesktop && (
                     <span className="ml-2 uppercase text-[10px]">
                       Upload Materi
                     </span>
                   )}
-                </Link>
+                </>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="font-bold">

@@ -238,6 +238,7 @@ export function useCoursesController() {
         name: classForm.name,
         academicYearId: classForm.academicYearId,
         capacity: classForm.capacity,
+        enrollmentKey: classForm.enrollmentKey.trim() || null,
       };
       const res = editingClass
         ? await updateClassAction(editingClass.id, payload)
@@ -494,6 +495,7 @@ export function useCoursesController() {
         name: classItem.name,
         academicYearId: classItem.academicYearId,
         capacity: classItem.capacity,
+        enrollmentKey: classItem.enrollmentKey || "",
       });
       setShowClassModal(true);
       return;
