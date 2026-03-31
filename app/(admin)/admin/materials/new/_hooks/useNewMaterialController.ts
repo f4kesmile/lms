@@ -44,9 +44,7 @@ export function useNewMaterialController({
     courseId: preselectedCourseId,
     title: "",
     module:
-      prefilledType === "session"
-        ? `Pertemuan ${prefilledMeetingNo}`
-        : "",
+      prefilledType === "session" ? `Pertemuan ${prefilledMeetingNo}` : "",
     pages: [""],
   });
 
