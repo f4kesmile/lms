@@ -102,7 +102,7 @@ export function MaterialDialog(props: MaterialDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[95dvh] flex flex-col p-0 border-none rounded-3xl overflow-hidden bg-background">
+      <DialogContent className="mobile-drawer-full max-w-7xl h-[95dvh] flex flex-col p-0 border-none rounded-3xl overflow-hidden bg-background">
         <MaterialEditorContent {...props} />
       </DialogContent>
     </Dialog>
@@ -246,12 +246,52 @@ function MaterialEditorContent({
               <div className="bg-background rounded-xl border border-border/60 p-4 space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">Pertemuan Ke-</span>
-                  <input
-                    type="number"
-                    value={form.meetingNo}
-                    onChange={(e) => setForm(prev => ({ ...prev, meetingNo: parseInt(e.target.value) || 1 }))}
-                    className="w-full bg-muted/40 rounded-lg h-9 text-center font-black text-primary outline-none focus:ring-2 focus:ring-primary/20"
-                  />
+                  <div className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-muted/40 p-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-7 rounded-md"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          meetingNo: Math.max(1, Math.min(16, prev.meetingNo - 1)),
+                        }))
+                      }
+                    >
+                      -
+                    </Button>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={form.meetingNo}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          meetingNo: Math.max(
+                            1,
+                            Math.min(16, parseInt(e.target.value, 10) || 1),
+                          ),
+                        }))
+                      }
+                      className="h-7 border-0 bg-transparent text-center font-black text-primary shadow-none focus-visible:ring-0"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-7 rounded-md"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          meetingNo: Math.max(1, Math.min(16, prev.meetingNo + 1)),
+                        }))
+                      }
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
                   Materi ini akan tampil di tab "Sesi" mahasiswa pada mata kuliah yang dipilih.
@@ -329,3 +369,6 @@ function MaterialEditorContent({
     </>
   );
 }
+
+
+

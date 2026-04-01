@@ -8,10 +8,9 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn,formatDate, getInitials } from "@/lib/utils/index";
+import { cn, formatDate, getInitials } from "@/lib/utils/index";
 
 type UserRole = "admin" | "dosen" | "mahasiswa";
 
@@ -145,27 +144,33 @@ export function List({
                     disabled={loading}
                   >
                     <SelectTrigger className="h-9 w-full border border-border bg-card shadow-sm px-3 text-[10px] font-black uppercase tracking-wider rounded-md focus:ring-0">
-                      <SelectValue />
+                      <span className="truncate">{rc.label}</span>
                     </SelectTrigger>
                     <SelectContent className="border border-border rounded-md shadow-sm">
-                      <SelectItem
-                        value="mahasiswa"
-                        className="font-bold cursor-pointer hover:bg-muted"
-                      >
-                        Mahasiswa
-                      </SelectItem>
-                      <SelectItem
-                        value="dosen"
-                        className="font-bold cursor-pointer hover:bg-muted"
-                      >
-                        Dosen
-                      </SelectItem>
-                      <SelectItem
-                        value="admin"
-                        className="font-bold cursor-pointer hover:bg-muted"
-                      >
-                        Admin
-                      </SelectItem>
+                      {user.role !== "mahasiswa" && (
+                        <SelectItem
+                          value="mahasiswa"
+                          className="font-bold cursor-pointer hover:bg-muted"
+                        >
+                          Mahasiswa
+                        </SelectItem>
+                      )}
+                      {user.role !== "dosen" && (
+                        <SelectItem
+                          value="dosen"
+                          className="font-bold cursor-pointer hover:bg-muted"
+                        >
+                          Dosen
+                        </SelectItem>
+                      )}
+                      {user.role !== "admin" && (
+                        <SelectItem
+                          value="admin"
+                          className="font-bold cursor-pointer hover:bg-muted"
+                        >
+                          Admin
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

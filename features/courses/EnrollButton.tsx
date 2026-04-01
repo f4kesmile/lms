@@ -109,7 +109,7 @@ export default function EnrollButton({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl">
+        <DialogContent className="mobile-drawer-sm sm:max-w-[425px] rounded-3xl border-none shadow-2xl">
           <DialogHeader className="space-y-3 pb-4">
             <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
               <Key className="h-6 w-6" />

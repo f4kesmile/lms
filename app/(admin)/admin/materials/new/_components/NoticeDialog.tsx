@@ -29,7 +29,7 @@ export function NoticeDialog({ notice, setNotice }: NoticeDialogProps) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="mobile-drawer-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{notice.title}</DialogTitle>
           <DialogDescription>{notice.message}</DialogDescription>

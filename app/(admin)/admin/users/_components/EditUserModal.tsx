@@ -57,7 +57,7 @@ export function EditUserModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] border border-border bg-card rounded-md shadow-lg p-0 overflow-hidden">
+      <DialogContent className="mobile-drawer-md sm:max-w-[425px] border border-border bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] rounded-md shadow-lg p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
             <Icon name="person" className="text-primary" size={24} />
