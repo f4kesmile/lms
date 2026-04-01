@@ -1,14 +1,14 @@
-import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { setAuthCookie } from "@/lib/auth/index";
 import {
   getAllowedEmailDomainsText,
   isAllowedEmail,
   isDomainRestrictionEnabled,
 } from "@/lib/auth/domain";
+import { setAuthCookie } from "@/lib/auth/index";
 import { prisma } from "@/lib/core/db";
 import { writeSystemLog } from "@/lib/core/logs";
 
@@ -61,7 +61,7 @@ function getBaseUrl(request: Request): string {
 function redirectToLogin(
   request: Request,
   errorCode: string,
-  meta?: Record<string, unknown>
+  meta?: Record<string, unknown>,
 ) {
   writeSystemLog({
     level: "WARNING",
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
     {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
       cache: "no-store",
-    }
+    },
   );
   const profileMs = Date.now() - profileStartedAt;
 
@@ -226,7 +226,7 @@ export async function GET(request: Request) {
 
   stage = "set_auth_cookie";
   const setCookieStartedAt = Date.now();
-  await setAuthCookie(user.id);
+  await setAuthCookie(user.id, user.role);
   const setCookieMs = Date.now() - setCookieStartedAt;
 
   const totalMs = Date.now() - startedAt;
@@ -238,7 +238,7 @@ export async function GET(request: Request) {
     { key: "setCookieMs", value: setCookieMs },
   ];
   const slowestStep = steps.reduce((prev, curr) =>
-    curr.value > prev.value ? curr : prev
+    curr.value > prev.value ? curr : prev,
   );
 
   writeSystemLog({
@@ -295,7 +295,7 @@ export async function GET(request: Request) {
       : user.role === UserRole.dosen
         ? "/admin/teaching-schedule"
         : "/admin/dashboard",
-    request.url
+    request.url,
   );
   return NextResponse.redirect(nextUrl);
 }

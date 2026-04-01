@@ -1,21 +1,24 @@
-import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
+
+export type AuthRole = "admin" | "dosen" | "mahasiswa";
 
 type JwtPayload = {
   userId: string;
+  role?: AuthRole;
 };
 
 const COOKIE_NAME = "jwt";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function signAuthToken(userId: string): string {
+export function signAuthToken(userId: string, role?: AuthRole): string {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
     throw new Error("JWT_SECRET is not configured");
   }
 
-  return jwt.sign({ userId }, secret, {
+  return jwt.sign({ userId, role }, secret, {
     expiresIn: "30d",
     algorithm: "HS512",
   });
@@ -31,8 +34,11 @@ export function verifyAuthToken(token: string): JwtPayload {
   return jwt.verify(token, secret) as JwtPayload;
 }
 
-export async function setAuthCookie(userId: string): Promise<void> {
-  const token = signAuthToken(userId);
+export async function setAuthCookie(
+  userId: string,
+  role?: AuthRole,
+): Promise<void> {
+  const token = signAuthToken(userId, role);
   const cookieStore = await cookies();
 
   cookieStore.set(COOKIE_NAME, token, {
