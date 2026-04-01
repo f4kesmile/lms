@@ -139,7 +139,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-2xl transition-all duration-300">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+      <div className="page-gutter flex h-20 w-full items-center justify-between">
         <div className="flex items-center gap-12">
           <Link href="/" className="hover:opacity-80 transition-opacity">
             <Logo noLink={true} />

@@ -34,10 +34,10 @@ export default function HelpClient() {
   } = useHelpFaqs();
 
   return (
-    <main className="app-shell flex flex-col gap-14 pb-20 max-w-7xl mx-auto w-full px-4 lg:px-0">
+    <main className="app-shell flex flex-col gap-14 pb-20">
       {/* Header synchronized with Catalog/About */}
       <header className="space-y-10 py-16 text-center border-b mb-6">
-        <div className="space-y-4 px-4">
+        <div className="space-y-4">
           <h1 className="text-5xl font-black tracking-tighter lg:text-6xl mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent leading-[1.1]">
             Apa yang bisa kami{" "}
             <span className="text-primary italic">bantu?</span>
@@ -49,7 +49,7 @@ export default function HelpClient() {
         </div>
 
         {/* Real-time Scaled Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full px-4 pt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full pt-4">
           <div className="relative w-full group">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
@@ -64,7 +64,7 @@ export default function HelpClient() {
 
       {/* Categories Modern Cards */}
       <section className="flex flex-col gap-10 pt-4">
-        <div className="flex items-center gap-3 px-4">
+        <div className="flex items-center gap-3">
           <div className="h-1 w-12 bg-primary rounded-full" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
             Kategori Bantuan
@@ -111,7 +111,7 @@ export default function HelpClient() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 max-w-4xl mx-auto w-full px-4">
+        <div className="flex flex-col gap-4 max-w-4xl mx-auto w-full">
           {isLoading ? (
             <div className="py-20 text-center animate-pulse">
               <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">
