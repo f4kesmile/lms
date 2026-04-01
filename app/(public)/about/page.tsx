@@ -34,10 +34,10 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <main className="app-shell flex flex-col gap-14 pb-20 max-w-7xl mx-auto w-full px-4 lg:px-0">
+      <main className="app-shell flex flex-col gap-14 pb-20">
         {/* Simplified Hero Section matching Catalog Header */}
         <header className="space-y-10 py-16 text-center border-b mb-6">
-          <div className="space-y-4 px-4">
+          <div className="space-y-4">
             <h1 className="text-5xl font-black tracking-tighter lg:text-6xl mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent leading-[1.1]">
               Membangun Masa Depan <br />
               <span className="text-primary italic">Pendidikan Cerdas</span>
@@ -105,7 +105,7 @@ export default function AboutPage() {
 
         {/* Founders Section matching Catalog Card Style */}
         <section className="flex flex-col gap-10 pt-10">
-          <div className="flex items-center gap-3 px-4">
+          <div className="flex items-center gap-3">
             <div className="h-1 w-12 bg-primary rounded-full" />
             <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
               Tim Pendiri

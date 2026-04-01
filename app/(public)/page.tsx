@@ -112,7 +112,7 @@ export default async function HomePage() {
           />
         </section>
 
-        <section className="flex flex-col gap-10 px-4 max-w-7xl mx-auto w-full">
+        <section className="flex w-full flex-col gap-10">
           <SectionHeader
             title="Kelas Unggulan"
             subtitle="Paling banyak diminati mahasiswa semester ini"

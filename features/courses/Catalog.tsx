@@ -64,9 +64,9 @@ export default function CourseCatalogBrowser({
   }
 
   return (
-    <div className="flex flex-col gap-10 max-w-7xl mx-auto w-full px-4 lg:px-0">
+    <div className="flex w-full flex-col gap-10">
       <header className="space-y-10 py-16 text-center border-b mb-6">
-        <div className="space-y-4 px-4">
+        <div className="space-y-4">
           <h1 className="text-5xl font-black tracking-tighter lg:text-6xl mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent leading-[1.1]">
             Katalog Kelas
           </h1>
@@ -79,7 +79,7 @@ export default function CourseCatalogBrowser({
         {/* Scaled Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full px-4 pt-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full pt-4"
         >
           <div className="relative w-full group">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -97,7 +97,7 @@ export default function CourseCatalogBrowser({
       </header>
 
       <section className="flex flex-col gap-8">
-        <div className="flex items-center justify-between px-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-muted-foreground">
             <div className="p-2 rounded-xl bg-primary/10">
               <Filter className="h-5 w-5 text-primary" />
@@ -109,7 +109,7 @@ export default function CourseCatalogBrowser({
         </div>
 
         {visibleCourses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center bg-muted/20 rounded-[4rem] border-2 border-dashed border-border/50 mx-4">
+          <div className="flex flex-col items-center justify-center py-32 text-center bg-muted/20 rounded-[4rem] border-2 border-dashed border-border/50">
             <div className="size-24 rounded-[2rem] bg-muted flex items-center justify-center text-muted-foreground mb-6 shadow-inner">
               <Search className="h-10 w-10" />
             </div>
@@ -131,7 +131,7 @@ export default function CourseCatalogBrowser({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 px-4 md:px-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {visibleCourses.map((course) => (
               <Card
                 key={course.id}
