@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { getAllowedEmailDomains } from "@/lib/auth/domain";
+import {
+  getAllowedEmailDomains,
+  isDomainRestrictionEnabled,
+} from "@/lib/auth/domain";
 import { tooManyRequests } from "@/lib/core/http";
 import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
 import { writeSystemLog } from "@/lib/core/logs";
@@ -30,23 +33,22 @@ export async function GET(request: Request) {
     });
     return tooManyRequests(
       "Terlalu banyak percobaan login Google. Coba lagi sebentar.",
-      rateLimit.retryAfterMs / 1000
+      rateLimit.retryAfterMs / 1000,
     );
   }
 
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const allowedDomains = getAllowedEmailDomains();
-  const forceAccountChooser =
-    process.env.GOOGLE_OAUTH_FORCE_ACCOUNT_CHOOSER === "true";
 
   if (!clientId) {
     writeSystemLog({
       level: "ERROR",
       category: "AUTH_OAUTH_GOOGLE",
-      message: "OAuth Google belum dikonfigurasi (GOOGLE_OAUTH_CLIENT_ID kosong)",
+      message:
+        "OAuth Google belum dikonfigurasi (GOOGLE_OAUTH_CLIENT_ID kosong)",
     });
     return NextResponse.redirect(
-      new URL("/login?error=oauth_not_configured", request.url)
+      new URL("/login?error=oauth_not_configured", request.url),
     );
   }
 
@@ -64,20 +66,15 @@ export async function GET(request: Request) {
   url.searchParams.set("client_id", clientId);
   url.searchParams.set(
     "redirect_uri",
-    `${getBaseUrl(request)}/api/auth/oauth/google/callback`
+    `${getBaseUrl(request)}/api/auth/oauth/google/callback`,
   );
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", state);
 
-  // Faster default: let Google reuse active session.
-  // Set GOOGLE_OAUTH_FORCE_ACCOUNT_CHOOSER=true to force account picker each time.
-  if (forceAccountChooser) {
-    url.searchParams.set("prompt", "select_account");
-  }
-
-  // Hint to Google account picker; actual enforcement still happens in callback.
-  if (allowedDomains.length === 1) {
+  // In public mode, do not hint `hd` so user can choose any account naturally.
+  // In restricted mode, keep hinting when only one allowed domain is configured.
+  if (isDomainRestrictionEnabled() && allowedDomains.length === 1) {
     url.searchParams.set("hd", allowedDomains[0]);
   }
 
@@ -85,7 +82,7 @@ export async function GET(request: Request) {
     level: "INFO",
     category: "AUTH_OAUTH_GOOGLE",
     message: "Memulai OAuth Google",
-    meta: { allowedDomains, forceAccountChooser },
+    meta: { allowedDomains },
   });
 
   return NextResponse.redirect(url);
