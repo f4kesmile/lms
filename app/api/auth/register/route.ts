@@ -1,16 +1,16 @@
-import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { setAuthCookie } from "@/lib/auth/index";
 import {
   getAllowedEmailDomainsText,
   isAllowedEmail,
   isDomainRestrictionEnabled,
 } from "@/lib/auth/domain";
-import { badRequest, serverError, tooManyRequests } from "@/lib/core/http";
+import { setAuthCookie } from "@/lib/auth/index";
 import { prisma } from "@/lib/core/db";
+import { badRequest, serverError, tooManyRequests } from "@/lib/core/http";
 import { checkRateLimit, getClientIp } from "@/lib/core/limiter";
 import { writeSystemLog } from "@/lib/core/logs";
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       });
       return tooManyRequests(
         "Terlalu banyak percobaan registrasi. Coba lagi sebentar.",
-        rateLimit.retryAfterMs / 1000
+        rateLimit.retryAfterMs / 1000,
       );
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         },
       });
       return badRequest(
-        `Hanya email domain berikut yang diizinkan: ${getAllowedEmailDomainsText()}`
+        `Hanya email domain berikut yang diizinkan: ${getAllowedEmailDomainsText()}`,
       );
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await setAuthCookie(user.id);
+    await setAuthCookie(user.id, user.role);
 
     writeSystemLog({
       level: "INFO",
