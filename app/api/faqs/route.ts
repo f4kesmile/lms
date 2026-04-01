@@ -2,8 +2,8 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { badRequest, serverError, unauthorized, forbidden } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
+import { badRequest, forbidden,serverError, unauthorized } from "@/lib/core/http";
 
 export async function GET() {
   try {

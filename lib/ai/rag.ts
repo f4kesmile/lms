@@ -1,4 +1,5 @@
 import { MeetingChunk } from "@prisma/client";
+
 import { Source } from "@/lib/ai/chatbot";
 
 export type ChunkWithMeeting = MeetingChunk & {

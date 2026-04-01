@@ -1,6 +1,7 @@
+import { Compass, Lightbulb, Rocket, ShieldCheck, Target } from "lucide-react";
+
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { SITE_CONFIG } from "@/lib/constants";
 import { getInitials } from "@/lib/utils";
-import { Compass, Target, ShieldCheck, Rocket, Lightbulb } from "lucide-react";
 
 export default function AboutPage() {
   const founders = [
@@ -43,9 +43,9 @@ export default function AboutPage() {
               <span className="text-primary italic">Pendidikan Cerdas</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed italic opacity-80">
-              "{SITE_CONFIG.name} hadir untuk menjembatani batasan ruang dan
-              waktu dalam pendidikan melalui perpaduan keahlian akademik dan
-              AI."
+              &quot;{SITE_CONFIG.name} hadir untuk menjembatani batasan ruang
+              dan waktu dalam pendidikan melalui perpaduan keahlian akademik dan
+              AI.&quot;
             </p>
           </div>
         </header>
@@ -138,7 +138,7 @@ export default function AboutPage() {
                 <CardContent className="flex-1 px-10 pb-10 pt-5">
                   <div className="py-6 border-t border-dashed border-border/80">
                     <p className="text-sm text-muted-foreground font-medium italic leading-relaxed">
-                      "{founder.description}"
+                      &quot;{founder.description}&quot;
                     </p>
                   </div>
                 </CardContent>

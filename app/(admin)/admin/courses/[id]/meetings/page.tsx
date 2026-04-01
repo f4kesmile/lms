@@ -2,7 +2,6 @@
 
 import { Prisma } from "@prisma/client";
 import type { Route } from "next";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -22,22 +21,13 @@ import { Icon } from "@/components/ui/icon";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn, getInitials } from "@/lib/utils/index";
-
-const MeetingEditor = dynamic(
-  () =>
-    import("@/app/(admin)/admin/courses/[id]/meetings/_components/MeetingEditor").then(
-      (mod) => mod.MeetingEditor,
-    ),
-  { ssr: false },
-);
 import {
   deleteSubjectMeetingAction,
   getSubjectMeetingsAction,
 } from "@/lib/actions/meeting";
+import { getInitials } from "@/lib/utils/index";
 
 export type SubjectMeetingItem = {
   id: string;

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { splitIntoChunks } from "@/lib/ai/chunking";
 import {
-  isDosenAllowedForSubjectInCurrentYear,
   buildDosenCurrentYearSubjectWhere,
+  isDosenAllowedForSubjectInCurrentYear,
 } from "@/lib/auth/dosen-access";
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";

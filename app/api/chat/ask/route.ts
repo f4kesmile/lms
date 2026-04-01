@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { generateChatAnswer } from "@/lib/ai/chatbot";
-import { readChatbotSettings } from "@/lib/ai/settings";
-import { getCurrentUser } from "@/lib/auth/user";
-import { badRequest, serverError, unauthorized } from "@/lib/core/http";
-import { prisma } from "@/lib/core/db";
 import type { ChunkWithMeeting } from "@/lib/ai/rag";
 import { buildSources, rankChunks } from "@/lib/ai/rag";
+import { readChatbotSettings } from "@/lib/ai/settings";
+import { getCurrentUser } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { badRequest, serverError, unauthorized } from "@/lib/core/http";
 
 function dedupeByMeeting<T extends { chunk: { meetingId: string } }>(items: T[]) {
   const seen = new Set<string>();

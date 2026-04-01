@@ -1,7 +1,7 @@
-import { UserRole, type User } from "@prisma/client";
+import { type User,UserRole } from "@prisma/client";
 
-import { prisma } from "@/lib/core/db";
 import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
+import { prisma } from "@/lib/core/db";
 
 export type SafeUser = Omit<User, "password">;
 

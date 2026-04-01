@@ -1,9 +1,8 @@
 "use client";
 
-import { Search, Users, Filter, ArrowUpDown, Calendar } from "lucide-react";
+import { ArrowUpDown, Calendar, Filter, Search, Users } from "lucide-react";
 import { FormEvent, useDeferredValue, useMemo, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import EnrollButton from "@/features/courses/EnrollButton";
-import { cn, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 
 interface CatalogCourse {
   id: string;
@@ -71,8 +70,8 @@ export default function CourseCatalogBrowser({
             Katalog Kelas
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed italic opacity-80">
-            "Pilih kelas yang tersedia untuk semester ini dan mulai perjalanan
-            akademikmu."
+            &quot;Pilih kelas yang tersedia untuk semester ini dan mulai
+            perjalanan akademikmu.&quot;
           </p>
         </div>
 

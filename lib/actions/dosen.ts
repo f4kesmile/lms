@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/core/db";
-import { getCurrentUser } from "@/lib/auth/user";
 import { buildDosenCurrentYearClassSubjectWhere } from "@/lib/auth/dosen-access";
+import { getCurrentUser } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
 
 export async function getDosenSubjectsAction() {
   const user = await getCurrentUser();

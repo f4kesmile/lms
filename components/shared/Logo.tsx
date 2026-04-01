@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 

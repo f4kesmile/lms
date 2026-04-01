@@ -35,8 +35,8 @@ import {
   toastAssigned,
   toastAssignFailed,
   toastDeleted,
-  toastSaveFailed,
   toastSaved,
+  toastSaveFailed,
   toastUnassigned,
   toastUpdated,
 } from "@/lib/utils/toast";
@@ -91,7 +91,17 @@ export function useCoursesController() {
     allSubjects: [],
   });
   const [showManageSubjectsModal, setShowManageSubjectsModal] = useState(false);
-  const [classSubjects, setClassSubjects] = useState<any[]>([]);
+  const [classSubjects, setClassSubjects] = useState<
+    Array<{
+      id: string;
+      subject: { id: string; code: string; name: string };
+      teacher: { id: string; name: string } | null;
+      dayOfWeek: string | null;
+      startTime: string | null;
+      endTime: string | null;
+      room: string | null;
+    }>
+  >([]);
 
   const [notice, setNotice] = useState<NoticeState>({
     open: false,
@@ -581,7 +591,14 @@ export function useCoursesController() {
         ? "kelas"
         : "tahun akademik";
 
-  async function handleAssignSubject(data: any) {
+  async function handleAssignSubject(data: {
+    subjectId: string;
+    teacherUserId: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    room: string;
+  }) {
     if (!editingClass) return;
     setLoading(true);
     try {

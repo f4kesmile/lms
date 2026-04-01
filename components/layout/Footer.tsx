@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
-import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
+
+import { getCurrentYear,SITE_CONFIG } from "@/lib/constants";
 
 export function Footer() {
   return (

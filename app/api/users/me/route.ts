@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth/user";
-import { unauthorized, serverError } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
+import { serverError,unauthorized } from "@/lib/core/http";
 
 export async function GET() {
   try {

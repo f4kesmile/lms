@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { Icon } from "@/components/ui/icon";
+
 import { Logo } from "@/components/shared/Logo";
+import { Icon } from "@/components/ui/icon";
 
 export default function RegisterClient() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useLayoutEffect, useState } from "react";
 
 import { DataViewportControls } from "@/app/(admin)/admin/_components/Controls";
 import { CourseDialogs } from "@/app/(admin)/admin/courses/_components/Dialogs";
@@ -87,7 +87,9 @@ export default function AdminCoursesPage() {
   const [isDesktop, setIsDesktop] = useState(true);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // This setState is necessary to detect hydration and prevent hydration mismatch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024);
     checkIsDesktop();
@@ -111,7 +113,7 @@ export default function AdminCoursesPage() {
       headerActions={
         <div className="flex items-center gap-3">
           {activeTab === "mataKuliah" && (
-            <Tooltip open={mounted && !isDesktop ? undefined : false}>
+            <Tooltip open={!isDesktop ? undefined : false}>
               <TooltipTrigger asChild>
                 <Button
                   size="sm"

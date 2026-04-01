@@ -3,8 +3,8 @@ import "dotenv/config";
 import { CourseStatus, DayOfWeek, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-import { prisma } from "@/lib/core/db";
 import { splitIntoChunks } from "@/lib/ai/rag";
+import { prisma } from "@/lib/core/db";
 
 type CreatedUser = {
   id: string;

@@ -1,5 +1,5 @@
-import { getCurrentUser } from "@/lib/auth/user";
 import { NavbarClient } from "@/components/layout/NavbarClient";
+import { getCurrentUser } from "@/lib/auth/user";
 
 type UserData = { name: string; role: string } | null;
 

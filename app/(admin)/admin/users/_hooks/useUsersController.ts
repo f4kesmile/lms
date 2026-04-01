@@ -5,7 +5,7 @@ import type {
   UserRole,
   UsersResponse,
 } from "@/app/(admin)/admin/users/_lib/types";
-import { toastUpdateFailed, toastUpdated } from "@/lib/utils/toast";
+import { toastUpdated,toastUpdateFailed } from "@/lib/utils/toast";
 
 export function useUsersController() {
   const [users, setUsers] = useState<UserItem[]>([]);

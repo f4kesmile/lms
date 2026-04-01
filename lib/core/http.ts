@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { writeSystemLog } from "@/lib/core/logs";
 
 export function badRequest(message: string) {

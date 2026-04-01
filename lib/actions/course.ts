@@ -1,6 +1,6 @@
 "use server";
 
-import { CourseStatus } from "@prisma/client";
+import { CourseStatus, DayOfWeek } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/core/db";
@@ -259,7 +259,7 @@ export async function assignSubjectToClassAction(data: {
   classId: string;
   subjectId: string;
   teacherUserId?: string;
-  dayOfWeek?: any;
+  dayOfWeek?: DayOfWeek;
   startTime?: string;
   endTime?: string;
   room?: string;

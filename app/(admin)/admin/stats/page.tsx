@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toastSaveFailed, toastSaved } from "@/lib/utils/toast";
+import { toastSaved,toastSaveFailed } from "@/lib/utils/toast";
 
 type Stats = {
   totalMaterials: number;

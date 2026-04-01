@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
@@ -29,8 +28,8 @@ import {
   notifyError,
   toastDeleted,
   toastDeleteFailed,
-  toastSaveFailed,
   toastSaved,
+  toastSaveFailed,
   toastUpdated,
 } from "@/lib/utils/toast";
 
@@ -237,7 +236,7 @@ function KnowledgeContent() {
         window.history.replaceState(null, "", window.location.pathname);
       }
     }
-  }, [searchParams, materials.length]); // Wait for materials to load if editing
+  }, [searchParams, materials]); // Wait for materials to load if editing
   function openCreateModal() {
     setEditingMaterial(null);
     setForm(EMPTY_FORM);

@@ -1,15 +1,15 @@
 import { DayOfWeek, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { buildDosenCurrentYearClassSubjectWhere } from "@/lib/auth/dosen-access";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
 import {
   badRequest,
   forbidden,
   serverError,
   unauthorized,
 } from "@/lib/core/http";
-import { prisma } from "@/lib/core/db";
 
 function getWeekRange(date = new Date()) {
   const base = new Date(date);

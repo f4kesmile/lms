@@ -105,23 +105,6 @@ function complexityConfig(level: ComplexityLevel) {
   return { refs: 2, detailSentences: 2, summaryMax: 160 };
 }
 
-function uniqueByMeaning(lines: string[]): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const line of lines) {
-    const key = normalizeExcerpt(line)
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .slice(0, 10)
-      .join(" ");
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    result.push(line);
-  }
-  return result;
-}
-
 function getCitationNumber(id: string): string {
   const match = id.match(/^S(\d+)$/i);
   return match ? match[1] : id;

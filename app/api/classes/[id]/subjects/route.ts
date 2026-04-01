@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/core/db";
+
 import { getCurrentUser } from "@/lib/auth/user";
-import { unauthorized, notFound, serverError } from "@/lib/core/http";
+import { prisma } from "@/lib/core/db";
+import { notFound, serverError, unauthorized } from "@/lib/core/http";
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) return unauthorized();
 
     const { id } = await params;
-    
+
     const item = await prisma.class.findUnique({
       where: { id },
       include: {
@@ -36,10 +37,10 @@ export async function GET(
           name: s.subject.name,
         },
         teacher: s.teacher,
-        dayOfWeek: (s as any).dayOfWeek,
-        startTime: (s as any).startTime,
-        endTime: (s as any).endTime,
-        room: (s as any).room,
+        dayOfWeek: s.dayOfWeek,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        room: s.room,
       })),
     });
   } catch (error) {

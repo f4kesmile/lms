@@ -1,27 +1,21 @@
 "use client";
 
+import {
+  ChevronDown,
+  LifeBuoy,
+  Mail,
+  MessageCircleQuestion,
+  PhoneCall,
+  Search,
+} from "lucide-react";
+
 import { useHelpFaqs } from "@/app/(public)/help/_hooks/useHelpFaqs";
 import { HELP_CATEGORIES } from "@/app/(public)/help/_lib/constants";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import {
-  Search,
-  ChevronDown,
-  Mail,
-  PhoneCall,
-  MessageCircleQuestion,
-  LifeBuoy,
-} from "lucide-react";
 
 export default function HelpClient() {
   const {
@@ -43,8 +37,8 @@ export default function HelpClient() {
             <span className="text-primary italic">bantu?</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed italic opacity-80">
-            "Cari panduan, tutorial, dan jawaban atas pertanyaan umum seputar
-            sistem pembelajaran."
+            &quot;Cari panduan, tutorial, dan jawaban atas pertanyaan umum
+            seputar sistem pembelajaran.&quot;
           </p>
         </div>
 
@@ -121,7 +115,7 @@ export default function HelpClient() {
           ) : displayedFaqs.length === 0 ? (
             <div className="py-20 text-center bg-muted/20 border-2 border-dashed rounded-[3rem] border-border/50">
               <p className="text-muted-foreground font-bold">
-                Tidak ada bantuan yang cocok untuk "{searchQuery}"
+                Tidak ada bantuan yang cocok untuk &quot;{searchQuery}&quot;
               </p>
             </div>
           ) : (

@@ -1,10 +1,10 @@
+import { Calendar, Users } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -18,7 +18,6 @@ import { Icon } from "@/components/ui/icon";
 import { StatBox } from "@/components/ui/statbox";
 import { prisma } from "@/lib/core/db";
 import { getInitials } from "@/lib/utils";
-import { Calendar, Users } from "lucide-react";
 
 export default async function HomePage() {
   const [userCount, classCount, materialCount] = await Promise.all([

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Icon } from "@/components/ui/icon";
+
 import { Logo } from "@/components/shared/Logo";
-import type { Route } from "next";
+import { Icon } from "@/components/ui/icon";
 
 export default function LoginClient() {
   const router = useRouter();

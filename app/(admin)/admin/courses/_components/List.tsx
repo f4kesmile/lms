@@ -28,7 +28,10 @@ interface ListProps {
   activeTab: ActiveTab;
   loading: boolean;
   data: (SubjectCourseItem | ClassItem | AcademicYear)[];
-  onEdit: (item: SubjectCourseItem | ClassItem | AcademicYear) => void;
+  onEdit: (
+    item: SubjectCourseItem | ClassItem | AcademicYear,
+    action?: string,
+  ) => void;
   onDelete: (id: string) => void;
   onYearActive?: (id: string) => void;
   searchQuery: string;
@@ -322,7 +325,7 @@ export function List({
                       variant="ghost"
                       size="icon"
                       className="h-10 w-10 rounded-md border border-border bg-indigo-500/10 text-indigo-500 shadow-sm hover:bg-indigo-500/20 hover:scale-105 transition-all"
-                      onClick={() => (onEdit as any)(item, "manage-subjects")}
+                      onClick={() => onEdit(item, "manage-subjects")}
                     >
                       <Icon name="library_books" size={20} />
                     </Button>

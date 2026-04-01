@@ -1,16 +1,22 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import {
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Moon,
+  Sun,
+} from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
-import type { Route } from "next";
 
+import { Logo } from "@/components/shared/Logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
-import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -19,18 +25,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PUBLIC_NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/shared/Logo";
-import {
-  Moon,
-  Sun,
-  Menu,
-  User,
-  LogOut,
-  LayoutDashboard,
-  GraduationCap,
-} from "lucide-react";
 
 type UserData = { name: string; role: string } | null;
 

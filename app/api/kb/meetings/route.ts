@@ -2,16 +2,16 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { splitIntoChunks } from "@/lib/ai/rag";
 import { isDosenAllowedForSubjectInCurrentYear } from "@/lib/auth/dosen-access";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
 import {
   badRequest,
   forbidden,
   serverError,
   unauthorized,
 } from "@/lib/core/http";
-import { prisma } from "@/lib/core/db";
-import { splitIntoChunks } from "@/lib/ai/rag";
 
 const createMeetingSchema = z.object({
   subjectId: z.string().uuid(),
