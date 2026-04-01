@@ -1,12 +1,14 @@
-import { Suspense } from "react";
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
-import "./globals.css";
+import { Suspense } from "react";
+
 import { AppToaster } from "@/components/shared/AppToaster";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatbotVisibilityGuard } from "@/features/chat/ChatbotVisibilityGuard";
 import { SITE_CONFIG } from "@/lib/constants";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],

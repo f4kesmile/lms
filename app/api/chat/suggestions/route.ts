@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import type { Prisma, UserRole } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth/user";
-import { serverError, unauthorized } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
+import { serverError, unauthorized } from "@/lib/core/http";
 
 const studentTemplates = [
   "Jelaskan konsep inti dari {title}",

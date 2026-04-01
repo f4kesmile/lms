@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { Prisma, UserRole } from "@prisma/client";
-import { prisma } from "@/lib/core/db";
+import { revalidatePath } from "next/cache";
+
 import { splitIntoChunks } from "@/lib/ai/chunking";
-import { getCurrentUser } from "@/lib/auth/user";
 import { getDosenSubjectAccessInCurrentYear } from "@/lib/auth/dosen-access";
+import { getCurrentUser } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
 
 async function canManageSubjectMeetings(subjectId: string) {
   const user = await getCurrentUser();

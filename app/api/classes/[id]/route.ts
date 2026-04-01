@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
 import {
   badRequest,
   forbidden,
@@ -10,7 +11,6 @@ import {
   serverError,
   unauthorized,
 } from "@/lib/core/http";
-import { prisma } from "@/lib/core/db";
 
 const updateClassSchema = z.object({
   name: z.string().min(2).optional(),

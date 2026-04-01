@@ -14,7 +14,7 @@ import type {
   NoticeState,
 } from "@/app/(admin)/admin/materials/new/_lib/types";
 import { joinMaterialPages } from "@/lib/utils/material-content";
-import { notifyError, toastSaveFailed, toastSaved } from "@/lib/utils/toast";
+import { notifyError, toastSaved,toastSaveFailed } from "@/lib/utils/toast";
 
 type UseNewMaterialControllerOptions = {
   from: "courses" | "knowledge";

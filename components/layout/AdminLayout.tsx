@@ -1,17 +1,21 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { ReactNode, useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
-  ADMIN_FEATURE_NAV_LINKS,
-  DOSEN_FEATURE_NAV_LINKS,
-  DOSEN_MASTER_DATA_NAV_LINKS,
-  MASTER_DATA_NAV_LINKS,
-  SITE_CONFIG,
-} from "@/lib/constants/index";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Icon } from "@/components/ui/icon";
 import {
   Sidebar,
   SidebarContent,
@@ -25,11 +29,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
   SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { getInitials, cn } from "@/lib/utils/index";
-import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -37,14 +39,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  ADMIN_FEATURE_NAV_LINKS,
+  DOSEN_FEATURE_NAV_LINKS,
+  DOSEN_MASTER_DATA_NAV_LINKS,
+  MASTER_DATA_NAV_LINKS,
+  SITE_CONFIG,
+} from "@/lib/constants/index";
+import { cn, getInitials } from "@/lib/utils/index";
 
 type AdminLayoutProps = {
   title: string;
@@ -328,11 +329,11 @@ export const AdminLayout = ({
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden bg-muted/30 px-4 py-6 sm:px-6 sm:py-8 md:p-8 lg:p-10">
+        <div className="flex-1 overflow-x-hidden bg-muted/30 px-4 py-6 sm:px-6 sm:py-8 md:p-8 lg:p-10">
           <div className="mx-auto w-full max-w-[1600px] min-w-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
-        </main>
+        </div>
       </SidebarInset>
 
       <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>

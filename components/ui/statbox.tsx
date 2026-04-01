@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+
 import { Icon } from "@/components/ui/icon";
+import { cn } from "@/lib/utils";
 
 export interface StatBoxProps {
   label: string;

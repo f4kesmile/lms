@@ -1,12 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { VariantProps, cva } from "class-variance-authority";
+import { cva, VariantProps } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
+import * as React from "react";
 
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils/index";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -587,12 +587,14 @@ const SidebarMenuButton = React.forwardRef<
       return button;
     }
 
-    let tooltipProps = tooltip;
+    let tooltipProps: React.ComponentProps<typeof TooltipContent>;
 
-    if (typeof tooltipProps === "string") {
+    if (typeof tooltip === "string") {
       tooltipProps = {
-        children: tooltipProps,
+        children: tooltip,
       };
+    } else {
+      tooltipProps = tooltip;
     }
 
     return (
@@ -602,7 +604,7 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed"}
-          {...(tooltipProps as any)}
+          {...tooltipProps}
         />
       </Tooltip>
     );

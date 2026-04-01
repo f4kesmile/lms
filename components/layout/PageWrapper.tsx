@@ -1,6 +1,8 @@
 import React from "react";
+
+import { getCurrentYear,SITE_CONFIG } from "@/lib/constants";
+
 import { Navbar } from "./Navbar";
-import { SITE_CONFIG, getCurrentYear } from "@/lib/constants";
 
 type PageWrapperProps = {
   children: React.ReactNode;

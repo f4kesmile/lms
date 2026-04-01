@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
+import { NextResponse } from "next/server";
 
-import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 import { getSystemLogs, type SystemLogLevel } from "@/lib/core/logs";
 
 function parseLevel(value: string | null): SystemLogLevel | undefined {

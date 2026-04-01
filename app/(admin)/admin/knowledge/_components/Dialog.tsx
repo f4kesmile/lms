@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 
-import { type Material } from "@/app/(admin)/admin/knowledge/page";
 import { DocumentEditor } from "@/app/(admin)/admin/knowledge/_components/DocumentEditor";
+import { type Material } from "@/app/(admin)/admin/knowledge/page";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,13 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,7 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +68,10 @@ export function MaterialDialog(props: MaterialDialogProps) {
   useEffect(() => {
     if (open && !editingMaterial && form.content.length > 10) {
       const timer = setTimeout(() => {
-        localStorage.setItem("nusabelajar_material_draft", JSON.stringify(form));
+        localStorage.setItem(
+          "nusabelajar_material_draft",
+          JSON.stringify(form),
+        );
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -83,7 +85,7 @@ export function MaterialDialog(props: MaterialDialogProps) {
         try {
           const parsed = JSON.parse(draft);
           setForm((prev) => ({ ...prev, ...parsed }));
-        } catch (e) {
+        } catch {
           console.error("Failed to load draft");
         }
       }
@@ -117,7 +119,6 @@ function MaterialEditorContent({
   moduleSuggestions,
   submitting,
   onSave,
-  onCancel,
 }: MaterialDialogProps) {
   return (
     <>
@@ -126,16 +127,25 @@ function MaterialEditorContent({
           {/* 1. Top Section: Title & Description */}
           <div className="min-w-0 pr-10">
             <div className="flex items-center gap-2 mb-1.5">
-              <div className={cn(
-                "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1",
-                form.type === 'session' ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-              )}>
-                <Icon name={form.type === 'session' ? "school" : "import_contacts"} size={13} />
-                {form.type === 'session' ? "Sesi" : "Referensi"}
+              <div
+                className={cn(
+                  "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1",
+                  form.type === "session"
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                <Icon
+                  name={form.type === "session" ? "school" : "import_contacts"}
+                  size={13}
+                />
+                {form.type === "session" ? "Sesi" : "Referensi"}
               </div>
             </div>
             <DialogTitle className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
-              {editingMaterial ? "Edit Materi & Pengetahuan" : "Pusat Pengetahuan Baru"}
+              {editingMaterial
+                ? "Edit Materi & Pengetahuan"
+                : "Pusat Pengetahuan Baru"}
             </DialogTitle>
             <DialogDescription className="text-[11px] md:text-xs font-medium text-muted-foreground mt-1 max-w-2xl">
               Satu workstation terpadu untuk kurikulum dan basis data AI RAG.
@@ -147,20 +157,28 @@ function MaterialEditorContent({
             <div className="bg-muted/30 p-1.5 rounded-2xl inline-flex items-center border border-border/40 overflow-x-auto">
               <button
                 type="button"
-                onClick={() => setForm(prev => ({ ...prev, type: 'session' }))}
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, type: "session" }))
+                }
                 className={cn(
                   "px-4 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                  form.type === 'session' ? "bg-background shadow-md text-primary" : "text-muted-foreground hover:bg-background/40"
+                  form.type === "session"
+                    ? "bg-background shadow-md text-primary"
+                    : "text-muted-foreground hover:bg-background/40",
                 )}
               >
                 Sesi Pertemuan
               </button>
               <button
                 type="button"
-                onClick={() => setForm(prev => ({ ...prev, type: 'reference' }))}
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, type: "reference" }))
+                }
                 className={cn(
                   "px-4 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                  form.type === 'reference' ? "bg-background shadow-md text-primary" : "text-muted-foreground hover:bg-background/40"
+                  form.type === "reference"
+                    ? "bg-background shadow-md text-primary"
+                    : "text-muted-foreground hover:bg-background/40",
                 )}
               >
                 Materi Referensi
@@ -175,12 +193,16 @@ function MaterialEditorContent({
                     disabled={submitting}
                     className={cn(
                       "rounded-xl shadow-lg shadow-primary/30 flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-black shrink-0",
-                      "h-11 px-4 lg:px-8"
+                      "h-11 px-4 lg:px-8",
                     )}
                     onClick={onSave}
                   >
                     {submitting ? (
-                      <Icon name="progress_activity" className="animate-spin" size={20} />
+                      <Icon
+                        name="progress_activity"
+                        className="animate-spin"
+                        size={20}
+                      />
                     ) : (
                       <Icon name="save" size={20} />
                     )}
@@ -189,8 +211,13 @@ function MaterialEditorContent({
                     </span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="font-bold text-xs shadow-lg" side="top">
-                  {editingMaterial ? "Simpan Perubahan Materi" : "Publikasikan Materi Baru"}
+                <TooltipContent
+                  className="font-bold text-xs shadow-lg"
+                  side="top"
+                >
+                  {editingMaterial
+                    ? "Simpan Perubahan Materi"
+                    : "Publikasikan Materi Baru"}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -204,12 +231,16 @@ function MaterialEditorContent({
           <div className="space-y-1.5">
             <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between">
               <span>Mata Kuliah</span>
-              <span className="text-[9px] text-destructive tracking-widest uppercase font-bold">* Wajib</span>
+              <span className="text-[9px] text-destructive tracking-widest uppercase font-bold">
+                * Wajib
+              </span>
             </label>
             <Select
               required
               value={form.courseId || ""}
-              onValueChange={(value) => setForm(prev => ({ ...prev, courseId: value }))}
+              onValueChange={(value) =>
+                setForm((prev) => ({ ...prev, courseId: value }))
+              }
             >
               <SelectTrigger className="h-11 border border-border/60 bg-background rounded-xl">
                 <SelectValue placeholder="Pilih mata kuliah" />
@@ -231,21 +262,27 @@ function MaterialEditorContent({
             <Input
               required
               value={form.title}
-              onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, title: e.target.value }))
+              }
               className="h-11 border border-border/60 bg-background rounded-xl font-bold"
               placeholder="Contoh: Pengenalan Dasar AI"
             />
           </div>
 
-          {form.type === 'session' ? (
+          {form.type === "session" ? (
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between">
                 <span>Sesi Pertemuan</span>
-                <span className="text-[9px] text-primary tracking-widest uppercase font-bold">Mahasiswa</span>
+                <span className="text-[9px] text-primary tracking-widest uppercase font-bold">
+                  Mahasiswa
+                </span>
               </label>
               <div className="bg-background rounded-xl border border-border/60 p-4 space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">Pertemuan Ke-</span>
+                  <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
+                    Pertemuan Ke-
+                  </span>
                   <div className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-muted/40 p-1">
                     <Button
                       type="button"
@@ -255,7 +292,10 @@ function MaterialEditorContent({
                       onClick={() =>
                         setForm((prev) => ({
                           ...prev,
-                          meetingNo: Math.max(1, Math.min(16, prev.meetingNo - 1)),
+                          meetingNo: Math.max(
+                            1,
+                            Math.min(16, prev.meetingNo - 1),
+                          ),
                         }))
                       }
                     >
@@ -285,7 +325,10 @@ function MaterialEditorContent({
                       onClick={() =>
                         setForm((prev) => ({
                           ...prev,
-                          meetingNo: Math.max(1, Math.min(16, prev.meetingNo + 1)),
+                          meetingNo: Math.max(
+                            1,
+                            Math.min(16, prev.meetingNo + 1),
+                          ),
                         }))
                       }
                     >
@@ -294,7 +337,8 @@ function MaterialEditorContent({
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
-                  Materi ini akan tampil di tab "Sesi" mahasiswa pada mata kuliah yang dipilih.
+                  Materi ini akan tampil di tab &quot;Sesi&quot; mahasiswa pada
+                  mata kuliah yang dipilih.
                 </p>
               </div>
             </div>
@@ -305,20 +349,33 @@ function MaterialEditorContent({
                   Modul / Topik
                 </label>
                 <Select
-                  value={moduleSuggestions.includes(form.module) ? form.module : "__none"}
-                  onValueChange={(val) => val !== "__none" && setForm(prev => ({ ...prev, module: val }))}
+                  value={
+                    moduleSuggestions.includes(form.module)
+                      ? form.module
+                      : "__none"
+                  }
+                  onValueChange={(val) =>
+                    val !== "__none" &&
+                    setForm((prev) => ({ ...prev, module: val }))
+                  }
                 >
                   <SelectTrigger className="h-10 border border-border/60 bg-background rounded-xl text-xs">
                     <SelectValue placeholder="Pilih modul/topik" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none">Isi Manual</SelectItem>
-                    {moduleSuggestions.map(id => <SelectItem key={id} value={id}>{id}</SelectItem>)}
+                    {moduleSuggestions.map((id) => (
+                      <SelectItem key={id} value={id}>
+                        {id}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Input
                   value={form.module}
-                  onChange={(e) => setForm(prev => ({ ...prev, module: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, module: e.target.value }))
+                  }
                   className="h-11 border border-border/60 bg-background rounded-xl text-sm"
                   placeholder="Isi modul manual..."
                 />
@@ -328,19 +385,31 @@ function MaterialEditorContent({
 
           <div className="pt-6 border-t border-border/40 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statistik Dokumen</span>
-              <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black">A4 STANDAR</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Statistik Dokumen
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black">
+                A4 STANDAR
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-background rounded-xl border border-border/60 p-3 text-center">
-                <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">Halaman</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">
+                  Halaman
+                </p>
                 <p className="text-lg font-black text-primary">
-                  {form.content.length > 5 ? Math.max(1, Math.ceil(form.content.length / 2500)) : 0}
+                  {form.content.length > 5
+                    ? Math.max(1, Math.ceil(form.content.length / 2500))
+                    : 0}
                 </p>
               </div>
               <div className="bg-background rounded-xl border border-border/60 p-3 text-center">
-                <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">Karakter</p>
-                <p className="text-lg font-black text-primary">{form.content.length.toLocaleString()}</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground mb-1">
+                  Karakter
+                </p>
+                <p className="text-lg font-black text-primary">
+                  {form.content.length.toLocaleString()}
+                </p>
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground/50 text-center italic">
@@ -356,8 +425,15 @@ function MaterialEditorContent({
               <DocumentEditor
                 content={form.content}
                 onChange={(val) => {
-                  const autoPage = val.length > 0 ? Math.max(1, Math.ceil(val.length / 2500)).toString() : "1";
-                  setForm(prev => ({ ...prev, content: val, page: autoPage }));
+                  const autoPage =
+                    val.length > 0
+                      ? Math.max(1, Math.ceil(val.length / 2500)).toString()
+                      : "1";
+                  setForm((prev) => ({
+                    ...prev,
+                    content: val,
+                    page: autoPage,
+                  }));
                 }}
                 className="p-4 sm:p-8 md:p-12 lg:p-20 min-h-[500px]"
                 placeholder="Mulai tulis materi pengajaran atau sumber pengetahuan Anda di sini..."
@@ -369,6 +445,3 @@ function MaterialEditorContent({
     </>
   );
 }
-
-
-

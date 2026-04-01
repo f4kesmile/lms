@@ -1,9 +1,10 @@
 "use client";
 
 import type { Route } from "next";
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import { Icon } from "@/components/ui/icon";
 
 export default function UnauthorizedClient() {

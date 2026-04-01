@@ -19,6 +19,38 @@ interface DocumentEditorProps {
   className?: string;
 }
 
+type ToolbarButtonProps = {
+  onClick: () => void;
+  isActive?: boolean;
+  icon: string;
+  label?: string;
+};
+
+function ToolbarButton({
+  onClick,
+  isActive = false,
+  icon,
+  label,
+}: ToolbarButtonProps) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={onClick}
+      className={cn(
+        "h-8 w-8 p-0 rounded-md transition-all",
+        isActive
+          ? "bg-primary/10 text-primary hover:bg-primary/20"
+          : "hover:bg-muted text-muted-foreground",
+      )}
+      title={label}
+    >
+      <Icon name={icon} size={18} />
+    </Button>
+  );
+}
+
 export function DocumentEditor({
   content,
   onChange,
@@ -35,7 +67,8 @@ export function DocumentEditor({
       Image.configure({
         allowBase64: true,
         HTMLAttributes: {
-          class: "rounded-2xl shadow-lg border border-border/50 max-w-full my-6",
+          class:
+            "rounded-2xl shadow-lg border border-border/50 max-w-full my-6",
         },
       }),
       Placeholder.configure({
@@ -51,7 +84,7 @@ export function DocumentEditor({
       attributes: {
         class: cn(
           "prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none min-h-[300px] sm:min-h-[400px] p-3 sm:p-6",
-          className
+          className,
         ),
       },
     },
@@ -83,47 +116,23 @@ export function DocumentEditor({
     input.click();
   };
 
-  const ToolbarButton = ({
-    onClick,
-    isActive = false,
-    icon,
-    label,
-  }: {
-    onClick: () => void;
-    isActive?: boolean;
-    icon: string;
-    label?: string;
-  }) => (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      onClick={onClick}
-      className={cn(
-        "h-8 w-8 p-0 rounded-md transition-all",
-        isActive
-          ? "bg-primary/10 text-primary hover:bg-primary/20"
-          : "hover:bg-muted text-muted-foreground"
-      )}
-      title={label}
-    >
-      <Icon name={icon} size={18} />
-    </Button>
-  );
-
   return (
     <div className="flex flex-col w-full border border-border/60 rounded-2xl overflow-hidden bg-background ring-offset-background focus-within:ring-2 focus-within:ring-primary/20 transition-all">
       {/* Premium Toolbar */}
       <div className="flex flex-wrap items-center gap-y-2 gap-x-1 p-2 border-b border-border/40 bg-muted/20 sticky top-0 z-10 backdrop-blur-md">
         <div className="flex items-center gap-1">
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
             isActive={editor.isActive("heading", { level: 1 })}
             icon="format_h1"
             label="Heading 1"
           />
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
             isActive={editor.isActive("heading", { level: 2 })}
             icon="format_h2"
             label="Heading 2"
@@ -188,7 +197,11 @@ export function DocumentEditor({
         </div>
         <div className="hidden sm:block w-px h-4 bg-border/60 mx-1" />
         <div className="flex items-center gap-1">
-          <ToolbarButton onClick={handleImageUpload} icon="image" label="Insert Image" />
+          <ToolbarButton
+            onClick={handleImageUpload}
+            icon="image"
+            label="Insert Image"
+          />
           <ToolbarButton
             onClick={() => editor.chain().focus().undo().run()}
             icon="undo"
@@ -203,7 +216,7 @@ export function DocumentEditor({
       </div>
 
       <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
-      
+
       <style jsx global>{`
         .ProseMirror p.is-editor-empty:first-child::before {
           content: attr(data-placeholder);

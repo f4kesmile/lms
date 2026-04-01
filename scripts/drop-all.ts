@@ -1,4 +1,5 @@
 import "dotenv/config";
+
 import { Client } from "pg";
 
 async function main() {

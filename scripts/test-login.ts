@@ -1,5 +1,6 @@
-import { prisma } from "../lib/core/db";
 import bcrypt from "bcryptjs";
+
+import { prisma } from "../lib/core/db";
 
 async function main() {
   const email = "budi@lms.com";

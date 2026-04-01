@@ -2,16 +2,10 @@
 
 import { type Material } from "@/app/(admin)/admin/knowledge/page";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Table as UITable,
   TableBody,
@@ -20,6 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils/index";
 
 interface TableProps {

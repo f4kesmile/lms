@@ -2,8 +2,8 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/user";
-import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 import { prisma } from "@/lib/core/db";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 
 type RatedTurn = {
   rating: number | null;

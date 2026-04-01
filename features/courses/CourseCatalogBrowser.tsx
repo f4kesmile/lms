@@ -8,8 +8,8 @@ import {
   useState,
 } from "react";
 
-import { getInitials } from "@/lib/utils";
 import EnrollButton from "@/features/courses/EnrollButton";
+import { getInitials } from "@/lib/utils";
 
 type CatalogCourse = {
   id: string;

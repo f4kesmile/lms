@@ -1,33 +1,34 @@
 "use client";
 
-import type { Route } from "next";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { SITE_CONFIG } from "@/lib/constants";
-import type { Source } from "@/lib/ai/chatbot";
 import {
   Bot,
-  History,
-  Maximize2,
   ChevronDown,
   ChevronUp,
-  X,
-  Send,
-  MessageSquare,
-  Star,
-  Plus,
   FileText,
+  History,
   Loader2,
+  Maximize2,
+  MessageSquare,
   Minimize2,
+  Plus,
+  Send,
+  Star,
+  X,
 } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Source } from "@/lib/ai/chatbot";
+import { SITE_CONFIG } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 function renderMarkdown(text: string): string {
   return text

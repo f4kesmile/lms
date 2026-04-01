@@ -2,7 +2,6 @@
 
 import { type Material } from "@/app/(admin)/admin/knowledge/page";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";

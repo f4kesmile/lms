@@ -14,7 +14,6 @@ import {
   type YearForm,
 } from "@/app/(admin)/admin/courses/_lib/types";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -65,11 +65,31 @@ interface CourseDialogsProps {
   // New props
   showManageSubjectsModal?: boolean;
   setShowManageSubjectsModal?: (open: boolean) => void;
-  classSubjects?: any[];
-  allSubjects?: any[];
-  onAssignSubject?: (data: any) => Promise<void>;
+  classSubjects?: ClassSubjectAssignment[];
+  allSubjects?: SubjectOption[];
+  onAssignSubject?: (data: AssignSubjectPayload) => Promise<void>;
   onRemoveSubject?: (id: string) => Promise<void>;
 }
+
+type SubjectOption = { id: string; code: string; name: string };
+
+type AssignSubjectPayload = {
+  subjectId: string;
+  teacherUserId: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  room: string;
+};
+
+type ClassSubjectAssignment = {
+  subject: SubjectOption;
+  teacher?: { id: string; name: string } | null;
+  dayOfWeek?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  room?: string | null;
+};
 
 export function CourseDialogs({
   showClassModal,
@@ -493,7 +513,9 @@ export function CourseDialogs({
                   pattern="[0-9]*"
                   required
                   value={subjectForm.credits}
-                  onChange={(e) => updateCredits(parseInt(e.target.value, 10) || 1)}
+                  onChange={(e) =>
+                    updateCredits(parseInt(e.target.value, 10) || 1)
+                  }
                   className="h-8 border-0 bg-transparent text-center font-black shadow-none focus-visible:ring-0"
                   placeholder="3"
                 />
@@ -715,7 +737,7 @@ export function CourseDialogs({
                       <SelectValue placeholder="Pilih MK" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allSubjects.map((s: any) => (
+                      {allSubjects.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.code} - {s.name}
                         </SelectItem>
@@ -859,7 +881,7 @@ export function CourseDialogs({
               </h4>
               <div className="space-y-3">
                 {classSubjects.length > 0 ? (
-                  classSubjects.map((cs: any) => (
+                  classSubjects.map((cs) => (
                     <div
                       key={cs.subject.id}
                       className="p-4 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/30 transition-all group"

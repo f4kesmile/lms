@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { GraduationCap,Key, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Key, GraduationCap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

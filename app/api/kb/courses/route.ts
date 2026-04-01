@@ -1,10 +1,10 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { buildDosenCurrentYearSubjectWhere } from "@/lib/auth/dosen-access";
-import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 
 export async function GET() {
   try {
