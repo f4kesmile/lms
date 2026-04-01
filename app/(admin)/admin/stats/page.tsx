@@ -7,13 +7,6 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,15 +41,6 @@ export default function AdminStatsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-  }>({
-    open: false,
-    title: "",
-    message: "",
-  });
 
   useEffect(() => {
     Promise.all([
@@ -106,20 +90,8 @@ export default function AdminStatsPage() {
 
       setSettings(data.settings);
       toastSaved("pengaturan chatbot");
-      setNotice({
-        open: true,
-        title: "Pengaturan Tersimpan",
-        message:
-          "Konfigurasi chatbot RAG berhasil diperbarui dan langsung dipakai oleh sistem.",
-      });
     } catch (e) {
       toastSaveFailed("pengaturan chatbot", e);
-      setNotice({
-        open: true,
-        title: "Gagal Menyimpan",
-        message:
-          e instanceof Error ? e.message : "Gagal menyimpan pengaturan chatbot",
-      });
     } finally {
       setSaving(false);
     }
@@ -246,7 +218,7 @@ export default function AdminStatsPage() {
                           topK: Number(e.target.value),
                         }))
                       }
-                      className="h-12 border border-border bg-background focus-visible:ring-0 focus-visible:border-primary pl-4 font-bold"
+                      className="h-12 border border-border bg-background focus-visible:ring-0 focus-visible:border-primary pl-4 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
                 </div>
@@ -266,7 +238,7 @@ export default function AdminStatsPage() {
                         minScore: Number(e.target.value),
                       }))
                     }
-                    className="h-12 border border-border bg-background focus-visible:ring-0 focus-visible:border-primary pl-4 font-bold"
+                    className="h-12 border border-border bg-background focus-visible:ring-0 focus-visible:border-primary pl-4 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
@@ -421,30 +393,6 @@ export default function AdminStatsPage() {
           </div>
         </div>
       )}
-
-      <Dialog
-        open={notice.open}
-        onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
-      >
-        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black uppercase">
-              {notice.title}
-            </DialogTitle>
-            <DialogDescription className="font-bold text-muted-foreground">
-              {notice.message}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end pt-4">
-            <Button
-              className="font-black px-10 rounded-md border border-border shadow-sm  transition-all"
-              onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
-            >
-              OK
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 }

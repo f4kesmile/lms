@@ -101,6 +101,8 @@ export function CourseDialogs({
   onAssignSubject,
   onRemoveSubject,
 }: CourseDialogsProps) {
+  const [bannerFileName, setBannerFileName] = useState("");
+
   const [confirmRemoval, setConfirmRemoval] = useState<{
     open: boolean;
     subjectId: string | null;
@@ -120,18 +122,28 @@ export function CourseDialogs({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setBannerFileName(file.name);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
-      setSubjectForm({ ...subjectForm, bannerImage: base64 });
+      setSubjectForm((prev) => ({ ...prev, bannerImage: base64 }));
     };
     reader.readAsDataURL(file);
+  };
+
+  const clampCredits = (value: number) => Math.min(8, Math.max(1, value));
+  const updateCredits = (nextValue: number) => {
+    setSubjectForm((prev) => ({
+      ...prev,
+      credits: clampCredits(nextValue),
+    }));
   };
 
   return (
     <>
       <Dialog open={showClassModal} onOpenChange={setShowClassModal}>
-        <DialogContent className="border-none max-w-lg rounded-3xl">
+        <DialogContent className="mobile-drawer-md border-none max-w-lg rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
               {editingClass ? "Edit Data Kelas" : "Tambah Kelas Baru"}
@@ -280,7 +292,7 @@ export function CourseDialogs({
       </Dialog>
 
       <Dialog open={showSubjectModal} onOpenChange={setShowSubjectModal}>
-        <DialogContent className="border-none max-w-2xl rounded-3xl max-h-[90dvh] overflow-y-auto">
+        <DialogContent className="mobile-drawer-lg border-none max-w-2xl rounded-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
               {editingSubject ? "Edit Mata Kuliah" : "Tambah Mata Kuliah Baru"}
@@ -307,13 +319,44 @@ export function CourseDialogs({
                     />
                   </div>
                 )}
-                <div className="flex-1">
-                  <Input
+                <div className="flex-1 space-y-2">
+                  <input
+                    id="subject-banner-upload"
                     type="file"
                     accept="image/*"
                     onChange={handleBannerUpload}
-                    className="h-11 rounded-xl bg-card border-border/50 text-[10px] font-bold uppercase"
+                    className="sr-only"
                   />
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor="subject-banner-upload"
+                      className="inline-flex h-11 cursor-pointer items-center justify-center rounded-xl border border-border/50 bg-card px-4 text-[11px] font-black uppercase tracking-widest transition-colors hover:bg-muted/40"
+                    >
+                      Pilih Banner
+                    </label>
+                    {subjectForm.bannerImage && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-11 rounded-xl px-3 text-[10px] font-black uppercase tracking-widest"
+                        onClick={() => {
+                          setSubjectForm((prev) => ({
+                            ...prev,
+                            bannerImage: null,
+                          }));
+                          setBannerFileName("");
+                        }}
+                      >
+                        Hapus
+                      </Button>
+                    )}
+                  </div>
+                  <p className="px-1 text-[11px] font-medium text-muted-foreground">
+                    {bannerFileName ||
+                      (subjectForm.bannerImage
+                        ? "Banner tersimpan."
+                        : "Belum ada file dipilih")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -434,21 +477,39 @@ export function CourseDialogs({
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Beban SKS
               </label>
-              <Input
-                type="number"
-                min={1}
-                max={8}
-                required
-                value={subjectForm.credits}
-                onChange={(e) =>
-                  setSubjectForm({
-                    ...subjectForm,
-                    credits: parseInt(e.target.value) || 0,
-                  })
-                }
-                className="h-11 rounded-xl bg-card border-border/50 font-bold"
-                placeholder="Contoh: 3"
-              />
+              <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card p-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8 rounded-lg"
+                  onClick={() => updateCredits(subjectForm.credits - 1)}
+                >
+                  -
+                </Button>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  required
+                  value={subjectForm.credits}
+                  onChange={(e) => updateCredits(parseInt(e.target.value, 10) || 1)}
+                  className="h-8 border-0 bg-transparent text-center font-black shadow-none focus-visible:ring-0"
+                  placeholder="3"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8 rounded-lg"
+                  onClick={() => updateCredits(subjectForm.credits + 1)}
+                >
+                  +
+                </Button>
+              </div>
+              <p className="px-1 text-[10px] font-medium text-muted-foreground">
+                Gunakan tombol + / - atau ketik langsung (rentang 1-8 SKS).
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -511,7 +572,7 @@ export function CourseDialogs({
       </Dialog>
 
       <Dialog open={showYearModal} onOpenChange={setShowYearModal}>
-        <DialogContent className="border-none max-w-md rounded-3xl">
+        <DialogContent className="mobile-drawer-sm border-none max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
               {editingYear ? "Edit Tahun Akademik" : "Tambah Tahun Akademik"}
@@ -622,7 +683,7 @@ export function CourseDialogs({
         open={showManageSubjectsModal}
         onOpenChange={setShowManageSubjectsModal}
       >
-        <DialogContent className="border-none max-w-4xl rounded-3xl max-h-[90dvh] overflow-y-auto">
+        <DialogContent className="mobile-drawer-full border-none max-w-4xl rounded-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
               Kelola Mata Kuliah & Jadwal: {editingClass?.name}
@@ -922,7 +983,7 @@ export function CourseDialogs({
             open={confirmRemoval.open}
             onOpenChange={(o) => setConfirmRemoval((p) => ({ ...p, open: o }))}
           >
-            <DialogContent className="sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
+            <DialogContent className="mobile-drawer-sm sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="text-xl font-black uppercase text-destructive">
                   Hapus Penugasan?

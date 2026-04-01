@@ -425,7 +425,7 @@ export default function SubjectMeetingsPage() {
             }))
           }
         >
-          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
             <DialogHeader>
               <DialogTitle className="text-xl font-black uppercase text-destructive">
                 {confirmState.title}

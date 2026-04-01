@@ -494,7 +494,7 @@ function KnowledgeContent() {
         open={notice.open}
         onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
       >
-        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+        <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase">
               {notice.title}
@@ -524,7 +524,7 @@ function KnowledgeContent() {
           }))
         }
       >
-        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+        <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase">
               {confirmState.title}

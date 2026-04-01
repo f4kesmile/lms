@@ -267,7 +267,7 @@ export default function AdminCoursesPage() {
           open={notice.open}
           onOpenChange={(o) => setNotice((p) => ({ ...p, open: o }))}
         >
-          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
             <DialogHeader>
               <DialogTitle className="text-xl font-black uppercase">
                 {notice.title}
@@ -297,7 +297,7 @@ export default function AdminCoursesPage() {
             }))
           }
         >
-          <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
             <DialogHeader>
               <DialogTitle className="text-xl font-black uppercase">
                 {confirmState.title}

@@ -48,6 +48,14 @@ export function MeetingEditor({
     meetingNo: editingMeeting?.meetingNo || nextMeetingNo,
   });
 
+  const clampMeetingNo = (value: number) => Math.min(16, Math.max(1, value));
+  const updateMeetingNo = (nextValue: number) => {
+    setForm((prev) => ({
+      ...prev,
+      meetingNo: clampMeetingNo(nextValue),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.content) {
@@ -93,7 +101,7 @@ export function MeetingEditor({
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-7xl h-[90dvh] flex flex-col p-0 border-none rounded-3xl overflow-hidden bg-background">
+      <DialogContent className="mobile-drawer-full max-w-7xl h-[90dvh] flex flex-col p-0 border-none rounded-3xl overflow-hidden bg-background">
         <DialogHeader className="p-6 border-b border-border/50 bg-card/30">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
@@ -105,17 +113,34 @@ export function MeetingEditor({
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
                     Pertemuan Ke-
                   </span>
-                  <input
-                    type="number"
-                    value={form.meetingNo}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        meetingNo: parseInt(e.target.value) || 1,
-                      })
-                    }
-                    className="w-12 bg-transparent outline-none font-black text-primary text-sm text-center"
-                  />
+                  <div className="flex items-center gap-1 rounded-lg border border-border/40 bg-background/70 p-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-7 rounded-md"
+                      onClick={() => updateMeetingNo(form.meetingNo - 1)}
+                    >
+                      -
+                    </Button>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={form.meetingNo}
+                      onChange={(e) => updateMeetingNo(parseInt(e.target.value, 10) || 1)}
+                      className="h-7 w-12 border-0 bg-transparent p-0 text-center font-black text-primary shadow-none focus-visible:ring-0"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-7 rounded-md"
+                      onClick={() => updateMeetingNo(form.meetingNo + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex-[4]">
                   <Input

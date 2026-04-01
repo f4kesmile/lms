@@ -392,7 +392,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
       </div>
 
       <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <DialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+        <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase">
               Konfirmasi Logout
