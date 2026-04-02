@@ -856,7 +856,7 @@ export function CourseDialogs({
                       ...assignForm,
                       teacherUserId:
                         assignForm.teacherUserId === "none"
-                          ? undefined
+                          ? ""
                           : assignForm.teacherUserId,
                     });
                     setAssignForm({

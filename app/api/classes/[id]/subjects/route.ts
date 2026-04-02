@@ -30,7 +30,7 @@ export async function GET(
 
     return NextResponse.json({
       subjects: item.subjects.map((s) => ({
-        id: s.id,
+        id: s.subjectId,
         subject: {
           id: s.subject.id,
           code: s.subject.code,

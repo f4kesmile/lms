@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { type DayOfWeek } from "@prisma/client";
 
 import {
   EMPTY_CLASS_FORM,
@@ -606,7 +607,12 @@ export function useCoursesController() {
         await import("@/lib/actions/course");
       const res = await assignSubjectToClassAction({
         classId: editingClass.id,
-        ...data,
+        subjectId: data.subjectId,
+        teacherUserId: data.teacherUserId || undefined,
+        dayOfWeek: data.dayOfWeek ? (data.dayOfWeek as DayOfWeek) : undefined,
+        startTime: data.startTime || undefined,
+        endTime: data.endTime || undefined,
+        room: data.room || undefined,
       });
       if (!res.success) throw new Error(res.error);
       toastAssigned("mata kuliah ke kelas");
