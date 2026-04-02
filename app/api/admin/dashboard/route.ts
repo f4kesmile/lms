@@ -1,9 +1,9 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
 
 type ActivityItem = {
   id: string;
@@ -12,6 +12,46 @@ type ActivityItem = {
   status: "Completed" | "Pending" | "Active";
   date: string;
 };
+
+type GrowthPoint = {
+  day: "Sen" | "Sel" | "Rab" | "Kam" | "Jum" | "Sab" | "Min";
+  value: number;
+};
+
+type RecentUser = {
+  id: string;
+  name: string;
+  createdAt: Date;
+};
+
+type RecentMeeting = {
+  id: string;
+  title: string;
+  createdAt: Date;
+};
+
+type RecentTurn = {
+  id: string;
+  question: string;
+  createdAt: Date;
+  rating: number | null;
+  user: { name: string };
+};
+
+const DAY_LABELS: GrowthPoint["day"][] = [
+  "Sen",
+  "Sel",
+  "Rab",
+  "Kam",
+  "Jum",
+  "Sab",
+  "Min",
+];
+
+function mapJsDayToLabel(day: number): GrowthPoint["day"] {
+  const map: GrowthPoint["day"][] = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+  return map[day] ?? "Sen";
+}
 
 export async function GET() {
   try {
@@ -28,7 +68,7 @@ export async function GET() {
       totalModules,
       totalTurns,
       recentUsers,
-      recentMaterials,
+      recentMeetings,
       recentTurns,
     ] = await Promise.all([
       prisma.user.count(),
@@ -40,7 +80,7 @@ export async function GET() {
         take: 4,
         select: { id: true, name: true, createdAt: true },
       }),
-      prisma.courseMaterial.findMany({
+      prisma.subjectMeeting.findMany({
         orderBy: { createdAt: "desc" },
         take: 4,
         select: { id: true, title: true, createdAt: true },
@@ -59,21 +99,21 @@ export async function GET() {
     ]);
 
     const activities: ActivityItem[] = [
-      ...recentUsers.map((item) => ({
+      ...recentUsers.map((item: RecentUser) => ({
         id: `user-${item.id}`,
         user: item.name,
         activity: "Akun baru terdaftar",
         status: "Completed" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentMaterials.map((item) => ({
-        id: `material-${item.id}`,
+      ...recentMeetings.map((item: RecentMeeting) => ({
+        id: `meeting-${item.id}`,
         user: "Admin",
         activity: `Upload materi: ${item.title}`,
         status: "Active" as const,
         date: item.createdAt.toISOString(),
       })),
-      ...recentTurns.map((item) => ({
+      ...recentTurns.map((item: RecentTurn) => ({
         id: `turn-${item.id}`,
         user: item.user.name,
         activity: `Mengirim pertanyaan: ${item.question.slice(0, 44)}${item.question.length > 44 ? "..." : ""}`,
@@ -86,6 +126,23 @@ export async function GET() {
 
     const aiUsage = totalUsers > 0 ? Math.min(100, Math.round((totalTurns / totalUsers) * 10)) : 0;
 
+    const dailyCounter = new Map<GrowthPoint["day"], number>(
+      DAY_LABELS.map((day) => [day, 0])
+    );
+
+    for (const item of activities) {
+      const label = mapJsDayToLabel(new Date(item.date).getDay());
+      dailyCounter.set(label, (dailyCounter.get(label) ?? 0) + 1);
+    }
+
+    const growthSeries: GrowthPoint[] = DAY_LABELS.map((day) => {
+      const count = dailyCounter.get(day) ?? 0;
+      return {
+        day,
+        value: count,
+      };
+    });
+
     return NextResponse.json({
       metrics: {
         totalUsers,
@@ -94,6 +151,7 @@ export async function GET() {
         aiUsage,
       },
       activities,
+      growthSeries,
     });
   } catch (error) {
     return serverError(error);

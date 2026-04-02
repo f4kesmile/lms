@@ -1,6 +1,14 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
-import "./globals.css";
+import { Suspense } from "react";
+
+import { AppToaster } from "@/components/shared/AppToaster";
+import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ChatbotVisibilityGuard } from "@/features/chat/ChatbotVisibilityGuard";
+import { SITE_CONFIG } from "@/lib/constants";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -9,8 +17,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "EduNexus – LMS Pintar",
-  description: "Platform LMS cerdas dengan AI chatbot akademik",
+  title: SITE_CONFIG.name,
+  description: SITE_CONFIG.description,
 };
 
 export default function RootLayout({
@@ -19,14 +27,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="dark">
+    <html lang="id" suppressHydrationWarning>
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className={spaceGrotesk.variable}>{children}</body>
+      <body className={spaceGrotesk.variable}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            {children}
+            <AppToaster />
+            <Suspense fallback={null}>
+              <ChatbotVisibilityGuard />
+            </Suspense>
+          </TooltipProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

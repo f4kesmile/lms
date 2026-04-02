@@ -2,15 +2,21 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { badRequest, forbidden, notFound, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  serverError,
+  unauthorized,
+} from "@/lib/core/http";
 
 const updateClassSchema = z.object({
   name: z.string().min(2).optional(),
   academicYearId: z.string().optional(),
-  classTeacherId: z.string().nullable().optional(),
   capacity: z.number().int().positive().optional(),
+  enrollmentKey: z.string().trim().min(1).optional().nullable(),
   subjectIds: z.array(z.string()).optional(),
   studentIds: z.array(z.string()).optional(),
 });
@@ -23,7 +29,13 @@ export async function GET(_request: Request, context: Context) {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return unauthorized();
-    if (!hasRole(currentUser.role, [UserRole.admin, UserRole.dosen, UserRole.mahasiswa])) {
+    if (
+      !hasRole(currentUser.role, [
+        UserRole.admin,
+        UserRole.dosen,
+        UserRole.mahasiswa,
+      ])
+    ) {
       return forbidden("User is not authorized to access this route");
     }
 
@@ -32,10 +44,10 @@ export async function GET(_request: Request, context: Context) {
       where: { id },
       include: {
         academicYear: { select: { id: true, name: true } },
-        classTeacher: { select: { id: true, name: true, email: true } },
         subjects: {
           include: {
             subject: { select: { id: true, name: true, code: true } },
+            teacher: { select: { id: true, name: true } },
           },
         },
         students: {
@@ -70,28 +82,39 @@ export async function PATCH(request: Request, context: Context) {
     const existing = await prisma.class.findUnique({ where: { id } });
     if (!existing) return notFound("Class not found");
 
+    const {
+      name,
+      academicYearId,
+      capacity,
+      enrollmentKey,
+      subjectIds,
+      studentIds,
+    } = parsed.data;
+
     const updatedClass = await prisma.class.update({
       where: { id },
       data: {
-        name: parsed.data.name,
-        academicYearId: parsed.data.academicYearId,
-        classTeacherId: parsed.data.classTeacherId,
-        capacity: parsed.data.capacity,
-        ...(parsed.data.subjectIds
+        name,
+        academicYearId,
+        capacity,
+        ...(enrollmentKey !== undefined
+          ? { enrollmentKey: enrollmentKey?.trim() || null }
+          : {}),
+        ...(subjectIds
           ? {
               subjects: {
                 deleteMany: {},
-                create: parsed.data.subjectIds.map((subjectId) => ({
+                create: subjectIds.map((subjectId: string) => ({
                   subject: { connect: { id: subjectId } },
                 })),
               },
             }
           : {}),
-        ...(parsed.data.studentIds
+        ...(studentIds
           ? {
               students: {
                 deleteMany: {},
-                create: parsed.data.studentIds.map((userId) => ({
+                create: studentIds.map((userId: string) => ({
                   user: { connect: { id: userId } },
                 })),
               },
@@ -100,7 +123,6 @@ export async function PATCH(request: Request, context: Context) {
       },
       include: {
         academicYear: { select: { id: true, name: true } },
-        classTeacher: { select: { id: true, name: true, email: true } },
         subjects: { include: { subject: true } },
         students: { include: { user: true } },
       },

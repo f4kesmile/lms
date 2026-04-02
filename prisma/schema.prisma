@@ -1,153 +1,263 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "cockroachdb"
-}
-
-enum UserRole {
-    admin
-    dosen
-    mahasiswa
-}
-
-enum crdb_internal_region {
-    aws_ap_southeast_1 @map("aws-ap-southeast-1")
+  provider = "cockroachdb"
 }
 
 model User {
-    id              String           @id @default(uuid())
-    name            String
-    email           String           @unique
-    password        String
-    role            UserRole         @default(mahasiswa)
-    isActive        Boolean          @default(true)
-    studentClassId  String?
-    createdAt       DateTime         @default(now())
-    updatedAt       DateTime         @updatedAt
-    teachingClasses Class[]          @relation("TeacherClasses")
-    subjectLinks    SubjectTeacher[]
-    classLinks      ClassStudent[]
-    chatSessions    ChatSession[]
-    chatTurns       ChatTurn[]
-    materials       CourseMaterial[]
+  id              String           @id @default(uuid())
+  name            String
+  email           String           @unique
+  password        String
+  role            UserRole         @default(mahasiswa)
+  isActive        Boolean          @default(true)
+  studentClassId  String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  nip             String?          @unique
+  specialization  String?
+  chatSessions    ChatSession[]
+  chatTurns       ChatTurn[]
+  classLinks      ClassStudent[]
+  teachingClasses ClassSubject[]
+  courses         Course[]
+  materials       CourseMaterial[]
+  subjectLinks    SubjectTeacher[]
+}
+
+model Course {
+  id               String           @id @default(uuid())
+  code             String           @unique
+  title            String
+  description      String?
+  learningOutcomes String?
+  status           CourseStatus     @default(published)
+  createdById      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdBy        User?            @relation(fields: [createdById], references: [id])
+  materials        CourseMaterial[]
 }
 
 model AcademicYear {
-    id        String   @id @default(uuid())
-    name      String
-    fromYear  DateTime
-    toYear    DateTime
-    isCurrent Boolean  @default(false)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    classes   Class[]
+  id        String   @id @default(uuid())
+  name      String
+  fromYear  DateTime
+  toYear    DateTime
+  isCurrent Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  classes   Class[]
 
-    @@unique([fromYear, toYear])
+  @@unique([fromYear, toYear])
 }
 
 model Class {
-    id             String         @id @default(uuid())
-    name           String
-    academicYearId String
-    classTeacherId String?
-    capacity       Int            @default(40)
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
-    academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
-    classTeacher   User?          @relation("TeacherClasses", fields: [classTeacherId], references: [id], onDelete: SetNull)
-    subjects       ClassSubject[]
-    students       ClassStudent[]
+  id             String         @id @default(uuid())
+  name           String
+  academicYearId String
+  capacity       Int            @default(40)
+  enrollmentKey  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id])
+  students       ClassStudent[]
+  subjects       ClassSubject[]
 
-    @@unique([name, academicYearId])
+  @@unique([name, academicYearId])
 }
 
 model Subject {
-    id        String           @id @default(uuid())
-    name      String
-    code      String           @unique
-    isActive  Boolean          @default(true)
-    createdAt DateTime         @default(now())
-    updatedAt DateTime         @updatedAt
-    teachers  SubjectTeacher[]
-    classes   ClassSubject[]
+  id               String           @id @default(uuid())
+  name             String
+  code             String           @unique
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  bannerImage      String?
+  credits          Int              @default(2)
+  description      String?
+  learningOutcomes String?
+  status           CourseStatus     @default(published)
+  classes          ClassSubject[]
+  meetings         SubjectMeeting[]
+  teachers         SubjectTeacher[]
 }
 
 model SubjectTeacher {
-    subjectId String
-    userId    String
-    subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  userId    String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([subjectId, userId])
+  @@id([subjectId, userId])
 }
 
 model ClassSubject {
-    classId   String
-    subjectId String
-    class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
-    subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  classId       String
+  subjectId     String
+  dayOfWeek     DayOfWeek?
+  endTime       String?
+  room          String?
+  startTime     String?
+  teacherUserId String?
+  class         Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject       Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher       User?      @relation(fields: [teacherUserId], references: [id])
 
-    @@id([classId, subjectId])
+  @@id([classId, subjectId])
 }
 
 model ClassStudent {
-    classId String
-    userId  String
-    class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
-    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId  String
+  userId   String
+  progress Int    @default(0)
+  class    Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([classId, userId])
+  @@id([classId, userId])
+}
+
+model SubjectMeeting {
+  id        String         @id @default(uuid())
+  subjectId String
+  meetingNo Int
+  title     String
+  content   String
+  assets    Json?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  chunks    MeetingChunk[]
+  subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([subjectId, meetingNo])
+  @@index([subjectId])
+}
+
+model MeetingChunk {
+  id         String         @id @default(uuid())
+  meetingId  String
+  chunkIndex Int
+  content    String
+  createdAt  DateTime       @default(now())
+  meeting    SubjectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, chunkIndex])
 }
 
 model CourseMaterial {
-    id          String          @id @default(uuid())
-    title       String
-    module      String
-    page        String?
-    content     String
-    createdById String?
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
-    createdBy   User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
-    chunks      MaterialChunk[]
+  id          String          @id @default(uuid())
+  title       String
+  module      String
+  page        String?
+  content     String
+  createdById String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  courseId    String?
+  course      Course?         @relation(fields: [courseId], references: [id])
+  createdBy   User?           @relation(fields: [createdById], references: [id])
+  chunks      MaterialChunk[]
+
+  @@index([courseId])
+}
+
+model ChatbotSetting {
+  id           String   @id @default(uuid())
+  key          String   @unique @default("default")
+  topK         Int      @default(4)
+  minScore     Float    @default(0.08)
+  systemPrompt String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model MaterialChunk {
-    id         String         @id @default(uuid())
-    materialId String
-    chunkIndex Int
-    content    String
-    createdAt  DateTime       @default(now())
-    material   CourseMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  id         String         @id @default(uuid())
+  materialId String
+  chunkIndex Int
+  content    String
+  createdAt  DateTime       @default(now())
+  material   CourseMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
 
-    @@unique([materialId, chunkIndex])
+  @@unique([materialId, chunkIndex])
 }
 
 model ChatSession {
-    id        String     @id @default(uuid())
-    userId    String
-    title     String?
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-    user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-    turns     ChatTurn[]
+  id        String     @id @default(uuid())
+  userId    String
+  title     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  turns     ChatTurn[]
 }
 
 model ChatTurn {
-    id             String      @id @default(uuid())
-    sessionId      String
-    userId         String
-    question       String
-    answer         String
-    citations      Json
-    responseTimeMs Int
-    rating         Int?
-    feedback       String?
-    createdAt      DateTime    @default(now())
-    session        ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-    user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String      @id @default(uuid())
+  sessionId      String
+  userId         String
+  question       String
+  answer         String
+  citations      Json
+  responseTimeMs Int
+  rating         Int?
+  feedback       String?
+  createdAt      DateTime    @default(now())
+  session        ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@index([sessionId, createdAt])
+  @@index([sessionId, createdAt])
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  category  String   @default("Umum")
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  level     String
+  category  String
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([level, createdAt])
+  @@index([category, createdAt])
+}
+
+enum UserRole {
+  admin
+  dosen
+  mahasiswa
+}
+
+enum CourseStatus {
+  draft
+  published
+  archived
+}
+
+enum DayOfWeek {
+  senin  @map("monday")
+  selasa @map("tuesday")
+  rabu   @map("wednesday")
+  kamis  @map("thursday")
+  jumat  @map("friday")
+  sabtu  @map("saturday")
+  minggu @map("sunday")
+}
+
+enum crdb_internal_region {
+  aws_ap_southeast_1 @map("aws-ap-southeast-1")
 }

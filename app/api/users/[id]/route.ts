@@ -1,11 +1,11 @@
-import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, notFound, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { forbidden, notFound, serverError, unauthorized } from "@/lib/core/http";
 
 const updateUserSchema = z.object({
   name: z.string().min(2).optional(),
@@ -14,6 +14,8 @@ const updateUserSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
   studentClassId: z.string().nullable().optional(),
+  nip: z.string().nullable().optional(),
+  specialization: z.string().nullable().optional(),
 });
 
 const allowedRoles = [UserRole.admin, UserRole.dosen];
@@ -49,14 +51,26 @@ export async function PATCH(request: Request, context: Context) {
       ? await bcrypt.hash(parsed.data.password, 10)
       : undefined;
 
+    const roleToApply = parsed.data.role ?? existing.role;
+    const normalizedIdentifier =
+      parsed.data.nip === undefined ? undefined : (parsed.data.nip?.trim() || null);
+    const normalizedSpecialization =
+      roleToApply === UserRole.dosen
+        ? parsed.data.specialization === undefined
+          ? undefined
+          : (parsed.data.specialization?.trim() || null)
+        : null;
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
         name: parsed.data.name,
         email: parsed.data.email,
-        role: parsed.data.role,
+        role: roleToApply,
         isActive: parsed.data.isActive,
         studentClassId: parsed.data.studentClassId,
+        nip: normalizedIdentifier,
+        specialization: normalizedSpecialization,
         ...(hashedPassword ? { password: hashedPassword } : {}),
       },
       select: {
@@ -66,6 +80,8 @@ export async function PATCH(request: Request, context: Context) {
         role: true,
         isActive: true,
         studentClassId: true,
+        nip: true,
+        specialization: true,
       },
     });
 

@@ -1,9 +1,17 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { forbidden, serverError, unauthorized } from "@/lib/core/http";
+
+type RatedTurn = {
+  rating: number | null;
+};
+
+type CitationTurn = {
+  citations: unknown;
+};
 
 export async function GET() {
   try {
@@ -13,22 +21,34 @@ export async function GET() {
       return forbidden("Only admin or dosen can access chatbot stats");
     }
 
-    const [totalMaterials, totalSessions, totalTurns, ratedTurns, fastTurns, citationTurns] =
-      await Promise.all([
-        prisma.courseMaterial.count(),
-        prisma.chatSession.count(),
-        prisma.chatTurn.count(),
-        prisma.chatTurn.findMany({ where: { rating: { not: null } }, select: { rating: true } }),
-        prisma.chatTurn.count({ where: { responseTimeMs: { lt: 3000 } } }),
-        prisma.chatTurn.findMany({ select: { citations: true } }),
-      ]);
+    const [
+      totalMaterials,
+      totalSessions,
+      totalTurns,
+      ratedTurns,
+      fastTurns,
+      citationTurns,
+    ] = await Promise.all([
+      prisma.subjectMeeting.count(),
+      prisma.chatSession.count(),
+      prisma.chatTurn.count(),
+      prisma.chatTurn.findMany({
+        where: { rating: { not: null } },
+        select: { rating: true },
+      }),
+      prisma.chatTurn.count({ where: { responseTimeMs: { lt: 3000 } } }),
+      prisma.chatTurn.findMany({ select: { citations: true } }),
+    ]);
 
     const avgRating =
       ratedTurns.length > 0
-        ? ratedTurns.reduce((sum, item) => sum + (item.rating ?? 0), 0) / ratedTurns.length
+        ? ratedTurns.reduce(
+            (sum: number, item: RatedTurn) => sum + (item.rating ?? 0),
+            0,
+          ) / ratedTurns.length
         : null;
 
-    const citedAnswers = citationTurns.filter((item) => {
+    const citedAnswers = citationTurns.filter((item: CitationTurn) => {
       if (!Array.isArray(item.citations)) return false;
       return item.citations.length > 0;
     }).length;

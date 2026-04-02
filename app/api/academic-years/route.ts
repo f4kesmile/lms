@@ -2,9 +2,9 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentUser, hasRole } from "@/lib/current-user";
-import { badRequest, forbidden, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, hasRole } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/http";
 
 const createAcademicYearSchema = z.object({
   name: z.string().min(3),

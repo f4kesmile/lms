@@ -1,17 +1,42 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/current-user";
-import { unauthorized, serverError } from "@/lib/http";
+import { getCurrentUser } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { serverError,unauthorized } from "@/lib/core/http";
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
+    const currentUser = await getCurrentUser();
 
-    if (!user) {
+    if (!currentUser) {
       return unauthorized("Not authorized");
     }
 
-    return NextResponse.json({ user });
+    const classLinks = await prisma.classStudent.findMany({
+      where: { userId: currentUser.id },
+      select: {
+        classId: true,
+        progress: true,
+        class: {
+          select: {
+            id: true,
+            name: true,
+            subjects: {
+              select: {
+                subject: { select: { name: true, code: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      user: {
+        ...currentUser,
+        classLinks,
+      },
+    });
   } catch (error) {
     return serverError(error);
   }

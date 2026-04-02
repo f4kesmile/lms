@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/current-user";
-import { notFound, serverError, unauthorized } from "@/lib/http";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/user";
+import { prisma } from "@/lib/core/db";
+import { notFound, serverError, unauthorized } from "@/lib/core/http";
 
 type Context = {
   params: Promise<{ id: string }>;
