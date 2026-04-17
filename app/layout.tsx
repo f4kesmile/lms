@@ -17,8 +17,37 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: SITE_CONFIG.name,
+  title: `${SITE_CONFIG.name} - ${SITE_CONFIG.description}`,
   description: SITE_CONFIG.description,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+  openGraph: {
+    title: SITE_CONFIG.name,
+    description: SITE_CONFIG.description,
+    url: "/",
+    siteName: SITE_CONFIG.name,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: SITE_CONFIG.name,
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_CONFIG.name,
+    description: SITE_CONFIG.description,
+    images: ["/og-image.png"],
+    creator: "@nusabelajar",
+  },
 };
 
 export default function RootLayout({
