@@ -376,7 +376,7 @@ function KnowledgeContent() {
       title="Basis Pengetahuan & Training AI"
       headerActions={
         <div className="flex items-center gap-3">
-          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+          <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
@@ -398,7 +398,7 @@ function KnowledgeContent() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+          <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 size="sm"
@@ -494,7 +494,9 @@ function KnowledgeContent() {
 
       <AlertDialog
         open={notice.open}
-        onOpenChange={(open: boolean) => setNotice((prev) => ({ ...prev, open }))}
+        onOpenChange={(open: boolean) =>
+          setNotice((prev) => ({ ...prev, open }))
+        }
       >
         <AlertDialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
           <AlertDialogHeader>

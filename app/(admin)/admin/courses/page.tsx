@@ -113,7 +113,7 @@ export default function AdminCoursesPage() {
       headerActions={
         <div className="flex items-center gap-3">
           {activeTab === "mataKuliah" && (
-            <Tooltip open={!isDesktop ? undefined : false}>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="sm"
@@ -143,7 +143,7 @@ export default function AdminCoursesPage() {
             </Tooltip>
           )}
 
-          <Tooltip open={mounted && !isDesktop ? undefined : false}>
+          <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"

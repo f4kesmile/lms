@@ -1,10 +1,12 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import {
   CartesianGrid,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -67,6 +69,31 @@ export function AdminDashboardContent({
   growthData,
   metricValues,
 }: AdminDashboardContentProps) {
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const [chartSize, setChartSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const node = chartContainerRef.current;
+    if (!node) return;
+
+    const updateSize = () => {
+      const rect = node.getBoundingClientRect();
+      setChartSize({
+        width: Math.max(0, Math.floor(rect.width)),
+        height: Math.max(0, Math.floor(rect.height)),
+      });
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="flex flex-col gap-8">
       <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -326,9 +353,14 @@ export function AdminDashboardContent({
                 7 Hari
               </Badge>
             </div>
-            <div className="h-52 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div
+              ref={chartContainerRef}
+              className="h-52 w-full min-w-0 min-h-[208px]"
+            >
+              {chartSize.width > 0 && chartSize.height > 0 ? (
                 <LineChart
+                  width={chartSize.width}
+                  height={chartSize.height}
                   data={growthData}
                   margin={{ top: 8, right: 8, left: -16, bottom: 8 }}
                 >
@@ -378,7 +410,9 @@ export function AdminDashboardContent({
                     }}
                   />
                 </LineChart>
-              </ResponsiveContainer>
+              ) : (
+                <Skeleton className="h-full w-full rounded-md" />
+              )}
             </div>
           </Card>
 

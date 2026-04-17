@@ -235,10 +235,7 @@ export const DosenLayout = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Tooltip
-              open={mounted && !isDesktop ? undefined : false}
-              delayDuration={0}
-            >
+            <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <Link
                   href="/"
@@ -258,7 +255,7 @@ export const DosenLayout = ({
             </Tooltip>
 
             {mounted && (
-              <Tooltip open={!isDesktop ? undefined : false} delayDuration={0}>
+              <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() =>
