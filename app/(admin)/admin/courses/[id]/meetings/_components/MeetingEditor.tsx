@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -108,6 +109,10 @@ export function MeetingEditor({
               <DialogTitle className="text-xl font-black tracking-tight mb-2">
                 {editingMeeting ? "Edit Sesi Pertemuan" : "Tambah Sesi Baru"}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Editor sesi pertemuan untuk mengubah judul, nomor pertemuan, dan
+                isi materi markdown.
+              </DialogDescription>
               <div className="flex gap-4">
                 <div className="flex-1 flex items-center gap-2 bg-background/50 rounded-xl px-3 py-1 border border-border/30">
                   <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap">
@@ -128,7 +133,9 @@ export function MeetingEditor({
                       inputMode="numeric"
                       pattern="[0-9]*"
                       value={form.meetingNo}
-                      onChange={(e) => updateMeetingNo(parseInt(e.target.value, 10) || 1)}
+                      onChange={(e) =>
+                        updateMeetingNo(parseInt(e.target.value, 10) || 1)
+                      }
                       className="h-7 w-12 border-0 bg-transparent p-0 text-center font-black text-primary shadow-none focus-visible:ring-0"
                     />
                     <Button

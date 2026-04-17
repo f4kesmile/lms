@@ -7,10 +7,21 @@ import { cn } from "@/lib/utils";
 
 const Drawer = ({
   shouldScaleBackground = true,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
+    onOpenChange={(open) => {
+      onOpenChange?.(open);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("chatbot-overlay-change", {
+            detail: { source: "drawer", open },
+          }),
+        );
+      }
+    }}
     {...props}
   />
 );
@@ -42,6 +53,7 @@ const DrawerContent = React.forwardRef<
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
+      data-chatbot-overlay="true"
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
         className,

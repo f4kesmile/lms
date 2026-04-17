@@ -59,7 +59,9 @@ export function DocumentEditor({
 }: DocumentEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        underline: false,
+      }),
       Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"],

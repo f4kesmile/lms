@@ -7,7 +7,26 @@ import * as React from "react";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils/index";
 
-const Sheet = SheetPrimitive.Root;
+const Sheet = ({
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Root>) => (
+  <SheetPrimitive.Root
+    onOpenChange={(open) => {
+      onOpenChange?.(open);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("chatbot-overlay-change", {
+            detail: { source: "sheet", open },
+          }),
+        );
+      }
+    }}
+    {...props}
+  />
+);
+
+Sheet.displayName = "Sheet";
 
 const SheetTrigger = SheetPrimitive.Trigger;
 
@@ -64,6 +83,7 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
+      data-chatbot-overlay="true"
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >

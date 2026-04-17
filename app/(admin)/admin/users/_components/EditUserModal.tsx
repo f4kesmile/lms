@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -63,6 +64,10 @@ export function EditUserModal({
             <Icon name="person" className="text-primary" size={24} />
             Edit Profil Akademik
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Form untuk memperbarui identitas akademik pengguna, termasuk NIP/NPM
+            dan bidang keahlian.
+          </DialogDescription>
           <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mt-1">
             {user.role} — {user.name}
           </p>
