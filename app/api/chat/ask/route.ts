@@ -79,12 +79,64 @@ export async function POST(request: Request) {
 
     let answer = "";
     let citationsToSave: typeof sources = [];
+    let followUps: string[] = [];
     
+    // Custom Intent Interceptors
+    const q = question.toLowerCase();
+    const isStatQuery = user.role === "admin" && /statistik|jumlah|total|rekap|pengguna|mahasiswa|dosen|kursus/.test(q);
+    const isFaqQuery = /faq|bantuan|tentang|cara|bagaimana cara|panduan/.test(q);
+
     if (isConv) {
+      if (user.role === "admin") {
+         followUps = ["Tampilkan log aktivitas hari ini", "Bagaimana melihat rekap statistik pengguna?"];
+      } else if (user.role === "dosen") {
+         followUps = ["Bantu saya membuat evaluasi materi", "Apa indikator sukses kelas saya?"];
+      } else {
+         followUps = ["Beri soal latihan untuk saya", "Rangkum materi terbaru"];
+      }
       answer = handleConversational(question);
+    } else if (isStatQuery) {
+      const [totalUsers, totalMahasiswa, totalDosen, totalCourses, totalClasses, activeSessions] = await Promise.all([
+        prisma.user.count(),
+        prisma.user.count({ where: { role: "mahasiswa" } }),
+        prisma.user.count({ where: { role: "dosen" } }),
+        prisma.course.count(),
+        prisma.class.count(),
+        prisma.chatSession.count()
+      ]);
+      
+      answer = [
+        "Berikut adalah **Statistik Live Platform Nusa Belajar** saat ini:",
+        "",
+        `- **Total Pengguna Sistem:** ${totalUsers} Akun`,
+        `- **Jumlah Mahasiswa:** ${totalMahasiswa} Orang`,
+        `- **Jumlah Dosen:** ${totalDosen} Orang`,
+        `- **Katalog Kursus:** ${totalCourses} Kursus Terdaftar`,
+        `- **Kelas Berjalan:** ${totalClasses} Kelas`,
+        `- **Total Sesi Chat AI:** ${activeSessions} Sesi`,
+        "",
+        "Semua sistem berjalan dengan normal. Ada data spesifik lain yang ingin kamu telusuri, Min?"
+      ].join("\n");
+      citationsToSave = [];
+      followUps = ["Bantu saya mengecek log error terbaru", "Jelaskan peran admin"];
+    } else if (isFaqQuery && sources.length === 0) {
+      const faqs = await prisma.faq.findMany({
+        where: { isActive: true },
+        take: 3,
+        orderBy: { updatedAt: 'desc' }
+      });
+      if (faqs.length > 0) {
+        answer = "Berdasarkan pedoman FAQ pusat, berikut informasinya:\n\n" + faqs.map(f => `**Q: ${f.question}**\nA: ${f.answer}`).join("\n\n");
+      } else {
+        answer = "Belum ada data panduan/FAQ yang cukup relevan dengan pertanyaan ini di sistem.";
+      }
+      citationsToSave = [];
+      followUps = ["Kembali bahas materi kuliah"];
     } else if (sources.length > 0) {
       answer = await generateChatAnswer({ question, sources });
       citationsToSave = sources;
+      followUps = sources.slice(0, 2).map((s) => `Bisa jelaskan lebih detail tentang ${s.title.trim()}?`);
+      followUps.push("Berikan pemahaman itu dengan contoh dunia nyata.");
     } else if (nearestSources.length > 0) {
       answer = [
         "Maaf ya, Liona belum menemukan pedoman yang persis untuk menjawab pertanyaan tersebut.",
@@ -96,8 +148,10 @@ export async function POST(request: Request) {
         "",
         "Pilih salah satu di atas atau sesuaikan kembali pertanyaannya ya!"
       ].join("\n");
+      followUps = ["Coba bantu carikan materi dari referensi lain", "Kembali ke topik sebelumnya"];
     } else {
       answer = "Maaf, Liona belum menemukan referensi terkait di sistem. Coba sampaikan dengan kata kunci lain ya!";
+      followUps = ["Coba bantu carikan materi dari referensi lain", "Kembali ke topik sebelumnya"];
     }
 
     let sessionId = parsed.data.sessionId;
@@ -139,6 +193,7 @@ export async function POST(request: Request) {
       sources: citationsToSave,
       strictMatch: sources.length > 0,
       responseTimeMs,
+      followUps,
     });
   } catch (error) {
     return serverError(error);

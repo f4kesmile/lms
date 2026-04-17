@@ -5,22 +5,31 @@ import { getCurrentUser } from "@/lib/auth/user";
 import { prisma } from "@/lib/core/db";
 import { serverError, unauthorized } from "@/lib/core/http";
 
+const adminTemplates = [
+  "Tampilkan ringkasan statistik platform minggu ini",
+  "Bagaimana cara mengelola pengguna baru di sistem?",
+  "Beri saya panduan membaca log aktivitas server",
+  "Jelaskan peran dan batas kewenangan admin",
+  "Apa metrik utama yang harus admin pantau?",
+  "Tampilkan rekap mahasiswa dan dosen aktif",
+];
+
 const studentTemplates = [
   "Jelaskan konsep inti dari {title}",
   "Apa poin penting pada {title}?",
-  "Berikan rangkuman singkat {title}",
-  "Bagaimana penerapan {title} dalam praktik?",
+  "Berikan rangkuman singkat terkait {title}",
+  "Bagaimana penerapan {title} di dunia nyata?",
   "Apa kesalahan umum saat mempelajari {title}?",
-  "Beri contoh sederhana terkait {title}",
+  "Beri contoh penerapan sederhana untuk {title}",
 ];
 
 const mentorTemplates = [
-  "Buat penjelasan terstruktur untuk topik {title}",
-  "Apa miskonsepsi umum mahasiswa pada topik {title}?",
-  "Rancang latihan singkat berbasis materi {title}",
-  "Bagaimana cara mengevaluasi pemahaman pada {title}?",
-  "Apa indikator keberhasilan belajar untuk {title}?",
-  "Hubungkan {title} dengan studi kasus praktis",
+  "Rancang soal latihan lanjutan dari materi {title}",
+  "Apa saja kemampuan yang harus dicapai mahasiswa pada {title}?",
+  "Buat bahan diskusi interaktif tentang {title}",
+  "Bagaimana cara mengevaluasi pemahaman terkait {title}?",
+  "Apa indikator keberhasilan belajar untuk topik {title}?",
+  "Hubungkan materi {title} dengan studi kasus tingkat lanjut",
 ];
 
 function truncateTitle(title: string, maxLength = 72): string {
@@ -55,12 +64,18 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Number(searchParams.get("limit") || 8), 12);
-    const subjectId = searchParams.get("subjectId")?.trim() || undefined;
+    const classId = searchParams.get("classId")?.trim() || undefined;
+
+    // Untuk Admin, langsung kembalikan static template yang diacak tanpa harus hit tabel Meeting
+    if (user.role === "admin") {
+      const suggestions = shuffle([...adminTemplates]).slice(0, limit);
+      return NextResponse.json({ suggestions, meetings: [] });
+    }
 
     const templates = user.role === "mahasiswa" ? studentTemplates : mentorTemplates;
 
-    const whereConditions: Prisma.SubjectMeetingWhereInput = subjectId
-      ? { subjectId }
+    const whereConditions: Prisma.SubjectMeetingWhereInput = classId
+      ? { subject: { classes: { some: { classId } } } }
       : {};
 
     const rawMeetings = await prisma.subjectMeeting.findMany({
@@ -126,6 +141,11 @@ export async function GET(request: Request) {
       }
 
       if (!addedInRound) break;
+    }
+
+    // Jika DB materi kosong dan loop di atas gagal dapat minimal limit
+    if (suggestions.length === 0) {
+      suggestions.push("Ceritakan sedikit tentang platform ini", "Apa fungsi utama dari LMS ini?");
     }
 
     return NextResponse.json({

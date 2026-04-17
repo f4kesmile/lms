@@ -7,13 +7,12 @@ import { FloatingChatbot } from "@/features/chatbot/FloatingChatbot";
 const HIDDEN_PREFIXES = [
   "/login",
   "/register",
-  "/admin",
   "/forbidden",
   "/unauthorized",
 ];
 
 const ALLOWED_EXACT_PATHS = ["/", "/about", "/help", "/chatbot"];
-const ALLOWED_PREFIXES = ["/courses", "/materials", "/student"];
+const ALLOWED_PREFIXES = ["/courses", "/materials", "/student", "/admin"];
 
 export function ChatbotVisibilityGuard() {
   const pathname = usePathname();

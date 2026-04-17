@@ -14,6 +14,7 @@ import {
   Send,
   Star,
   X,
+  Lightbulb,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -50,6 +51,7 @@ interface Message {
   content: string;
   sources?: Source[];
   rating?: number | null;
+  followUps?: string[];
 }
 
 interface SessionItem {
@@ -82,6 +84,7 @@ export const FloatingChatbot = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const [ratingLoadingByTurn, setRatingLoadingByTurn] = useState<
     Record<string, boolean>
   >({});
@@ -184,6 +187,7 @@ export const FloatingChatbot = () => {
         content: t.answer,
         sources: Array.isArray(t.citations) ? t.citations : [],
         rating: t.rating,
+        followUps: [],
       },
     ]);
     setSessionId(data.id);
@@ -218,6 +222,7 @@ export const FloatingChatbot = () => {
           content: data.answer,
           sources: data.sources || [],
           rating: null,
+          followUps: data.followUps || [],
         },
       ]);
       setInput("");
@@ -444,7 +449,7 @@ export const FloatingChatbot = () => {
                 </div>
               )}
 
-              {messages.map((msg) => (
+              {messages.map((msg, idx) => (
                 <div
                   key={msg.id}
                   className={cn(
@@ -504,28 +509,28 @@ export const FloatingChatbot = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Render Follow-Ups for the latest Assistant Message */}
+                  {msg.role === "assistant" && idx === messages.length - 1 && !loading && (
+                    <div className="flex flex-wrap gap-2 mt-3 pt-1">
+                      {/* For the greeting message, use global `suggestions`. For others, use `msg.followUps` */}
+                      {(msg.id === "greeting" ? suggestions : msg.followUps || []).map((s, i) => (
+                        <button
+                          key={i}
+                          onClick={() => sendQuestion(s)}
+                          className="flex items-start gap-1.5 text-left px-3 py-1.5 rounded-xl bg-background border border-border text-[11px] font-medium text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-muted/50 transition-all max-w-[280px]"
+                        >
+                          <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/60" />
+                          <span className="line-clamp-2">{s}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                 </div>
               ))}
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Suggestions */}
-            {suggestions.length > 0 && !loading && messages.length === 0 && (
-              <div className="px-4 py-3 border-t border-border">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Saran</p>
-                <div className="flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}>
-                  {suggestions.map((s, i) => (
-                    <button
-                      key={i}
-                      onClick={() => sendQuestion(s)}
-                      className="whitespace-nowrap shrink-0 px-3 py-1.5 rounded-lg bg-muted border border-border text-[11px] font-semibold text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Input */}
             <div className="p-3 border-t border-border bg-card">
