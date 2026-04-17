@@ -9,14 +9,17 @@ import { Filters } from "@/app/(admin)/admin/knowledge/_components/Filters";
 import { List } from "@/app/(admin)/admin/knowledge/_components/List";
 import { Table } from "@/app/(admin)/admin/knowledge/_components/Table";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import {
   Tooltip,
@@ -489,33 +492,33 @@ function KnowledgeContent() {
         />
       </Suspense>
 
-      <Dialog
+      <AlertDialog
         open={notice.open}
-        onOpenChange={(open) => setNotice((prev) => ({ ...prev, open }))}
+        onOpenChange={(open: boolean) => setNotice((prev) => ({ ...prev, open }))}
       >
-        <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black uppercase">
+        <AlertDialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black uppercase">
               {notice.title}
-            </DialogTitle>
-            <DialogDescription className="font-bold text-muted-foreground">
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-bold text-muted-foreground">
               {notice.message}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end pt-4">
-            <Button
-              className="font-black px-10 rounded-md border border-border shadow-sm"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="font-black px-10 rounded-md border border-border bg-primary text-primary-foreground shadow-sm"
               onClick={() => setNotice((prev) => ({ ...prev, open: false }))}
             >
               OK
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <Dialog
+      <AlertDialog
         open={confirmState.open}
-        onOpenChange={(open) =>
+        onOpenChange={(open: boolean) =>
           setConfirmState((prev) => ({
             ...prev,
             open,
@@ -523,26 +526,25 @@ function KnowledgeContent() {
           }))
         }
       >
-        <DialogContent className="mobile-drawer-sm sm:max-w-md border border-border rounded-md shadow-sm">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black uppercase">
+        <AlertDialogContent className="sm:max-w-md border border-border rounded-md shadow-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black uppercase">
               {confirmState.title}
-            </DialogTitle>
-            <DialogDescription className="font-bold text-muted-foreground">
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-bold text-muted-foreground">
               {confirmState.message}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-3 pt-6">
-            <Button
-              variant="ghost"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
               className="font-black text-[11px] uppercase tracking-widest border border-border"
               onClick={() =>
                 setConfirmState((prev) => ({ ...prev, open: false }))
               }
             >
               Batal
-            </Button>
-            <Button
+            </AlertDialogCancel>
+            <AlertDialogAction
               className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 border border-border rounded-md shadow-sm"
               onClick={async () => {
                 if (confirmState.onConfirm) await confirmState.onConfirm();
@@ -550,10 +552,10 @@ function KnowledgeContent() {
               }}
             >
               Ya, Hapus
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

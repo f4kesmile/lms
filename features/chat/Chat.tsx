@@ -6,6 +6,7 @@ import {
   ChevronUp,
   FileText,
   History,
+  Lightbulb,
   Loader2,
   Maximize2,
   MessageSquare,
@@ -14,7 +15,6 @@ import {
   Send,
   Star,
   X,
-  Lightbulb,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -84,7 +84,7 @@ export const FloatingChatbot = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+
   const [ratingLoadingByTurn, setRatingLoadingByTurn] = useState<
     Record<string, boolean>
   >({});
@@ -113,18 +113,31 @@ export const FloatingChatbot = () => {
     }
   }, [messages, isOpen, isMinimized]);
 
+  // Greeting — runs once when chatbot is first opened
   useEffect(() => {
-    if (!isOpen) return;
-    if (!hasGreeted) {
-      const hour = new Date().getHours();
-      const timeGreet = hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 18 ? "Selamat sore" : "Selamat malam";
-      setMessages([{
+    if (!isOpen || hasGreeted) return;
+    const hour = new Date().getHours();
+    const timeGreet =
+      hour < 11
+        ? "Selamat pagi"
+        : hour < 15
+          ? "Selamat siang"
+          : hour < 18
+            ? "Selamat sore"
+            : "Selamat malam";
+    setMessages([
+      {
         id: "greeting",
         role: "assistant",
         content: `${timeGreet}! Saya **Liona**, asisten akademik untuk Nusa Belajar.\n\nSaya siap membantu Anda memahami materi kuliah, menjawab pertanyaan, dan berdiskusi seputar topik pembelajaran. Silakan ajukan pertanyaan Anda!`,
-      }]);
-      setHasGreeted(true);
-    }
+      },
+    ]);
+    setHasGreeted(true);
+  }, [isOpen, hasGreeted]);
+
+  // Fetch sessions & suggestions when chatbot opens or context changes
+  useEffect(() => {
+    if (!isOpen) return;
     fetch("/api/chat/sessions")
       .then((r) => r.json())
       .then((d) => setSessions(d.sessions || []))

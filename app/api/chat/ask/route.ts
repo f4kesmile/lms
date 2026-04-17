@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateChatAnswer, isConversational, handleConversational } from "@/lib/ai/chatbot";
+import { generateChatAnswer, handleConversational,isConversational } from "@/lib/ai/chatbot";
 import type { ChunkWithMeeting } from "@/lib/ai/rag";
 import { buildSources, rankChunks } from "@/lib/ai/rag";
 import { readChatbotSettings } from "@/lib/ai/settings";

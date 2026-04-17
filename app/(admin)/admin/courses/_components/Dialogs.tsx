@@ -13,16 +13,20 @@ import {
   type Teacher,
   type YearForm,
 } from "@/app/(admin)/admin/courses/_lib/types";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
   Select,
   SelectContent,
@@ -162,18 +166,15 @@ export function CourseDialogs({
 
   return (
     <>
-      <Dialog open={showClassModal} onOpenChange={setShowClassModal}>
-        <DialogContent className="mobile-drawer-md border-none max-w-lg rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
-              {editingClass ? "Edit Data Kelas" : "Tambah Kelas Baru"}
-            </DialogTitle>
-            <DialogDescription className="font-medium">
-              Kelompokkan mahasiswa ke dalam unit kelas dan tentukan
-              kapasitasnya.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onClassSubmit} className="space-y-4 pt-2">
+      <ResponsiveModal
+        open={showClassModal}
+        onOpenChange={setShowClassModal}
+        title={<span className="text-xl md:text-2xl font-black tracking-tight">{editingClass ? "Edit Data Kelas" : "Tambah Kelas Baru"}</span>}
+        description={<span className="font-medium">Kelompokkan mahasiswa ke dalam unit kelas dan tentukan kapasitasnya.</span>}
+        desktopMaxWidth="max-w-lg"
+        className="border-none rounded-3xl"
+      >
+        <form onSubmit={onClassSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Nama Kelas
@@ -307,21 +308,18 @@ export function CourseDialogs({
                     : "Tambah Kelas"}
               </Button>
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        </form>
+      </ResponsiveModal>
 
-      <Dialog open={showSubjectModal} onOpenChange={setShowSubjectModal}>
-        <DialogContent className="mobile-drawer-lg border-none max-w-2xl rounded-3xl max-h-[90dvh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
-              {editingSubject ? "Edit Mata Kuliah" : "Tambah Mata Kuliah Baru"}
-            </DialogTitle>
-            <DialogDescription className="font-medium">
-              Definisikan kurikulum, unggah banner, dan tentukan dosen pengampu.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onSubjectSubmit} className="space-y-4 pt-2">
+      <ResponsiveModal
+        open={showSubjectModal}
+        onOpenChange={setShowSubjectModal}
+        title={<span className="text-xl md:text-2xl font-black tracking-tight">{editingSubject ? "Edit Mata Kuliah" : "Tambah Mata Kuliah Baru"}</span>}
+        description={<span className="font-medium">Definisikan kurikulum, unggah banner, dan tentukan dosen pengampu.</span>}
+        desktopMaxWidth="max-w-2xl"
+        className="border-none rounded-3xl"
+      >
+        <form onSubmit={onSubjectSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Banner Mata Kuliah
@@ -589,21 +587,18 @@ export function CourseDialogs({
                     : "Simpan Mata Kuliah"}
               </Button>
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        </form>
+      </ResponsiveModal>
 
-      <Dialog open={showYearModal} onOpenChange={setShowYearModal}>
-        <DialogContent className="mobile-drawer-sm border-none max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
-              {editingYear ? "Edit Tahun Akademik" : "Tambah Tahun Akademik"}
-            </DialogTitle>
-            <DialogDescription className="font-medium">
-              Definisikan periode akademik baru untuk pengelolaan kelas.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onYearSubmit} className="space-y-4 pt-2">
+      <ResponsiveModal
+        open={showYearModal}
+        onOpenChange={setShowYearModal}
+        title={<span className="text-xl md:text-2xl font-black tracking-tight">{editingYear ? "Edit Tahun Akademik" : "Tambah Tahun Akademik"}</span>}
+        description={<span className="font-medium">Definisikan periode akademik baru untuk pengelolaan kelas.</span>}
+        desktopMaxWidth="max-w-md"
+        className="border-none rounded-3xl"
+      >
+        <form onSubmit={onYearSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="pl-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
                 Nama Periode
@@ -697,26 +692,18 @@ export function CourseDialogs({
                     : "Simpan Tahun"}
               </Button>
             </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        </form>
+      </ResponsiveModal>
 
-      <Dialog
-        open={showManageSubjectsModal}
-        onOpenChange={setShowManageSubjectsModal}
+      <ResponsiveModal
+        open={showManageSubjectsModal || false}
+        onOpenChange={setShowManageSubjectsModal || (() => {})}
+        title={<span className="text-xl md:text-2xl font-black tracking-tight">Kelola Mata Kuliah & Jadwal: {editingClass?.name}</span>}
+        description={<span className="font-medium">Tentukan mata kuliah apa saja yang tersedia di kelas ini beserta jadwal dan dosen pengampunya.</span>}
+        desktopMaxWidth="max-w-4xl"
+        className="border-none rounded-3xl"
       >
-        <DialogContent className="mobile-drawer-full border-none max-w-4xl rounded-3xl max-h-[90dvh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">
-              Kelola Mata Kuliah & Jadwal: {editingClass?.name}
-            </DialogTitle>
-            <DialogDescription className="font-medium">
-              Tentukan mata kuliah apa saja yang tersedia di kelas ini beserta
-              jadwal dan dosen pengampunya.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-8 pt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-8 pt-4">
             {/* Form Penugasan */}
             <div className="space-y-4 p-6 rounded-2xl bg-muted/20 border border-border">
               <h4 className="text-xs font-black uppercase tracking-widest text-primary">
@@ -1001,36 +988,35 @@ export function CourseDialogs({
           </div>
 
           {/* Konfirmasi Hapus MK dari Kelas */}
-          <Dialog
+          <AlertDialog
             open={confirmRemoval.open}
-            onOpenChange={(o) => setConfirmRemoval((p) => ({ ...p, open: o }))}
+            onOpenChange={(o: boolean) => setConfirmRemoval((p) => ({ ...p, open: o }))}
           >
-            <DialogContent className="mobile-drawer-sm sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-black uppercase text-destructive">
+            <AlertDialogContent className="sm:max-w-[400px] border-none rounded-3xl shadow-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-xl font-black uppercase text-destructive">
                   Hapus Penugasan?
-                </DialogTitle>
-                <DialogDescription className="font-bold text-muted-foreground pt-2">
-                  Anda akan menghapus mata kuliah{" "}
+                </AlertDialogTitle>
+                <AlertDialogDescription className="font-bold text-muted-foreground pt-2">
+                  Anda akan melepaskan{" "}
                   <span className="text-foreground">
                     {confirmRemoval.subjectName}
                   </span>{" "}
-                  dari kelas ini. Data nilai atau presensi yang terkait mungkin
-                  akan terpengaruh.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end gap-3 pt-6">
-                <Button
-                  variant="ghost"
-                  className="font-black text-[11px] uppercase tracking-widest border border-border h-11 px-6 rounded-xl"
+                  dari kelas ini. Operasi ini tidak menghapus mata kuliah dari
+                  sistem, hanya dari kelas ini saja.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex gap-2 w-full pt-4">
+                <AlertDialogCancel
+                  className="font-black text-[11px] uppercase tracking-widest border border-border h-11 px-6 rounded-xl m-0 flex-1"
                   onClick={() =>
                     setConfirmRemoval((p) => ({ ...p, open: false }))
                   }
                 >
                   Batal
-                </Button>
-                <Button
-                  className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-xl border-none shadow-xl h-11"
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className="font-black text-[11px] uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground px-8 rounded-xl border-none shadow-xl h-11 m-0 flex-1"
                   onClick={() => {
                     if (confirmRemoval.subjectId) {
                       onRemoveSubject?.(confirmRemoval.subjectId);
@@ -1043,12 +1029,11 @@ export function CourseDialogs({
                   }}
                 >
                   Ya, Lepas Penugasan
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </DialogContent>
-      </Dialog>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+      </ResponsiveModal>
     </>
   );
 }
