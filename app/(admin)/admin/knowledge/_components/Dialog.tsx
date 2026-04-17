@@ -12,7 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import {
@@ -96,6 +101,14 @@ export function MaterialDialog(props: MaterialDialogProps) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="h-[95dvh] border-none rounded-t-3xl overflow-hidden bg-background p-0">
+          <DrawerTitle className="sr-only">
+            {editingMaterial
+              ? "Edit Materi & Pengetahuan"
+              : "Pusat Pengetahuan Baru"}
+          </DrawerTitle>
+          <DrawerDescription className="sr-only">
+            Satu workstation terpadu untuk kurikulum dan basis data AI RAG.
+          </DrawerDescription>
           <MaterialEditorContent {...props} />
         </DrawerContent>
       </Drawer>

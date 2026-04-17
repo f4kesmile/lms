@@ -26,6 +26,8 @@ interface ResponsiveModalProps {
   description?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  mobileContentClassName?: string;
+  mobileBodyClassName?: string;
   desktopMaxWidth?: string; // e.g., "max-w-xl", "max-w-4xl"
 }
 
@@ -36,6 +38,8 @@ export function ResponsiveModal({
   description,
   children,
   className,
+  mobileContentClassName,
+  mobileBodyClassName,
   desktopMaxWidth = "max-w-md",
 }: ResponsiveModalProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -60,16 +64,23 @@ export function ResponsiveModal({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
+      <DrawerContent
+        className={cn(
+          "max-h-[92dvh] border-none rounded-t-3xl overflow-hidden bg-background p-0",
+          mobileContentClassName,
+        )}
+      >
         {(title || description) && (
-          <DrawerHeader className="text-left">
+          <DrawerHeader className="text-left border-b border-border/40 bg-card/30 px-4 py-4">
             {title && <DrawerTitle>{title}</DrawerTitle>}
             {description && (
               <DrawerDescription>{description}</DrawerDescription>
             )}
           </DrawerHeader>
         )}
-        <div className={cn("px-4 pb-4 overflow-y-auto max-h-[85vh]", className)}>
+        <div
+          className={cn("overflow-y-auto px-4 pb-6 pt-3", mobileBodyClassName)}
+        >
           {children}
         </div>
       </DrawerContent>
