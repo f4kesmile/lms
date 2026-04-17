@@ -9,10 +9,11 @@ async function main() {
   console.log("Dropping all user tables and enums...");
 
   const tables = [
-    "Faq", "ChatTurn", "ChatSession", "MaterialChunk", "CourseMaterial",
-    "ActivityCompletion", "CourseActivity", "CourseSection", "Course",
-    "ClassStudent", "ClassSubject", "SubjectTeacher", "Class", "Subject",
-    "AcademicYear", "User", "_prisma_migrations",
+    "SystemLog", "Faq", "ChatTurn", "ChatSession",
+    "MaterialChunk", "MeetingChunk", "CourseMaterial", "SubjectMeeting",
+    "Course", "ClassStudent", "ClassSubject", "SubjectTeacher",
+    "ChatbotSetting", "Class", "Subject", "AcademicYear", "User",
+    "_prisma_migrations",
   ];
 
   for (const table of tables) {
@@ -20,14 +21,13 @@ async function main() {
     console.log(`  Dropped table: ${table}`);
   }
 
-  // CockroachDB does not support DROP TYPE CASCADE, so drop individually after tables are gone
-  const enums = ["UserRole", "CourseStatus", "CourseActivityType", "CompletionState"];
+  // PostgreSQL supports DROP TYPE CASCADE
+  const enums = ["UserRole", "CourseStatus", "DayOfWeek"];
   for (const enumName of enums) {
     try {
-      await client.query(`DROP TYPE IF EXISTS "${enumName}"`);
+      await client.query(`DROP TYPE IF EXISTS "${enumName}" CASCADE`);
       console.log(`  Dropped enum: ${enumName}`);
     } catch (err: unknown) {
-      // May already not exist or may be referenced – log and continue
       console.warn(`  Skipped enum ${enumName}:`, (err as Error).message);
     }
   }

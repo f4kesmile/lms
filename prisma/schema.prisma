@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "cockroachdb"
+  provider = "postgresql"
 }
 
 model User {
@@ -18,6 +18,7 @@ model User {
   updatedAt       DateTime         @updatedAt
   nip             String?          @unique
   specialization  String?
+  studentClass    Class?           @relation("PrimaryClass", fields: [studentClassId], references: [id], onDelete: SetNull)
   chatSessions    ChatSession[]
   chatTurns       ChatTurn[]
   classLinks      ClassStudent[]
@@ -63,8 +64,9 @@ model Class {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id])
-  students       ClassStudent[]
-  subjects       ClassSubject[]
+  students        ClassStudent[]
+  subjects        ClassSubject[]
+  primaryStudents User[]           @relation("PrimaryClass")
 
   @@unique([name, academicYearId])
 }
@@ -82,6 +84,7 @@ model Subject {
   learningOutcomes String?
   status           CourseStatus     @default(published)
   classes          ClassSubject[]
+  materials        CourseMaterial[]
   meetings         SubjectMeeting[]
   teachers         SubjectTeacher[]
 }
@@ -157,11 +160,14 @@ model CourseMaterial {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   courseId    String?
+  subjectId   String?
   course      Course?         @relation(fields: [courseId], references: [id])
+  subject     Subject?        @relation(fields: [subjectId], references: [id])
   createdBy   User?           @relation(fields: [createdById], references: [id])
   chunks      MaterialChunk[]
 
   @@index([courseId])
+  @@index([subjectId])
 }
 
 model ChatbotSetting {
@@ -258,6 +264,3 @@ enum DayOfWeek {
   minggu @map("sunday")
 }
 
-enum crdb_internal_region {
-  aws_ap_southeast_1 @map("aws-ap-southeast-1")
-}

@@ -30,14 +30,14 @@ export default function UnauthorizedClient() {
   const progress = (secondsLeft / 10) * 100;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6">
+    <main className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden bg-background px-6 py-24">
       <div className="absolute inset-0 z-0">
         <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] animate-pulse rounded-full bg-primary/10 blur-[120px]" />
         <div className="absolute -right-[10%] -bottom-[10%] h-[50%] w-[50%] animate-pulse rounded-full bg-secondary/5 blur-[120px] [animation-delay:2s]" />
       </div>
 
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 select-none text-center">
-        <h1 className="text-[20rem] font-black leading-none tracking-tighter text-foreground/[0.03] md:text-[30rem] lg:text-[40rem]">
+        <h1 className="text-[12rem] sm:text-[20rem] font-black leading-none tracking-tighter text-foreground/[0.03] md:text-[30rem] lg:text-[40rem]">
           401
         </h1>
       </div>
@@ -97,17 +97,17 @@ export default function UnauthorizedClient() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+        <div className="flex w-full flex-col items-center gap-4 sm:flex-row sm:w-auto sm:gap-6 px-4 sm:px-0">
           <Link
             href="/login"
-            className="group flex h-14 min-w-[220px] items-center justify-center gap-3 rounded-full bg-primary px-8 font-black text-primary-foreground transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
+            className="group flex w-full sm:w-auto h-14 min-w-[220px] items-center justify-center gap-3 rounded-full bg-primary px-8 font-black text-primary-foreground transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
           >
             <Icon name="login" size={20} />
             Masuk Sekarang
           </Link>
           <Link
             href="/"
-            className="flex h-14 min-w-[220px] items-center justify-center gap-3 rounded-full border border-border bg-background/50 px-8 font-black text-foreground backdrop-blur-xl transition-all hover:bg-muted active:scale-95"
+            className="flex w-full sm:w-auto h-14 min-w-[220px] items-center justify-center gap-3 rounded-full border border-border bg-background/50 px-8 font-black text-foreground backdrop-blur-xl transition-all hover:bg-muted active:scale-95"
           >
             Kembali Beranda
             <Icon name="home" size={20} />
@@ -118,8 +118,8 @@ export default function UnauthorizedClient() {
       <footer className="absolute bottom-12 z-10">
         <div className="flex flex-col items-center gap-2">
           <div className="h-6 w-px bg-gradient-to-b from-primary/50 to-transparent" />
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40">
-            Autentikasi &copy; {new Date().getFullYear()}
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40 text-center">
+            Nusa Belajar &copy; {new Date().getFullYear()}
           </p>
         </div>
       </footer>

@@ -830,9 +830,12 @@ async function main() {
         caseStudy: mod.caseStudy,
       });
 
+      const subjectRef = createdSubjects.get(subject.code);
+
       const material = await prisma.courseMaterial.create({
         data: {
           courseId: course.id,
+          subjectId: subjectRef?.id,
           title: mod.title,
           module: mod.module,
           page: mod.page,
@@ -858,7 +861,6 @@ async function main() {
         courseCode: subject.code,
       });
 
-      const subjectRef = createdSubjects.get(subject.code);
       if (subjectRef) {
         await prisma.subjectMeeting.create({
           data: {
