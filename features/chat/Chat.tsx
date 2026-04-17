@@ -174,11 +174,25 @@ export const FloatingChatbot = () => {
     const onMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
       setPosition({
-        x: Math.max(8, Math.min(window.innerWidth - 8, window.innerWidth - (e.clientX - dragOffsetRef.current.x))),
-        y: Math.max(8, Math.min(window.innerHeight - 8, window.innerHeight - (e.clientY - dragOffsetRef.current.y))),
+        x: Math.max(
+          8,
+          Math.min(
+            window.innerWidth - 8,
+            window.innerWidth - (e.clientX - dragOffsetRef.current.x),
+          ),
+        ),
+        y: Math.max(
+          8,
+          Math.min(
+            window.innerHeight - 8,
+            window.innerHeight - (e.clientY - dragOffsetRef.current.y),
+          ),
+        ),
       });
     };
-    const onUp = () => { isDraggingRef.current = false; };
+    const onUp = () => {
+      isDraggingRef.current = false;
+    };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
     return () => {
@@ -224,7 +238,8 @@ export const FloatingChatbot = () => {
         body: JSON.stringify({ question, sessionId: sessionId ?? undefined }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Gagal memproses pertanyaan");
+      if (!res.ok)
+        throw new Error(data.message || "Gagal memproses pertanyaan");
       setSessionId(data.sessionId);
       setMessages((prev) => [
         ...prev,
@@ -285,8 +300,11 @@ export const FloatingChatbot = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            onClick={() => { setIsOpen(true); setIsMinimized(false); }}
-            className="fixed z-[100] right-5 bottom-5 sm:right-6 sm:bottom-6 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+            onClick={() => {
+              setIsOpen(true);
+              setIsMinimized(false);
+            }}
+            className="fixed z-40 right-5 bottom-5 sm:right-6 sm:bottom-6 h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
           >
             <Bot className="h-7 w-7" />
           </button>
@@ -301,17 +319,30 @@ export const FloatingChatbot = () => {
     ? { inset: isMobile ? 0 : 16 }
     : isMobile
       ? { bottom: 0, left: 0, right: 0, height: isMinimized ? 56 : "92dvh" }
-      : { right: position.x, bottom: position.y, width: 420, height: isMinimized ? 56 : 620 };
+      : {
+          right: position.x,
+          bottom: position.y,
+          width: 420,
+          height: isMinimized ? 56 : 620,
+        };
 
   return (
     <div
       style={windowStyle}
       className={cn(
-        "fixed z-[100] flex flex-col overflow-hidden transition-all duration-300",
+        "fixed z-40 flex flex-col overflow-hidden transition-all duration-300",
         "bg-background border border-border shadow-2xl",
         isMobile
-          ? isMaximized ? "rounded-none" : isMinimized ? "rounded-t-2xl" : "rounded-t-2xl"
-          : isMaximized ? "rounded-2xl" : isMinimized ? "rounded-xl" : "rounded-2xl",
+          ? isMaximized
+            ? "rounded-none"
+            : isMinimized
+              ? "rounded-t-2xl"
+              : "rounded-t-2xl"
+          : isMaximized
+            ? "rounded-2xl"
+            : isMinimized
+              ? "rounded-xl"
+              : "rounded-2xl",
       )}
     >
       {/* ── Header ── */}
@@ -319,7 +350,10 @@ export const FloatingChatbot = () => {
         onMouseDown={startDrag}
         className={cn(
           "h-14 shrink-0 px-4 flex items-center justify-between border-b border-border bg-card",
-          !isMaximized && !isMinimized && !isMobile && "cursor-grab active:cursor-grabbing",
+          !isMaximized &&
+            !isMinimized &&
+            !isMobile &&
+            "cursor-grab active:cursor-grabbing",
         )}
       >
         <div className="flex items-center gap-3">
@@ -327,8 +361,12 @@ export const FloatingChatbot = () => {
             <Bot className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-bold leading-none">{SITE_CONFIG.assistantName}</p>
-            <p className="text-[10px] text-primary font-semibold mt-0.5">Online</p>
+            <p className="text-sm font-bold leading-none">
+              {SITE_CONFIG.assistantName}
+            </p>
+            <p className="text-[10px] text-primary font-semibold mt-0.5">
+              Online
+            </p>
           </div>
         </div>
 
@@ -338,8 +376,14 @@ export const FloatingChatbot = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost" size="icon"
-                    className={cn("h-8 w-8 rounded-lg", showHistory ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground")}
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 rounded-lg",
+                      showHistory
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
                     onClick={() => setShowHistory(!showHistory)}
                   >
                     <History className="h-4 w-4" />
@@ -351,9 +395,14 @@ export const FloatingChatbot = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost" size="icon"
+                    variant="ghost"
+                    size="icon"
                     className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                    onClick={() => { setMessages([]); setSessionId(null); setHasGreeted(false); }}
+                    onClick={() => {
+                      setMessages([]);
+                      setSessionId(null);
+                      setHasGreeted(false);
+                    }}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -367,28 +416,40 @@ export const FloatingChatbot = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost" size="icon"
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
                   onClick={() => setIsMaximized(!isMaximized)}
                 >
-                  {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  {isMaximized ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{isMaximized ? "Kembalikan" : "Layar Penuh"}</TooltipContent>
+              <TooltipContent>
+                {isMaximized ? "Kembalikan" : "Layar Penuh"}
+              </TooltipContent>
             </Tooltip>
           )}
 
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost" size="icon"
+                variant="ghost"
+                size="icon"
                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setIsMinimized(!isMinimized);
                   if (isMaximized) setIsMaximized(false);
                 }}
               >
-                {isMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {isMinimized ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isMinimized ? "Buka" : "Kecilkan"}</TooltipContent>
@@ -397,7 +458,8 @@ export const FloatingChatbot = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost" size="icon"
+                variant="ghost"
+                size="icon"
                 className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive"
                 onClick={() => setIsOpen(false)}
               >
@@ -424,7 +486,9 @@ export const FloatingChatbot = () => {
                 {sessions.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <History className="h-6 w-6 mx-auto mb-2 opacity-30" />
-                    <p className="text-[10px] font-semibold">Belum ada riwayat</p>
+                    <p className="text-[10px] font-semibold">
+                      Belum ada riwayat
+                    </p>
                   </div>
                 )}
                 {sessions.map((s) => (
@@ -439,7 +503,9 @@ export const FloatingChatbot = () => {
                     )}
                   >
                     <p className="text-xs font-bold truncate">{s.title}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{s.totalTurns} pesan</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {s.totalTurns} pesan
+                    </p>
                   </button>
                 ))}
               </div>
@@ -456,8 +522,12 @@ export const FloatingChatbot = () => {
                     <MessageSquare className="h-7 w-7 text-primary" />
                   </div>
                   <div>
-                    <p className="text-base font-bold text-foreground">Mulai Percakapan</p>
-                    <p className="text-xs mt-1">Tanyakan seputar materi kuliah Anda.</p>
+                    <p className="text-base font-bold text-foreground">
+                      Mulai Percakapan
+                    </p>
+                    <p className="text-xs mt-1">
+                      Tanyakan seputar materi kuliah Anda.
+                    </p>
                   </div>
                 </div>
               )}
@@ -479,67 +549,93 @@ export const FloatingChatbot = () => {
                     )}
                   >
                     {msg.role === "assistant" ? (
-                      <div dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: renderMarkdown(msg.content),
+                        }}
+                      />
                     ) : (
                       msg.content
                     )}
                   </div>
 
-                  {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {msg.sources.slice(0, 3).map((src) => (
-                        <Link
-                          key={src.id}
-                          href={`/courses/${classId}/subjects/${src.subjectId}/meetings/${src.meetingNo}` as Route}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors"
-                        >
-                          <FileText className="h-3 w-3" />
-                          <span className="truncate max-w-[100px]">{src.subjectCode} · {src.title}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-
-                  {msg.role === "assistant" && msg.turnId && msg.sources && msg.sources.length > 0 && (
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-semibold text-muted-foreground">Rating</span>
-                      <div className="flex gap-0.5">
-                        {[1, 2, 3, 4, 5].map((val) => (
-                          <button
-                            key={val}
-                            disabled={ratingLoadingByTurn[msg.turnId!] || !!msg.rating}
-                            onClick={() => rateTurn(msg.turnId!, val)}
-                            className={cn(
-                              "transition-colors",
-                              (msg.rating || 0) >= val
-                                ? "text-primary"
-                                : "text-muted-foreground/30 hover:text-primary/50",
-                            )}
+                  {msg.role === "assistant" &&
+                    msg.sources &&
+                    msg.sources.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {msg.sources.slice(0, 3).map((src) => (
+                          <Link
+                            key={src.id}
+                            href={
+                              `/courses/${classId}/subjects/${src.subjectId}/meetings/${src.meetingNo}` as Route
+                            }
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors"
                           >
-                            <Star className={cn("h-3 w-3", (msg.rating || 0) >= val && "fill-current")} />
+                            <FileText className="h-3 w-3" />
+                            <span className="truncate max-w-[100px]">
+                              {src.subjectCode} · {src.title}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
+                  {msg.role === "assistant" &&
+                    msg.turnId &&
+                    msg.sources &&
+                    msg.sources.length > 0 && (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                          Rating
+                        </span>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((val) => (
+                            <button
+                              key={val}
+                              disabled={
+                                ratingLoadingByTurn[msg.turnId!] || !!msg.rating
+                              }
+                              onClick={() => rateTurn(msg.turnId!, val)}
+                              className={cn(
+                                "transition-colors",
+                                (msg.rating || 0) >= val
+                                  ? "text-primary"
+                                  : "text-muted-foreground/30 hover:text-primary/50",
+                              )}
+                            >
+                              <Star
+                                className={cn(
+                                  "h-3 w-3",
+                                  (msg.rating || 0) >= val && "fill-current",
+                                )}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Render Follow-Ups for the latest Assistant Message */}
+                  {msg.role === "assistant" &&
+                    idx === messages.length - 1 &&
+                    !loading && (
+                      <div className="flex flex-wrap gap-2 mt-3 pt-1">
+                        {/* For the greeting message, use global `suggestions`. For others, use `msg.followUps` */}
+                        {(msg.id === "greeting"
+                          ? suggestions
+                          : msg.followUps || []
+                        ).map((s, i) => (
+                          <button
+                            key={i}
+                            onClick={() => sendQuestion(s)}
+                            className="flex items-start gap-1.5 text-left px-3 py-1.5 rounded-xl bg-background border border-border text-[11px] font-medium text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-muted/50 transition-all max-w-[280px]"
+                          >
+                            <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/60" />
+                            <span className="line-clamp-2">{s}</span>
                           </button>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Render Follow-Ups for the latest Assistant Message */}
-                  {msg.role === "assistant" && idx === messages.length - 1 && !loading && (
-                    <div className="flex flex-wrap gap-2 mt-3 pt-1">
-                      {/* For the greeting message, use global `suggestions`. For others, use `msg.followUps` */}
-                      {(msg.id === "greeting" ? suggestions : msg.followUps || []).map((s, i) => (
-                        <button
-                          key={i}
-                          onClick={() => sendQuestion(s)}
-                          className="flex items-start gap-1.5 text-left px-3 py-1.5 rounded-xl bg-background border border-border text-[11px] font-medium text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-muted/50 transition-all max-w-[280px]"
-                        >
-                          <Lightbulb className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/60" />
-                          <span className="line-clamp-2">{s}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
+                    )}
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -548,7 +644,10 @@ export const FloatingChatbot = () => {
             {/* Input */}
             <div className="p-3 border-t border-border bg-card">
               <form
-                onSubmit={(e) => { e.preventDefault(); sendQuestion(input); }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendQuestion(input);
+                }}
                 className="flex items-center gap-2"
               >
                 <input
@@ -567,7 +666,11 @@ export const FloatingChatbot = () => {
                       disabled={loading || !input.trim()}
                       className="h-10 w-10 rounded-xl shrink-0"
                     >
-                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Kirim</TooltipContent>

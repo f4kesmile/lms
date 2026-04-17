@@ -19,6 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getSubjectParticipantsAction } from "@/lib/actions/meeting";
 
 interface Student {
@@ -112,7 +117,7 @@ export default function CourseStudentsPage({
                 {data?.yearName || "Tahun Akademik"}
               </Badge>
             </div>
-            <h2 className="text-3xl font-black tracking-tighter">
+            <h2 className="text-2xl md:text-3xl font-black tracking-tighter">
               Partisipan Kelas
             </h2>
             <p className="text-sm font-medium text-muted-foreground max-w-md">
@@ -204,75 +209,151 @@ export default function CourseStudentsPage({
                 </div>
 
                 <Card className="overflow-hidden border-border/40 rounded-[2rem] shadow-sm">
-                  <Table>
-                    <TableHeader className="bg-muted/50">
-                      <TableRow className="hover:bg-transparent border-b border-border/40">
-                        <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest min-w-[200px]">
-                          Mahasiswa
-                        </TableHead>
-                        <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
-                          Identifier / NPM
-                        </TableHead>
-                        <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-center">
-                          Progres Belajar
-                        </TableHead>
-                        <TableHead className="h-12 text-right px-6 text-[10px] font-black uppercase tracking-widest">
-                          Aksi
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {cls.students.map((student) => (
-                        <TableRow
-                          key={student.id}
-                          className="group border-b border-border/20 last:border-0 hover:bg-muted/30 transition-colors"
-                        >
-                          <TableCell className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="size-9 rounded-full bg-secondary-brand text-white flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-white border border-secondary-brand/20">
-                                {student.name.charAt(0)}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-black tracking-tight group-hover:text-primary transition-colors underline decoration-transparent group-hover:decoration-primary/30 underline-offset-4 decoration-2">
-                                  {student.name}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground font-medium opacity-70 truncate">
-                                  {student.email}
-                                </p>
-                              </div>
+                  <div className="md:hidden p-4 flex flex-col gap-3">
+                    {cls.students.map((student) => (
+                      <Card
+                        key={student.id}
+                        className="border border-border/50 bg-card/70 p-4 rounded-2xl"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="size-9 rounded-full bg-secondary-brand text-white flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-white border border-secondary-brand/20">
+                              {student.name.charAt(0)}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-mono text-xs font-bold bg-muted/50 px-2 py-1 rounded border border-border/40">
-                              {student.identifier || "N/A"}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col items-center gap-1.5 min-w-[120px]">
-                              <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden border border-border/30">
-                                <div
-                                  className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
-                                  style={{ width: `${student.progress}%` }}
-                                />
-                              </div>
-                              <span className="text-[10px] font-black text-primary">
-                                {student.progress}% Selesai
-                              </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black tracking-tight truncate">
+                                {student.name}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground font-medium truncate">
+                                {student.email}
+                              </p>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-right px-6">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-lg border border-border/40 bg-background shadow-sm hover:bg-primary hover:text-white transition-all"
-                            >
-                              <Icon name="mail" size={14} />
-                            </Button>
-                          </TableCell>
+                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                asChild
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 shrink-0 p-0 rounded-lg border border-border/40 bg-background shadow-sm hover:bg-primary hover:text-white transition-all"
+                              >
+                                <a
+                                  href={`mailto:${student.email}`}
+                                  aria-label={`Kirim email ke ${student.name}`}
+                                >
+                                  <Icon name="mail" size={14} />
+                                </a>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              Kirim email ke {student.name}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between gap-2">
+                          <span className="font-mono text-xs font-bold bg-muted/50 px-2 py-1 rounded border border-border/40">
+                            {student.identifier || "N/A"}
+                          </span>
+                          <span className="text-[10px] font-black text-primary">
+                            {student.progress}% Selesai
+                          </span>
+                        </div>
+
+                        <div className="mt-2 w-full h-1.5 bg-muted rounded-full overflow-hidden border border-border/30">
+                          <div
+                            className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
+                            style={{ width: `${student.progress}%` }}
+                          />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-transparent border-b border-border/40">
+                          <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest min-w-[200px]">
+                            Mahasiswa
+                          </TableHead>
+                          <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest">
+                            Identifier / NPM
+                          </TableHead>
+                          <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-center">
+                            Progres Belajar
+                          </TableHead>
+                          <TableHead className="h-12 text-right px-6 text-[10px] font-black uppercase tracking-widest">
+                            Aksi
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {cls.students.map((student) => (
+                          <TableRow
+                            key={student.id}
+                            className="group border-b border-border/20 last:border-0 hover:bg-muted/30 transition-colors"
+                          >
+                            <TableCell className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="size-9 rounded-full bg-secondary-brand text-white flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-white border border-secondary-brand/20">
+                                  {student.name.charAt(0)}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-black tracking-tight group-hover:text-primary transition-colors underline decoration-transparent group-hover:decoration-primary/30 underline-offset-4 decoration-2">
+                                    {student.name}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground font-medium opacity-70 truncate">
+                                    {student.email}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-mono text-xs font-bold bg-muted/50 px-2 py-1 rounded border border-border/40">
+                                {student.identifier || "N/A"}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col items-center gap-1.5 min-w-[120px]">
+                                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden border border-border/30">
+                                  <div
+                                    className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all duration-1000"
+                                    style={{ width: `${student.progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-black text-primary">
+                                  {student.progress}% Selesai
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right px-6">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    asChild
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 rounded-lg border border-border/40 bg-background shadow-sm hover:bg-primary hover:text-white transition-all"
+                                  >
+                                    <a
+                                      href={`mailto:${student.email}`}
+                                      aria-label={`Kirim email ke ${student.name}`}
+                                    >
+                                      <Icon name="mail" size={14} />
+                                    </a>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="left">
+                                  Kirim email ke {student.name}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </Card>
               </div>
             ))}
