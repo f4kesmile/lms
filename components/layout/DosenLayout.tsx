@@ -38,8 +38,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { DOSEN_NAV_LINKS, SITE_CONFIG } from "@/lib/constants/index";
-import { cn, getInitials } from "@/lib/utils/index";
+import { cn } from "@/lib/utils/index";
 
 type DosenLayoutProps = {
   title: string;
@@ -59,6 +60,7 @@ export const DosenLayout = ({
     name: string;
     email: string;
     role: string;
+    avatarBase64?: string | null;
   } | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -182,7 +184,11 @@ export const DosenLayout = ({
                 <SidebarMenuButton className="w-full justify-start gap-3 h-auto p-2 hover:bg-muted rounded-md border-2 border-transparent hover:border-border transition-colors group-data-[collapsible=icon]:justify-center">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary-brand/10 text-secondary-brand font-black text-xs border border-secondary-brand/20">
                     {mounted && user ? (
-                      initials
+                      <img
+                        src={user.avatarBase64 || DEFAULT_AVATAR_DATA_URL}
+                        alt="Avatar pengguna"
+                        className="size-full object-cover rounded-md"
+                      />
                     ) : (
                       <Icon name="person" size={20} />
                     )}

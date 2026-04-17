@@ -15,6 +15,7 @@ export async function GET() {
       user: {
         id: currentUser.id,
         name: currentUser.name,
+        avatarBase64: currentUser.avatarBase64,
         role: currentUser.role,
       },
     });

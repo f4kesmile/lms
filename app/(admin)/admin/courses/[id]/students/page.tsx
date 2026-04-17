@@ -24,6 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { getSubjectParticipantsAction } from "@/lib/actions/meeting";
 
 interface Student {
@@ -217,8 +218,12 @@ export default function CourseStudentsPage({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="size-9 rounded-full bg-secondary-brand text-white flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-white border border-secondary-brand/20">
-                              {student.name.charAt(0)}
+                            <div className="size-9 overflow-hidden rounded-full bg-secondary-brand shadow-sm ring-2 ring-white border border-secondary-brand/20">
+                              <img
+                                src={DEFAULT_AVATAR_DATA_URL}
+                                alt={student.name}
+                                className="size-full object-cover"
+                              />
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-black tracking-tight truncate">
@@ -296,8 +301,12 @@ export default function CourseStudentsPage({
                           >
                             <TableCell className="px-6 py-4">
                               <div className="flex items-center gap-3">
-                                <div className="size-9 rounded-full bg-secondary-brand text-white flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-white border border-secondary-brand/20">
-                                  {student.name.charAt(0)}
+                                <div className="size-9 overflow-hidden rounded-full bg-secondary-brand shadow-sm ring-2 ring-white border border-secondary-brand/20">
+                                  <img
+                                    src={DEFAULT_AVATAR_DATA_URL}
+                                    alt={student.name}
+                                    className="size-full object-cover"
+                                  />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-black tracking-tight group-hover:text-primary transition-colors underline decoration-transparent group-hover:decoration-primary/30 underline-offset-4 decoration-2">

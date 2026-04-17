@@ -21,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { formatDateRange } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/index";
 
@@ -155,8 +156,12 @@ export function List({
                             const t = subject.teachers[0];
                             return (
                               <div className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-xl border border-border/40 transition-colors hover:bg-muted/50">
-                                <div className="size-8 rounded-full bg-secondary-brand flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-2 ring-background">
-                                  {t.user.name.charAt(0)}
+                                <div className="size-8 overflow-hidden rounded-full bg-secondary-brand shadow-sm ring-2 ring-background">
+                                  <img
+                                    src={DEFAULT_AVATAR_DATA_URL}
+                                    alt={t.user.name}
+                                    className="size-full object-cover"
+                                  />
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="text-xs font-black text-foreground">

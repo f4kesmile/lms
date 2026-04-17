@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  Camera,
   GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
   Moon,
+  UserPen,
   Sun,
 } from "lucide-react";
 import type { Route } from "next";
@@ -15,6 +17,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 
 import { Logo } from "@/components/shared/Logo";
+import { ProfileEditDialog } from "@/components/layout/ProfileEditDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,10 +29,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { PUBLIC_NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-type UserData = { name: string; role: string } | null;
+type UserData = {
+  name: string;
+  role: string;
+  avatarBase64?: string | null;
+} | null;
 
 export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   const { theme, setTheme } = useTheme();
@@ -39,6 +47,7 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   const [user, setUser] = useState<UserData>(initialUser);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [logoutSource, setLogoutSource] = useState<"dropdown" | "sheet" | null>(
     null,
@@ -64,12 +73,22 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
         if (!response.ok) return;
 
         const data = (await response.json()) as {
-          user: { name: string; role: string } | null;
+          user: {
+            name: string;
+            role: string;
+            avatarBase64?: string | null;
+          } | null;
         };
 
         if (isCancelled) return;
         setUser(
-          data.user ? { name: data.user.name, role: data.user.role } : null,
+          data.user
+            ? {
+                name: data.user.name,
+                role: data.user.role,
+                avatarBase64: data.user.avatarBase64,
+              }
+            : null,
         );
       } catch {
         // silent
@@ -132,6 +151,12 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
   function isActive(href: string) {
     if (href === "/" && pathname !== "/") return false;
     return pathname === href || (href !== "/" && pathname?.startsWith(href));
+  }
+
+  function openProfileEditor() {
+    setDropdownOpen(false);
+    setSheetOpen(false);
+    setShowProfileEditor(true);
   }
 
   return (
@@ -221,8 +246,12 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors hidden lg:block">
                     {user.name.split(" ")[0]}
                   </span>
-                  <div className="h-10 w-10 rounded-xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center text-sm font-black text-primary-foreground transform group-hover:scale-105 transition-transform">
-                    {user.name.charAt(0).toUpperCase()}
+                  <div className="h-10 w-10 rounded-xl bg-primary shadow-xl shadow-primary/20 flex items-center justify-center text-sm font-black text-primary-foreground transform group-hover:scale-105 transition-transform overflow-hidden">
+                    <img
+                      src={user.avatarBase64 || DEFAULT_AVATAR_DATA_URL}
+                      alt="Avatar pengguna"
+                      className="size-full object-cover"
+                    />
                   </div>
                 </button>
 
@@ -241,6 +270,13 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                     </div>
 
                     <div className="space-y-1">
+                      <button
+                        onClick={openProfileEditor}
+                        className="flex w-full items-center gap-3 rounded-2xl px-5 py-3.5 text-[13px] font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+                      >
+                        <UserPen size={18} />
+                        Ubah Profil
+                      </button>
                       <Link
                         href={
                           (user.role === "mahasiswa"
@@ -335,8 +371,12 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                   ) : (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4 rounded-[1.5rem] bg-muted/40 p-4 border border-border/20">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-black text-primary-foreground shadow-lg">
-                          {user.name.charAt(0).toUpperCase()}
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-black text-primary-foreground shadow-lg overflow-hidden">
+                          <img
+                            src={user.avatarBase64 || DEFAULT_AVATAR_DATA_URL}
+                            alt="Avatar pengguna"
+                            className="size-full object-cover"
+                          />
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-black tracking-tight tracking-[0.05em]">
@@ -352,6 +392,13 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
                       </div>
 
                       <div className="space-y-1">
+                        <button
+                          onClick={openProfileEditor}
+                          className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground w-full"
+                        >
+                          <Camera size={18} />
+                          Ubah Profil
+                        </button>
                         <Link
                           href={
                             (user.role === "mahasiswa"
@@ -419,6 +466,15 @@ export function NavbarClient({ initialUser }: { initialUser: UserData }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ProfileEditDialog
+        open={showProfileEditor}
+        onOpenChange={setShowProfileEditor}
+        user={user}
+        onSaved={(updatedUser) => {
+          setUser(updatedUser);
+        }}
+      />
     </header>
   );
 }

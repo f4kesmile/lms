@@ -10,6 +10,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { cn, formatDate, getInitials } from "@/lib/utils/index";
 
 type UserRole = "admin" | "dosen" | "mahasiswa";
@@ -77,12 +78,15 @@ export function List({
               <div className="flex items-start gap-4">
                 <div
                   className={cn(
-                    "flex size-12 shrink-0 items-center justify-center rounded-md border border-border font-black text-sm shadow-sm",
+                    "flex size-12 shrink-0 overflow-hidden items-center justify-center rounded-md border border-border shadow-sm",
                     rc.bg,
-                    rc.text,
                   )}
                 >
-                  {getInitials(user.name)}
+                  <img
+                    src={DEFAULT_AVATAR_DATA_URL}
+                    alt={user.name}
+                    className="size-full object-cover"
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">

@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { cn, getInitials } from "@/lib/utils/index";
 
 type UserRole = "admin" | "dosen" | "mahasiswa";
@@ -125,12 +126,15 @@ export function Table({
                       <div className="flex items-center gap-4">
                         <div
                           className={cn(
-                            "flex size-10 shrink-0 items-center justify-center rounded-md border border-border font-black text-xs shadow-sm transition-transform group-hover:-translate-y-1",
+                            "flex size-10 shrink-0 overflow-hidden items-center justify-center rounded-md border border-border shadow-sm transition-transform group-hover:-translate-y-1",
                             rc.bg,
-                            rc.text,
                           )}
                         >
-                          {getInitials(user.name)}
+                          <img
+                            src={DEFAULT_AVATAR_DATA_URL}
+                            alt={user.name}
+                            className="size-full object-cover"
+                          />
                         </div>
                         <div className="flex flex-col">
                           <span className="font-black text-sm tracking-tight text-foreground">

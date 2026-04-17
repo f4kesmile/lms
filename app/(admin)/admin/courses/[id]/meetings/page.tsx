@@ -27,7 +27,7 @@ import {
   deleteSubjectMeetingAction,
   getSubjectMeetingsAction,
 } from "@/lib/actions/meeting";
-import { getInitials } from "@/lib/utils/index";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 
 export type SubjectMeetingItem = {
   id: string;
@@ -249,8 +249,15 @@ export default function SubjectMeetingsPage() {
                   {headerTeachers.map((t) => (
                     <Tooltip key={`teacher-${t.user.id}`}>
                       <TooltipTrigger asChild>
-                        <div className="size-10 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shadow-xl ring-2 ring-background transition-transform hover:scale-110 hover:z-30 cursor-pointer">
-                          {getInitials(t.user.name)}
+                        <div className="size-10 overflow-hidden rounded-full border-2 border-card bg-primary/10 shadow-xl ring-2 ring-background transition-transform hover:scale-110 hover:z-30 cursor-pointer">
+                          <Image
+                            src={DEFAULT_AVATAR_DATA_URL}
+                            alt={t.user.name}
+                            width={40}
+                            height={40}
+                            unoptimized
+                            className="size-full object-cover"
+                          />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="font-bold">

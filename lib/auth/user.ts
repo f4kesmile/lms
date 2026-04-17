@@ -1,4 +1,4 @@
-import { type User,UserRole } from "@prisma/client";
+import { type User, UserRole } from "@prisma/client";
 
 import { getCurrentUserIdFromCookie } from "@/lib/auth/index";
 import { prisma } from "@/lib/core/db";
@@ -16,6 +16,7 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
       id: true,
       name: true,
       email: true,
+      avatarBase64: true,
       role: true,
       isActive: true,
       studentClassId: true,
@@ -27,9 +28,6 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
   });
 }
 
-export function hasRole(
-  role: UserRole,
-  allowedRoles: UserRole[]
-): boolean {
+export function hasRole(role: UserRole, allowedRoles: UserRole[]): boolean {
   return allowedRoles.includes(role);
 }

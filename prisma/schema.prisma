@@ -11,6 +11,7 @@ model User {
   name               String
   email              String                     @unique
   password           String
+  avatarBase64       String?
   role               UserRole                   @default(mahasiswa)
   isActive           Boolean                    @default(true)
   studentClassId     String?

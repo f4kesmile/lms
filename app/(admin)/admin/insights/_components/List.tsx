@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { formatDateTime, getInitials } from "@/lib/utils/index";
 
 interface Interaction {
@@ -63,15 +64,23 @@ export function List({ loading, error, interactions, search }: ListProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="size-8 shrink-0 rounded-md border border-border bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shadow-sm">
-                    {getInitials(item.user.name)}
+                  <div className="size-8 shrink-0 overflow-hidden rounded-md border border-border bg-primary/10 shadow-sm">
+                    <img
+                      src={DEFAULT_AVATAR_DATA_URL}
+                      alt={item.user.name}
+                      className="size-full object-cover"
+                    />
                   </div>
                   <p className="text-sm font-black tracking-tight truncate text-foreground">
                     {item.user.name}
                   </p>
                 </div>
                 <div className="relative pl-3 border-l border-border/50">
-                  <Icon name="format_quote" size={16} className="absolute -left-2 -top-1 opacity-20 text-foreground rotate-180" />
+                  <Icon
+                    name="format_quote"
+                    size={16}
+                    className="absolute -left-2 -top-1 opacity-20 text-foreground rotate-180"
+                  />
                   <p className="mt-1 line-clamp-3 text-sm font-bold text-muted-foreground leading-relaxed italic">
                     {item.query}
                   </p>
@@ -92,13 +101,17 @@ export function List({ loading, error, interactions, search }: ListProps) {
                 </span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 rounded-sm border border-border shadow-sm">
-                <Icon name="schedule" size={12} className="text-secondary-brand opacity-80" />
+                <Icon
+                  name="schedule"
+                  size={12}
+                  className="text-secondary-brand opacity-80"
+                />
                 <span className="text-[10px] font-black text-foreground uppercase tracking-tighter">
                   {(item.responseTimeMs / 1000).toFixed(2)}s
                 </span>
               </div>
               {item.rating !== null && (
-               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-sm border border-border shadow-sm">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-sm border border-border shadow-sm">
                   <span className="text-[10px] font-black uppercase tracking-widest">
                     Rate {item.rating}/5
                   </span>

@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -13,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateTime, getInitials } from "@/lib/utils/index";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
+import { formatDateTime } from "@/lib/utils/index";
 
 interface Interaction {
   id: string;
@@ -61,7 +64,10 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                 .fill(0)
                 .map((_, index) => (
                   <TableRow key={`insight-skeleton-${index}`}>
-                    <TableCell colSpan={4} className="h-20 border-b border-border/50">
+                    <TableCell
+                      colSpan={4}
+                      className="h-20 border-b border-border/50"
+                    >
                       <Skeleton className="h-12 w-full rounded-md" />
                     </TableCell>
                   </TableRow>
@@ -98,8 +104,15 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                 >
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-[12px] font-black text-primary shadow-sm">
-                        {getInitials(item.user.name)}
+                      <div className="flex size-10 shrink-0 overflow-hidden rounded-md border border-border bg-primary/10 shadow-sm">
+                        <Image
+                          src={DEFAULT_AVATAR_DATA_URL}
+                          alt={item.user.name}
+                          width={40}
+                          height={40}
+                          unoptimized
+                          className="size-full object-cover"
+                        />
                       </div>
                       <span className="text-sm font-black tracking-tight truncate max-w-[150px] text-foreground">
                         {item.user.name}
@@ -123,7 +136,11 @@ export function Table({ loading, error, interactions, search }: TableProps) {
                         {item.citationCount} sitasi
                       </span>
                       <span className="text-[10px] font-black text-muted-foreground whitespace-nowrap flex items-center gap-1.5 uppercase tracking-widest bg-muted/40 px-2 py-1 rounded-sm border border-border/50">
-                        <Icon name="schedule" size={12} className="opacity-80 shrink-0" />
+                        <Icon
+                          name="schedule"
+                          size={12}
+                          className="opacity-80 shrink-0"
+                        />
                         {(item.responseTimeMs / 1000).toFixed(2)}s
                       </span>
                       {item.rating !== null ? (

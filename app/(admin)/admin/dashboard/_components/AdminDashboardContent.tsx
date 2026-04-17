@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -36,7 +37,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn, formatDate, getInitials } from "@/lib/utils/index";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
+import { cn, formatDate } from "@/lib/utils/index";
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
@@ -233,8 +235,15 @@ export function AdminDashboardContent({
                       >
                         <TableCell className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                              {getInitials(item.user)}
+                            <div className="flex size-8 shrink-0 overflow-hidden rounded-full bg-primary/10">
+                              <Image
+                                src={DEFAULT_AVATAR_DATA_URL}
+                                alt={item.user}
+                                width={32}
+                                height={32}
+                                unoptimized
+                                className="size-full object-cover"
+                              />
                             </div>
                             <span className="text-sm font-semibold">
                               {item.user}
@@ -308,8 +317,15 @@ export function AdminDashboardContent({
                       : "destructive";
                 return (
                   <div key={item.id} className="flex items-start gap-3 p-4">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                      {getInitials(item.user)}
+                    <div className="flex size-9 shrink-0 overflow-hidden rounded-full bg-primary/10">
+                      <Image
+                        src={DEFAULT_AVATAR_DATA_URL}
+                        alt={item.user}
+                        width={36}
+                        height={36}
+                        unoptimized
+                        className="size-full object-cover"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold truncate">

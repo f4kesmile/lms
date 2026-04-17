@@ -45,7 +45,8 @@ import {
   MASTER_DATA_NAV_LINKS,
   SITE_CONFIG,
 } from "@/lib/constants/index";
-import { cn, getInitials } from "@/lib/utils/index";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
+import { cn } from "@/lib/utils/index";
 
 type AdminLayoutProps = {
   title: string;
@@ -65,6 +66,7 @@ export const AdminLayout = ({
     name: string;
     email: string;
     role: string;
+    avatarBase64?: string | null;
   } | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -99,7 +101,6 @@ export const AdminLayout = ({
     }
   }
 
-  const initials = user?.name ? getInitials(user.name) : "??";
   const isDosen = user?.role === "dosen";
   const sidebarTitle = isDosen
     ? `${SITE_CONFIG.name} Dosen`
@@ -218,7 +219,11 @@ export const AdminLayout = ({
                 <SidebarMenuButton className="w-full justify-start gap-3 h-auto p-2 hover:bg-muted rounded-md border-2 border-transparent hover:border-border transition-colors group-data-[collapsible=icon]:justify-center">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-surface-primary-soft text-primary font-black text-xs border border-primary/20">
                     {mounted && user ? (
-                      initials
+                      <img
+                        src={user.avatarBase64 || DEFAULT_AVATAR_DATA_URL}
+                        alt="Avatar pengguna"
+                        className="size-full object-cover rounded-md"
+                      />
                     ) : (
                       <Icon name="person" size={20} />
                     )}

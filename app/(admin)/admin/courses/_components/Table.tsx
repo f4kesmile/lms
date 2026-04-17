@@ -29,6 +29,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { formatDateRange } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/index";
 
@@ -199,10 +200,14 @@ export function Table({
                               {subject.teachers.length > 0 ? (
                                 <div className="flex items-center gap-2">
                                   <div
-                                    className="size-7 rounded-full border border-border bg-secondary-brand flex items-center justify-center text-[9px] font-black text-white shadow-sm"
+                                    className="size-7 overflow-hidden rounded-full border border-border bg-secondary-brand shadow-sm"
                                     title={subject.teachers[0].user.name}
                                   >
-                                    {subject.teachers[0].user.name.charAt(0)}
+                                    <img
+                                      src={DEFAULT_AVATAR_DATA_URL}
+                                      alt={subject.teachers[0].user.name}
+                                      className="size-full object-cover"
+                                    />
                                   </div>
                                   <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
                                     {subject.teachers[0].user.name}
