@@ -10,6 +10,11 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { cn, formatDate, getInitials } from "@/lib/utils/index";
 
@@ -35,6 +40,7 @@ interface ListProps {
   >;
   handleRoleChange: (userId: string, newRole: UserRole) => void;
   onEdit: (user: UserItem) => void;
+  onResetPassword?: (user: UserItem) => void;
 }
 
 export function List({
@@ -44,6 +50,7 @@ export function List({
   roleConfig,
   handleRoleChange,
   onEdit,
+  onResetPassword,
 }: ListProps) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:hidden min-h-[50dvh]">
@@ -93,12 +100,32 @@ export function List({
                     <p className="truncate text-base font-black tracking-tight text-foreground">
                       {user.name}
                     </p>
-                    <button
-                      onClick={() => onEdit(user)}
-                      className="p-1.5 hover:bg-muted rounded-sm transition-colors text-muted-foreground hover:text-primary"
-                    >
-                      <Icon name="edit" size={16} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => onEdit(user)}
+                            className="p-1.5 hover:bg-muted rounded-sm transition-colors text-muted-foreground hover:text-primary"
+                          >
+                            <Icon name="edit" size={16} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit User Info</TooltipContent>
+                      </Tooltip>
+                      {onResetPassword && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => onResetPassword(user)}
+                              className="p-1.5 hover:bg-muted rounded-sm transition-colors text-muted-foreground hover:text-orange-500"
+                            >
+                              <Icon name="lock_reset" size={16} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>Reset Password</TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground font-bold">
                     {user.email}

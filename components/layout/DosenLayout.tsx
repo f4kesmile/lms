@@ -95,8 +95,6 @@ export const DosenLayout = ({
     }
   }
 
-  const initials = user?.name ? getInitials(user.name) : "??";
-
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {

@@ -18,6 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DEFAULT_AVATAR_DATA_URL } from "@/lib/constants/avatar";
 import { cn, getInitials } from "@/lib/utils/index";
 
@@ -43,6 +48,7 @@ interface TableProps {
   >;
   handleRoleChange: (userId: string, newRole: UserRole) => void;
   onEdit: (user: UserItem) => void;
+  onResetPassword?: (user: UserItem) => void;
 }
 
 export function Table({
@@ -52,6 +58,7 @@ export function Table({
   roleConfig,
   handleRoleChange,
   onEdit,
+  onResetPassword,
 }: TableProps) {
   return (
     <Card className="hidden overflow-hidden border border-border bg-card shadow-sm animate-in fade-in duration-700 lg:block rounded-md">
@@ -221,13 +228,32 @@ export function Table({
                       </Select>
                     </TableCell>
                     <TableCell className="px-6 text-center">
-                      <button
-                        onClick={() => onEdit(user)}
-                        className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary"
-                        title="Edit User Info"
-                      >
-                        <Icon name="edit" size={18} />
-                      </button>
+                      <div className="flex items-center justify-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => onEdit(user)}
+                              className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary"
+                            >
+                              <Icon name="edit" size={18} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit User Info</TooltipContent>
+                        </Tooltip>
+                        {onResetPassword && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => onResetPassword(user)}
+                                className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-orange-500"
+                              >
+                                <Icon name="lock_reset" size={18} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>Reset Password</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
