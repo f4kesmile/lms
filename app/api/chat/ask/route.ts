@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { generateChatAnswer } from "@/lib/ai/chatbot";
+import { generateChatAnswer, isConversational, handleConversational } from "@/lib/ai/chatbot";
 import type { ChunkWithMeeting } from "@/lib/ai/rag";
 import { buildSources, rankChunks } from "@/lib/ai/rag";
 import { readChatbotSettings } from "@/lib/ai/settings";
@@ -19,7 +19,7 @@ function dedupeByMeeting<T extends { chunk: { meetingId: string } }>(items: T[])
 }
 
 const askSchema = z.object({
-  question: z.string().min(5),
+  question: z.string().min(1),
   sessionId: z.string().optional(),
   topK: z.number().int().min(1).max(8).optional(),
 });
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
 
     const settings = await readChatbotSettings();
     const { question, topK = settings.topK } = parsed.data;
+    const isConv = isConversational(question);
     const candidatePool = Math.min(40, Math.max(topK * 4, 12));
 
     const chunks: ChunkWithMeeting[] = await prisma.meetingChunk.findMany({
@@ -76,21 +77,28 @@ export async function POST(request: Request) {
     const nearestSources =
       sources.length === 0 ? buildSources(nearestRanked) : [];
 
-    const answer =
-      sources.length > 0
-        ? await generateChatAnswer({ question, sources })
-        : nearestSources.length > 0
-          ? [
-              "Saya tidak menemukan kecocokan kuat untuk pertanyaan Anda. Kemungkinan ada typo atau istilah yang berbeda dari materi.",
-              "",
-              "Materi terdekat yang masih relevan:",
-              ...nearestSources.slice(0, 5).map((item) =>
-                `- [${item.id}] ${item.title} (${item.subjectName} - Pertemuan ${item.meetingNo})`,
-              ),
-              "",
-              "Silakan pilih salah satu materi di atas atau tulis ulang pertanyaan dengan kata kunci yang lebih spesifik.",
-            ].join("\n")
-          : "Maaf, saya belum menemukan materi yang cukup relevan. Silakan unggah materi atau perjelas pertanyaan.";
+    let answer = "";
+    let citationsToSave: typeof sources = [];
+    
+    if (isConv) {
+      answer = handleConversational(question);
+    } else if (sources.length > 0) {
+      answer = await generateChatAnswer({ question, sources });
+      citationsToSave = sources;
+    } else if (nearestSources.length > 0) {
+      answer = [
+        "Maaf ya, Liona belum menemukan pedoman yang persis untuk menjawab pertanyaan tersebut.",
+        "",
+        "Tapi materi terdekat yang mungkin ada hubungannya adalah:",
+        ...nearestSources.slice(0, 3).map((item) =>
+          `- ${item.title} (${item.subjectName} - Pertemuan ${item.meetingNo})`
+        ),
+        "",
+        "Pilih salah satu di atas atau sesuaikan kembali pertanyaannya ya!"
+      ].join("\n");
+    } else {
+      answer = "Maaf, Liona belum menemukan referensi terkait di sistem. Coba sampaikan dengan kata kunci lain ya!";
+    }
 
     let sessionId = parsed.data.sessionId;
     if (sessionId) {
@@ -111,7 +119,6 @@ export async function POST(request: Request) {
     }
 
     const responseTimeMs = Date.now() - startedAt;
-    const citationsToSave = sources.length > 0 ? sources : nearestSources;
 
     const turn = await prisma.chatTurn.create({
       data: {

@@ -43,14 +43,17 @@ const STOPWORDS = new Set([
 
 const CHUNK_TOKEN_CACHE = new Map<string, string[]>();
 
-function smartExcerpt(content: string, maxLength = 220): string {
+function smartExcerpt(content: string, maxLength = 600): string {
   const clean = content.replace(/\s+/g, " ").trim();
   if (clean.length <= maxLength) return clean;
 
   const clipped = clean.slice(0, maxLength);
+  const lastPeriod = clipped.lastIndexOf(". ");
   const lastSpace = clipped.lastIndexOf(" ");
-  const safe = lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped;
-  return `${safe.trim()}...`;
+  const safe = lastPeriod > maxLength * 0.6
+    ? clipped.slice(0, lastPeriod + 1)
+    : lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped;
+  return `${safe.trim()}`;
 }
 
 export function tokenize(text: string): string[] {

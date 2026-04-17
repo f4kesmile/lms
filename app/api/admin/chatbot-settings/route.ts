@@ -9,7 +9,7 @@ import { badRequest, forbidden, serverError, unauthorized } from "@/lib/core/htt
 const chatbotSettingsSchema = z.object({
   topK: z.number().int().min(1).max(8),
   minScore: z.number().min(0).max(1),
-  systemPrompt: z.string().min(20).max(4000),
+  systemPrompt: z.string().min(20).max(15000),
 });
 
 async function authorizeAdmin() {

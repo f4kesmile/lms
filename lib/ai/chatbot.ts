@@ -21,7 +21,6 @@ type PromptControls = {
 
 function parsePromptControls(systemPrompt: string): PromptControls {
   const normalized = systemPrompt.toLowerCase();
-
   return {
     concise: /ringkas|singkat|padat/.test(normalized),
     mentionLimits: /batasan|konteks kurang|keterbatasan/.test(normalized),
@@ -32,26 +31,18 @@ function normalizeExcerpt(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-function firstSentence(text: string, maxLength = 180): string {
-  const clean = normalizeExcerpt(text);
-  if (!clean) return "";
-  const sentenceBreak = clean.search(/[.!?](\s|$)/);
-  const base = sentenceBreak >= 0 ? clean.slice(0, sentenceBreak + 1) : clean;
-  if (base.length <= maxLength) return base;
-  const clipped = base.slice(0, maxLength);
-  const lastSpace = clipped.lastIndexOf(" ");
-  return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim()}...`;
+// Returns full content, NOT trimmed — let answers be as long as needed
+function fullExcerpt(text: string): string {
+  return normalizeExcerpt(text);
 }
 
-function firstNSentences(text: string, count = 2, maxLength = 280): string {
+function firstNSentences(text: string, count = 3, maxLength = 500): string {
   const clean = normalizeExcerpt(text);
   if (!clean) return "";
   const parts = clean.match(/[^.!?]+[.!?]?/g) ?? [clean];
   const joined = parts.slice(0, Math.max(1, count)).join(" ").trim();
   if (joined.length <= maxLength) return joined;
-  const clipped = joined.slice(0, maxLength);
-  const lastSpace = clipped.lastIndexOf(" ");
-  return `${(lastSpace > 0 ? clipped.slice(0, lastSpace) : clipped).trim()}...`;
+  return joined.slice(0, maxLength).trim();
 }
 
 function isExerciseRequest(question: string): boolean {
@@ -59,30 +50,30 @@ function isExerciseRequest(question: string): boolean {
   return /rancang|latihan|exercise|praktik|soal|tugas/.test(q);
 }
 
+// Detect conversational / greeting messages that don't need RAG
+export function isConversational(question: string): boolean {
+  const q = question.toLowerCase().trim();
+  return /^(halo|hai|hi|hello|hey|pagi|siang|sore|malam|hei|assalamu|selamat)\b/.test(q) ||
+    /^(saya\s+(akan|mau|ingin|ada|punya)\s+(bertanya|tanya|pertanyaan|ngobrol|diskusi|chat))/i.test(q) ||
+    /^(mau\s+(tanya|bertanya|diskusi|ngobrol))/.test(q) ||
+    /^(ada\s+(pertanyaan|yang\s+ingin\s+saya\s+tanyakan))/.test(q) ||
+    /^(oke|ok|siap|lanjut|boleh|bisa\s+bantu|tolong\s+bantu)/.test(q) ||
+    /^(terima\s+kasih|makasih|thanks|thank\s+you|mantap|bagus|keren|oke\s+deh)/.test(q) ||
+    (q.split(/\s+/).length <= 4 && !/apa|bagaimana|kenapa|mengapa|jelaskan|ceritakan/.test(q));
+}
+
 function estimateComplexity(question: string): ComplexityLevel {
   const q = question.toLowerCase();
   const words = q.split(/\s+/).filter(Boolean).length;
 
   const hard = [
-    "bandingkan",
-    "analisis",
-    "evaluasi",
-    "kritisi",
-    "trade-off",
-    "implikasi",
-    "strategi",
-    "arsitektur",
-    "mengapa",
-    "kenapa",
+    "bandingkan", "analisis", "evaluasi", "kritisi", "trade-off",
+    "implikasi", "strategi", "arsitektur", "mengapa", "kenapa",
+    "hubungan", "perbedaan", "perbandingan", "jelaskan", "uraikan",
   ];
   const medium = [
-    "bagaimana",
-    "langkah",
-    "proses",
-    "contoh",
-    "penerapan",
-    "kapan",
-    "apa perbedaan",
+    "bagaimana", "langkah", "proses", "contoh", "penerapan",
+    "kapan", "apa perbedaan", "seperti apa", "maksud",
   ];
 
   let score = 0;
@@ -99,10 +90,10 @@ function estimateComplexity(question: string): ComplexityLevel {
 }
 
 function complexityConfig(level: ComplexityLevel) {
-  if (level === "high") return { refs: 4, detailSentences: 4, summaryMax: 260 };
-  if (level === "medium")
-    return { refs: 3, detailSentences: 3, summaryMax: 220 };
-  return { refs: 2, detailSentences: 2, summaryMax: 160 };
+  // Removed artificial sentence caps — let content flow naturally
+  if (level === "high") return { refs: 4, detailSentences: 99, summaryMax: 9999 };
+  if (level === "medium") return { refs: 3, detailSentences: 99, summaryMax: 9999 };
+  return { refs: 2, detailSentences: 5, summaryMax: 9999 };
 }
 
 function getCitationNumber(id: string): string {
@@ -112,21 +103,10 @@ function getCitationNumber(id: string): string {
 
 function toSuperscript(value: string): string {
   const map: Record<string, string> = {
-    "0": "⁰",
-    "1": "¹",
-    "2": "²",
-    "3": "³",
-    "4": "⁴",
-    "5": "⁵",
-    "6": "⁶",
-    "7": "⁷",
-    "8": "⁸",
-    "9": "⁹",
+    "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
+    "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹",
   };
-  return value
-    .split("")
-    .map((c) => map[c] || c)
-    .join("");
+  return value.split("").map((c) => map[c] || c).join("");
 }
 
 function cite(source: Source, controls: PromptControls): string {
@@ -135,44 +115,60 @@ function cite(source: Source, controls: PromptControls): string {
   return /^\d+$/.test(num) ? toSuperscript(num) : `[${source.id}]`;
 }
 
-/* ── Variasi frasa agar jawaban terasa berbeda tiap kali ── */
+/* ── Variasi frasa ── */
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Friendly greetings that respond to conversational openers
+const GREETINGS = [
+  "Halo! Senang bisa membantu. Silakan ajukan pertanyaan Anda seputar materi kuliah — saya siap menjelaskannya.",
+  "Hai! Saya Liona, asisten belajar Anda. Ada yang ingin ditanyakan tentang materi perkuliahan? Silakan langsung tanyakan saja!",
+  "Halo! Dengan senang hati saya akan membantu. Apa yang ingin Anda pelajari hari ini?",
+];
+
+const READY_RESPONSES = [
+  "Tentu! Silakan tuliskan pertanyaannya, saya siap membantu menjelaskan materi yang Anda butuhkan.",
+  "Siap! Langsung saja, apa yang ingin Anda tanyakan? Saya akan coba jawab sebaik mungkin berdasarkan materi yang tersedia.",
+  "Dengan senang hati! Apa pertanyaan Anda? Saya di sini untuk membantu.",
+];
+
+const THANKS_RESPONSES = [
+  "Sama-sama! Jangan ragu untuk bertanya lagi jika ada yang masih kurang jelas.",
+  "Senang bisa membantu! Kalau ada pertanyaan lain seputar materi kuliah, saya siap membantu kapan saja.",
+  "Sama-sama! Semangat belajarnya ya. Jika ada yang ingin didiskusikan, silakan untuk bertanya kembali.",
+];
+
 const OPENERS_CONCEPT = [
-  "Berdasarkan materi internal yang tersedia, berikut pembahasannya.",
-  "Saya rangkum dari materi perkuliahan yang relevan untuk menjawab pertanyaan Anda.",
-  "Dari referensi materi yang ada, berikut penjelasan yang bisa membantu.",
-  "Berikut penjelasan berdasarkan modul pembelajaran yang tersedia di sistem.",
-  "Saya temukan beberapa materi yang relevan, berikut rangkumannya.",
+  "Berdasarkan materi internal yang tersedia, berikut penjelasannya.",
+  "Saya temukan referensi yang relevan dari materi perkuliahan. Mari kita bahas.",
+  "Dari modul pembelajaran yang ada, berikut penjelasan lengkapnya.",
+  "Saya rangkum dari materi kuliah terkait untuk menjawab pertanyaan Anda.",
 ];
 
 const OPENERS_HOW = [
-  "Untuk memahami prosesnya, berikut alur yang dijelaskan dalam materi internal.",
-  "Berikut langkah-langkah yang diuraikan dalam modul pembelajaran terkait.",
+  "Untuk memahami prosesnya secara utuh, berikut penjelasan berdasarkan materi internal.",
+  "Berikut alur dan langkah-langkah yang diuraikan dalam modul pembelajaran terkait.",
   "Dari materi yang tersedia, prosesnya dapat dipahami sebagai berikut.",
-  "Saya temukan penjelasan alur yang relevan dari materi perkuliahan.",
 ];
 
 const OPENERS_WHY = [
-  "Pertanyaan yang menarik. Berdasarkan materi internal, berikut alasan utamanya.",
-  "Dari pembahasan di modul terkait, berikut penjelasan mengenai hal tersebut.",
-  "Alasan di balik hal tersebut dibahas dalam materi berikut ini.",
+  "Pertanyaan yang menarik! Berdasarkan materi internal, berikut penjelasan mengenai hal tersebut.",
+  "Dari pembahasan di modul terkait, berikut alasan dan latar belakangnya.",
+  "Materi perkuliahan membahas hal ini secara cukup mendalam. Berikut penjelasannya.",
 ];
 
 const OPENERS_EXAMPLE = [
-  "Berikut contoh dan penerapannya berdasarkan materi yang tersedia.",
-  "Saya rangkum beberapa penerapan praktis dari materi perkuliahan terkait.",
-  "Dari modul yang tersedia, berikut contoh penerapan yang bisa dijadikan acuan.",
+  "Berikut contoh dan penerapan dari materi yang tersedia.",
+  "Saya rangkum penerapan praktis dari materi perkuliahan terkait.",
+  "Dari modul yang ada, berikut contoh konkret yang bisa dijadikan acuan.",
 ];
 
 const OPENERS_GENERIC = [
-  "Berikut hasil pencarian saya dari materi internal yang relevan.",
-  "Saya temukan beberapa referensi yang dapat membantu menjawab pertanyaan Anda.",
-  "Berdasarkan materi perkuliahan, berikut pembahasan yang saya temukan.",
-  "Dari database materi yang tersedia, berikut informasi relevannya.",
+  "Saya temukan beberapa referensi yang relevan dengan pertanyaan Anda. Berikut pembahasannya.",
+  "Berdasarkan materi perkuliahan yang tersedia, berikut informasi yang bisa saya sampaikan.",
+  "Dari database materi internal, berikut penjelasan yang saya temukan.",
 ];
 
 function pickOpener(question: string): string {
@@ -189,58 +185,77 @@ const TRANSITIONS = [
   "Lebih lanjut,",
   "Perlu diketahui juga bahwa",
   "Dalam konteks yang lebih luas,",
-  "Untuk melengkapi,",
+  "Untuk melengkapi pemahaman,",
   "Di sisi lain,",
   "Yang juga penting dipahami,",
-  "Sebagai tambahan,",
+  "Sebagai tambahan informasi,",
+  "Menariknya,",
+  "Kaitannya dengan hal ini,",
 ];
 
 const PRACTICAL_INTROS = [
   "Secara praktis, konsep ini dapat diterapkan",
-  "Dalam penerapannya, materi ini relevan",
-  "Untuk penggunaan di dunia nyata, topik ini berkaitan",
-  "Dari sisi implementasi, pembahasan ini berhubungan",
+  "Dalam penerapannya, materi ini berkaitan langsung",
+  "Untuk konteks dunia nyata, topik ini relevan",
+  "Dari sisi implementasi, pembahasan ini berhubungan erat",
 ];
 
 const CLOSERS = [
-  "Jika ada bagian yang ingin dibahas lebih detail, silakan tanyakan kembali.",
-  "Apabila butuh penjelasan lebih mendalam pada topik tertentu, saya siap membantu.",
-  "Silakan tanyakan jika ada konsep spesifik yang perlu diperjelas.",
-  "Semoga membantu! Jangan ragu bertanya lagi jika ada yang kurang jelas.",
-  "Jika ingin eksplorasi topik ini lebih jauh, saya bisa membantu dengan detail tambahan.",
+  "Jika ada bagian yang ingin dibahas lebih mendalam, jangan ragu untuk bertanya kembali.",
+  "Apabila butuh penjelasan lebih lanjut atau ada konsep yang masih belum jelas, saya siap membantu.",
+  "Semoga penjelasan ini membantu! Kalau ada pertanyaan lain atau ingin mengeksplorasi topik lebih jauh, silakan tanyakan.",
+  "Jika ingin membahas aspek lain dari topik ini atau berdiskusi lebih lanjut, saya di sini untuk membantu.",
+  "Kalau ada yang kurang jelas atau ingin diperdalam lebih lanjut, langsung saja tanyakan!",
 ];
 
 /* ── Builder Utama ── */
+
+export function handleConversational(question: string): string {
+  const q = question.toLowerCase().trim();
+
+  // Thanks / appreciation
+  if (/terima\s+kasih|makasih|thanks|thank\s+you/.test(q)) {
+    return pick(THANKS_RESPONSES);
+  }
+
+  // "Saya akan bertanya" / "Ada pertanyaan" / "Mau tanya"
+  if (/saya\s+(akan|mau|ingin|ada|punya)\s+(bertanya|tanya|pertanyaan)|mau\s+(tanya|bertanya)|ada\s+(pertanyaan|yang\s+ingin)/.test(q)) {
+    return pick(READY_RESPONSES);
+  }
+
+  // Short casual messages / greetings
+  return pick(GREETINGS);
+}
 
 function buildExerciseAnswer(
   primary: Source,
   references: Source[],
   controls: PromptControls,
 ): string {
-  const concept = firstSentence(primary.excerpt, 140).replace(/[.!?]+$/, "");
+  const concept = firstNSentences(primary.excerpt, 2, 200).replace(/[.!?]+$/, "");
   const lines: string[] = [
     `Berikut latihan yang dirancang berdasarkan materi **${primary.title}** pada mata kuliah ${primary.subjectName}. ${cite(primary, controls)}`,
     "",
-    `**Tujuan:** Memahami konsep utama terkait ${primary.title.toLowerCase()}.`,
+    `**Tujuan:** Memahami konsep utama terkait ${primary.title.toLowerCase()} dan mampu menerapkannya dalam konteks praktis.`,
     "",
     "**Instruksi:**",
-    `1. Tuliskan ulang konsep berikut dengan bahasa Anda sendiri: "*${concept}*". ${cite(primary, controls)}`,
-    "2. Berikan 2 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
+    `1. Tuliskan ulang konsep berikut dengan bahasa Anda sendiri: "*${concept}*" ${cite(primary, controls)}`,
+    "2. Berikan 2–3 contoh penerapan atau situasi nyata yang relevan dengan topik ini.",
   ];
 
   if (references.length > 1) {
     lines.push(
-      `3. Bandingkan pendekatan di atas dengan pembahasan pada ${references[1].title} (${references[1].subjectName}). ${cite(references[1], controls)}`,
+      `3. Bandingkan pendekatan di atas dengan pembahasan pada **${references[1].title}** (${references[1].subjectName}). ${cite(references[1], controls)}`,
     );
+    lines.push("4. Identifikasi persamaan dan perbedaan utama antara kedua topik tersebut.");
   } else {
-    lines.push(
-      "3. Identifikasi 2 poin evaluasi: apa yang harus benar agar jawaban dianggap kuat.",
-    );
+    lines.push("3. Identifikasi minimal 2 poin evaluasi: apa yang harus terpenuhi agar jawaban Anda dianggap kuat dan akurat.");
+    lines.push("4. Tuliskan satu pertanyaan lanjutan yang ingin Anda eksplorasi lebih jauh dari topik ini.");
   }
 
   lines.push(
     "",
-    "**Output yang diharapkan:** Jawaban terstruktur (maksimal 1 halaman) dengan 3 insight utama.",
+    "**Output yang diharapkan:** Jawaban terstruktur dengan argumen yang jelas, disertai contoh konkret.",
   );
   lines.push("", pick(CLOSERS));
   return lines.join("\n");
@@ -259,14 +274,10 @@ function buildNaturalAnswer(
   lines.push(pickOpener(question));
   lines.push("");
 
-  // Core explanation from primary source
-  const coreExcerpt = firstNSentences(
-    primary.excerpt,
-    cfg.detailSentences,
-    cfg.summaryMax,
-  );
+  // Core explanation from primary source — use full excerpt, not trimmed
+  const coreExcerpt = fullExcerpt(primary.excerpt);
   lines.push(
-    `Pada topik **${primary.title}** dalam mata kuliah ${primary.subjectName} (Pertemuan ${primary.meetingNo}), ` +
+    `Pada topik **${primary.title}** dalam mata kuliah **${primary.subjectName}** (Pertemuan ${primary.meetingNo}), ` +
       `${coreExcerpt} ${cite(primary, controls)}`,
   );
 
@@ -275,16 +286,11 @@ function buildNaturalAnswer(
   const additionalRefs = references.slice(1);
 
   for (const ref of additionalRefs) {
-    const excerpt = firstNSentences(
-      ref.excerpt,
-      cfg.detailSentences - 1,
-      cfg.summaryMax - 40,
-    );
+    const excerpt = fullExcerpt(ref.excerpt);
     if (!excerpt) continue;
 
     lines.push("");
 
-    // Pick unique transition
     let transIdx: number;
     do {
       transIdx = Math.floor(Math.random() * TRANSITIONS.length);
@@ -305,19 +311,19 @@ function buildNaturalAnswer(
     lines.push("");
     const practicalRef = additionalRefs[0];
     lines.push(
-      `${pick(PRACTICAL_INTROS)} dengan topik ${practicalRef.title} pada mata kuliah ${practicalRef.subjectName}. ` +
-        `Memahami kedua konsep ini secara bersamaan akan memberikan perspektif yang lebih utuh. ${cite(practicalRef, controls)}`,
+      `${pick(PRACTICAL_INTROS)} dengan topik **${practicalRef.title}** pada mata kuliah **${practicalRef.subjectName}**. ` +
+        `Memahami kedua konsep ini secara bersamaan akan memberikan perspektif yang lebih utuh dan komprehensif. ${cite(practicalRef, controls)}`,
     );
   }
 
   if (controls.mentionLimits && references.length < 2) {
     lines.push("");
     lines.push(
-      "Catatan: Konteks materi yang ditemukan masih terbatas, jadi jawaban ini merangkum referensi terdekat yang tersedia.",
+      "Catatan: Materi yang ditemukan masih terbatas pada referensi yang tersedia. Jika ingin eksplorasi lebih dalam, pastikan materi terkait sudah diunggah ke sistem.",
     );
   }
 
-  // References section (clean)
+  // References section
   lines.push("");
   lines.push("**Sumber Referensi:**");
   for (const ref of references) {
@@ -341,8 +347,22 @@ export async function generateChatAnswer(params: {
   const settings = await readChatbotSettings();
   const controls = parsePromptControls(settings.systemPrompt);
 
+  // Handle conversational / greeting inputs before hitting RAG
+  if (isConversational(question)) {
+    return handleConversational(question);
+  }
+
   if (sources.length === 0) {
-    return "Maaf, saya belum menemukan materi yang relevan untuk menjawab pertanyaan ini. Coba perjelas pertanyaan Anda atau pastikan materi terkait sudah tersedia di sistem.";
+    return [
+      "Maaf, saya belum menemukan materi yang cukup relevan untuk menjawab pertanyaan ini.",
+      "",
+      "Ada beberapa kemungkinan yang bisa dicoba:",
+      "- Coba perjelas pertanyaan dengan kata kunci yang lebih spesifik",
+      "- Pastikan materi terkait sudah tersedia di sistem",
+      "- Gunakan istilah yang sesuai dengan terminologi dalam modul kuliah",
+      "",
+      "Saya siap membantu jika Anda ingin mencoba formulasi pertanyaan yang berbeda.",
+    ].join("\n");
   }
 
   const complexity = estimateComplexity(question);
@@ -351,7 +371,7 @@ export async function generateChatAnswer(params: {
     ? {
         ...cfg,
         refs: Math.max(1, cfg.refs - 1),
-        detailSentences: Math.max(1, cfg.detailSentences - 1),
+        detailSentences: Math.max(2, cfg.detailSentences - 1),
       }
     : cfg;
   const primary = sources[0];

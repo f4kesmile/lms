@@ -76,6 +76,7 @@ export const FloatingChatbot = () => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [hasGreeted, setHasGreeted] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -111,6 +112,16 @@ export const FloatingChatbot = () => {
 
   useEffect(() => {
     if (!isOpen) return;
+    if (!hasGreeted) {
+      const hour = new Date().getHours();
+      const timeGreet = hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 18 ? "Selamat sore" : "Selamat malam";
+      setMessages([{
+        id: "greeting",
+        role: "assistant",
+        content: `${timeGreet}! Saya **Liona**, asisten akademik untuk Nusa Belajar.\n\nSaya siap membantu Anda memahami materi kuliah, menjawab pertanyaan, dan berdiskusi seputar topik pembelajaran. Silakan ajukan pertanyaan Anda!`,
+      }]);
+      setHasGreeted(true);
+    }
     fetch("/api/chat/sessions")
       .then((r) => r.json())
       .then((d) => setSessions(d.sessions || []))
@@ -324,7 +335,7 @@ export const FloatingChatbot = () => {
                   <Button
                     variant="ghost" size="icon"
                     className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                    onClick={() => { setMessages([]); setSessionId(null); }}
+                    onClick={() => { setMessages([]); setSessionId(null); setHasGreeted(false); }}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -471,7 +482,7 @@ export const FloatingChatbot = () => {
                     </div>
                   )}
 
-                  {msg.role === "assistant" && msg.turnId && (
+                  {msg.role === "assistant" && msg.turnId && msg.sources && msg.sources.length > 0 && (
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] font-semibold text-muted-foreground">Rating</span>
                       <div className="flex gap-0.5">
