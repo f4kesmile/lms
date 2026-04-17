@@ -220,6 +220,10 @@ export async function getSubjectParticipantsAction(
       return { success: true, classes: [] };
     }
 
+    const totalMeetings = await prisma.subjectMeeting.count({
+      where: { subjectId },
+    });
+
     const classSubjects = await prisma.classSubject.findMany({
       where: {
         subjectId,
@@ -249,7 +253,6 @@ export async function getSubjectParticipantsAction(
                     nip: true,
                   },
                 },
-                progress: true,
               },
               orderBy: {
                 user: {
@@ -276,6 +279,23 @@ export async function getSubjectParticipantsAction(
 
     const firstScope = classSubjects[0];
 
+    const classIds = classSubjects.map((row) => row.class.id);
+    const completionCounts = await prisma.subjectMeetingCompletion.groupBy({
+      by: ["classId", "userId"],
+      where: {
+        classId: { in: classIds },
+        meeting: { subjectId },
+      },
+      _count: { _all: true },
+    });
+
+    const completionByClassUser = new Map<string, number>(
+      completionCounts.map((item) => [
+        `${item.classId}:${item.userId}`,
+        item._count._all,
+      ]),
+    );
+
     return {
       success: true,
       yearName: currentYear.name,
@@ -297,7 +317,16 @@ export async function getSubjectParticipantsAction(
           name: student.user.name,
           email: student.user.email,
           identifier: student.user.nip,
-          progress: student.progress,
+          progress:
+            totalMeetings > 0
+              ? Math.round(
+                  ((completionByClassUser.get(
+                    `${row.class.id}:${student.user.id}`,
+                  ) || 0) /
+                    totalMeetings) *
+                    100,
+                )
+              : 0,
         })),
       })),
     };

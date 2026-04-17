@@ -7,25 +7,26 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  name            String
-  email           String           @unique
-  password        String
-  role            UserRole         @default(mahasiswa)
-  isActive        Boolean          @default(true)
-  studentClassId  String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  nip             String?          @unique
-  specialization  String?
-  studentClass    Class?           @relation("PrimaryClass", fields: [studentClassId], references: [id], onDelete: SetNull)
-  chatSessions    ChatSession[]
-  chatTurns       ChatTurn[]
-  classLinks      ClassStudent[]
-  teachingClasses ClassSubject[]
-  courses         Course[]
-  materials       CourseMaterial[]
-  subjectLinks    SubjectTeacher[]
+  id                 String                     @id @default(uuid())
+  name               String
+  email              String                     @unique
+  password           String
+  role               UserRole                   @default(mahasiswa)
+  isActive           Boolean                    @default(true)
+  studentClassId     String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  nip                String?                    @unique
+  specialization     String?
+  studentClass       Class?                     @relation("PrimaryClass", fields: [studentClassId], references: [id], onDelete: SetNull)
+  chatSessions       ChatSession[]
+  chatTurns          ChatTurn[]
+  classLinks         ClassStudent[]
+  teachingClasses    ClassSubject[]
+  courses            Course[]
+  materials          CourseMaterial[]
+  subjectLinks       SubjectTeacher[]
+  meetingCompletions SubjectMeetingCompletion[]
 }
 
 model Course {
@@ -56,17 +57,18 @@ model AcademicYear {
 }
 
 model Class {
-  id             String         @id @default(uuid())
-  name           String
-  academicYearId String
-  capacity       Int            @default(40)
-  enrollmentKey  String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id])
-  students        ClassStudent[]
-  subjects        ClassSubject[]
-  primaryStudents User[]           @relation("PrimaryClass")
+  id                 String                     @id @default(uuid())
+  name               String
+  academicYearId     String
+  capacity           Int                        @default(40)
+  enrollmentKey      String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  academicYear       AcademicYear               @relation(fields: [academicYearId], references: [id])
+  students           ClassStudent[]
+  subjects           ClassSubject[]
+  primaryStudents    User[]                     @relation("PrimaryClass")
+  meetingCompletions SubjectMeetingCompletion[]
 
   @@unique([name, academicYearId])
 }
@@ -124,19 +126,34 @@ model ClassStudent {
 }
 
 model SubjectMeeting {
-  id        String         @id @default(uuid())
-  subjectId String
-  meetingNo Int
-  title     String
-  content   String
-  assets    Json?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  chunks    MeetingChunk[]
-  subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  id          String                     @id @default(uuid())
+  subjectId   String
+  meetingNo   Int
+  title       String
+  content     String
+  assets      Json?
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  chunks      MeetingChunk[]
+  completions SubjectMeetingCompletion[]
+  subject     Subject                    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@unique([subjectId, meetingNo])
   @@index([subjectId])
+}
+
+model SubjectMeetingCompletion {
+  meetingId String
+  classId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  meeting SubjectMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  class   Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([meetingId, classId, userId])
+  @@index([classId, userId])
 }
 
 model MeetingChunk {
@@ -263,4 +280,3 @@ enum DayOfWeek {
   sabtu  @map("saturday")
   minggu @map("sunday")
 }
-
